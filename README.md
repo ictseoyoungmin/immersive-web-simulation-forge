@@ -43,7 +43,7 @@ Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 
     </td>
     <td width="33%" align="center">
       <a href="examples/0.6.0/Pixel_Minions_Room_Explorer_Phase1/">
-        <img src="examples/0.6.0/Pixel_Minions_Room_Explorer_Phase1/preview.webp" width="100%" alt="Pixel Minions preview">
+        <img src="examples/0.6.0/Pixel_Minions_Room_Explorer_Phase1/2026-08-03-153501.png" width="100%" alt="Pixel Minions preview">
         <br>
         <sub><b>Pixel Minions</b><br>Room explorer</sub>
       </a>
@@ -144,18 +144,34 @@ node skills/immersive-web-simulation-forge/scripts/browser_verify.mjs my-project
 
 이 저장소를 독립 스킬로 설치하려면 다음 명령을 사용할 수 있습니다.
 
+다른 에이전트를 대상으로 설치할 때는 `--agent` 값을 해당 에이전트 이름으로 바꿉니다.
+
 ```bash
 npx skills add ictseoyoungmin/immersive-web-simulation-forge --agent claude-code
 npx skills add ictseoyoungmin/immersive-web-simulation-forge --agent codex
 ```
 
-다른 에이전트를 대상으로 설치할 때는 `--agent` 값을 해당 에이전트 이름으로 바꿉니다.
+Claude Code에서 플러그인 marketplace로 설치할 수도 있습니다.
 
-이 저장소에는 Codex용 `.codex-plugin/plugin.json`과 Claude Code용 `.claude-plugin/plugin.json`이 포함되어 있습니다. 스킬 지침과 리소스는 `skills/immersive-web-simulation-forge/` 단일 폴더에 들어 있습니다.
+```text
+/plugin marketplace add ictseoyoungmin/immersive-web-simulation-forge
+/plugin install immersive-web-simulation-forge@immersive-web-simulation-forge
+/reload-plugins
+```
+
+Codex CLI에서는 같은 marketplace를 다음처럼 추가하고 설치합니다.
+
+```bash
+codex plugin marketplace add ictseoyoungmin/immersive-web-simulation-forge
+codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge
+```
+
+
+이 저장소에는 Codex용 `.codex-plugin/plugin.json`, Codex marketplace용 `.agents/plugins/marketplace.json`, Claude Code용 `.claude-plugin/plugin.json`과 `.claude-plugin/marketplace.json`이 포함되어 있습니다. 스킬 지침과 리소스는 `skills/immersive-web-simulation-forge/` 단일 폴더에 들어 있습니다.
 
 ## 제작 기록
 
-이 스킬은 Codex `skill-creator`를 사용해 만들었습니다. 저장소의 예제는 `gpt-5.6-sol-high`를 사용해 단일 프롬프트로 작성된 결과물입니다. `k-holo-status-openworld-revision`은 첫 결과물에서 한번 수정된 결과입니다.
+이 스킬은 Codex `skill-creator`를 사용해 만들었습니다. 저장소의 예제는 `gpt-5.6-sol-high`를 사용해 단일 프롬프트로 작성된 결과물입니다. [`k-holo-status-openworld-revision`](examples/0.6.0/k-holo-status-openworld-revision/k-holo-status-openworld/README.md)은 첫 결과물에서 한번 수정된 결과입니다.
 
 단일 프롬프트 예제:
 
@@ -167,6 +183,7 @@ npx skills add ictseoyoungmin/immersive-web-simulation-forge --agent codex
 ```text
 .
 ├── .codex-plugin/                     # Codex plugin manifest
+├── .agents/plugins/                   # Codex repo marketplace
 ├── .claude-plugin/                   # Claude Code plugin manifest
 ├── docs/                              # GitHub Pages 예제 전시 페이지
 ├── examples/                          # 버전별 브라우저 예제와 검증 자료

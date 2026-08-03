@@ -98,7 +98,7 @@ button { color: inherit; font: inherit; }
 .brand-mark { display: grid; width: 38px; height: 38px; place-items: center; }
 .brand-mark img { width: 34px; height: 34px; }
 .brand-copy { display: grid; gap: 1px; }
-.eyebrow, .kicker, .system-state, .instrument-bar, .instrument-footer, .signal-strip, .archive-count, .filter, .ledger-label, .ledger-foot, .footer, .hero-readout span, .hero-overlay span, .hero-overlay small { font-family: var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.eyebrow, .kicker, .system-state, .instrument-bar, .instrument-footer, .signal-strip, .archive-count, .filter, .product-badge, .command-head span, .copy-command, .ledger-label, .ledger-foot, .footer, .hero-readout span, .hero-overlay span, .hero-overlay small { font-family: var(--mono); letter-spacing: .12em; text-transform: uppercase; }
 .eyebrow { color: var(--cyan); font-size: 9px; }
 .brand-name { font-size: 14px; font-weight: 700; letter-spacing: .12em; }
 .nav { display: flex; gap: 32px; margin-left: auto; color: var(--muted); font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
@@ -166,11 +166,32 @@ h1 em, h2 em, .closing h2 em { color: var(--cyan); font-family: var(--serif); fo
 .signal-strip b { margin-right: auto; color: var(--muted); font-weight: 400; }
 .signal-strip span:not(:first-child) { margin-left: 32px; }
 
-.archive { padding: 100px 0 114px; }
+.install { padding: 78px 0 88px; }
 .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 48px; margin-bottom: 48px; }
 .section-heading .kicker { margin-bottom: 18px; }
 .section-heading h2 { margin-bottom: 0; }
 .section-note { max-width: 360px; margin-bottom: 4px; color: var(--muted); font-size: 13px; line-height: 1.75; }
+.install-layout { display: grid; grid-template-columns: minmax(240px, .48fr) minmax(0, 1.52fr); gap: clamp(34px, 5vw, 74px); align-items: start; }
+.install-copy h2 { margin-bottom: 22px; font-size: clamp(42px, 4.5vw, 68px); }
+.install-copy .section-note { max-width: 410px; }
+.install-products { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.install-product { position: relative; min-width: 0; border: 1px solid var(--line); background: var(--ledger-bg); }
+.install-product::before { position: absolute; top: -1px; left: -1px; width: 84px; height: 1px; content: ""; background: var(--accent); box-shadow: 0 0 16px var(--accent); }
+.product-claude { --accent: var(--violet); }
+.product-codex { --accent: var(--cyan); }
+.product-head { padding: 21px 22px 18px; border-bottom: 1px solid var(--line); }
+.product-badge { display: inline-flex; margin-bottom: 10px; padding: 4px 7px; border: 1px solid color-mix(in srgb, var(--accent) 48%, transparent); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); font-size: 9px; }
+.product-head h3 { margin-bottom: 0; font-size: 28px; font-weight: 400; letter-spacing: -.04em; }
+.command-block { border-top: 1px solid var(--line); }
+.product-head + .command-block { border-top: 0; }
+.command-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 14px 0; }
+.command-head span { color: var(--faint); font-size: 9px; }
+.copy-command { flex: 0 0 auto; min-width: 72px; height: 30px; border: 1px solid var(--line); color: var(--cyan); background: transparent; cursor: pointer; font-size: 9px; transition: color .2s ease, border-color .2s ease, background .2s ease; }
+.copy-command:hover, .copy-command.is-copied { color: #051010; border-color: var(--cyan); background: var(--cyan); }
+.command-block pre { min-width: 0; margin: 0; padding: 12px 14px 16px; overflow: hidden; }
+.command-block code { color: var(--muted); font-family: var(--mono); font-size: 11px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+
+.archive { padding: 100px 0 114px; }
 .archive-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
 .filter-group { display: flex; gap: 6px; }
 .filter { padding: 8px 11px; border: 1px solid transparent; color: var(--faint); background: transparent; cursor: pointer; font-size: 10px; transition: color .2s ease, border-color .2s ease, background .2s ease; }
@@ -236,6 +257,8 @@ h1 em, h2 em, .closing h2 em { color: var(--cyan); font-family: var(--serif); fo
   .hero { grid-template-columns: 1fr; gap: 58px; padding-top: 70px; }
   .hero-copy { max-width: 760px; }
   .hero-instrument { width: min(100%, 760px); }
+  .install-layout { grid-template-columns: 1fr; }
+  .install-copy .section-note { max-width: 620px; }
   .archive-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
@@ -257,13 +280,16 @@ h1 em, h2 em, .closing h2 em { color: var(--cyan); font-family: var(--serif); fo
   .signal-strip { align-items: flex-start; flex-direction: column; gap: 8px; padding: 17px 0; }
   .signal-strip span:not(:first-child) { margin-left: 0; }
   .signal-strip b { margin: 0 0 8px 18px; }
-  .archive, .method { padding: 72px 0 80px; }
+  .archive, .install, .method { padding: 72px 0 80px; }
   .section-heading { align-items: flex-start; flex-direction: column; gap: 22px; margin-bottom: 34px; }
   .section-note { max-width: 100%; }
   .archive-toolbar { align-items: flex-start; flex-direction: column; gap: 16px; }
   .filter-group { width: 100%; overflow-x: auto; }
   .filter { flex: 0 0 auto; }
-  .archive-grid, .ledger-grid { grid-template-columns: 1fr; }
+  .archive-grid, .install-products, .ledger-grid { grid-template-columns: 1fr; }
+  .product-head { padding: 18px; }
+  .product-head h3 { font-size: 24px; }
+  .command-block code { font-size: 10px; }
   .archive-card { min-height: 0; }
   .card-art { height: 190px; }
   .method-heading { margin-bottom: 34px; }

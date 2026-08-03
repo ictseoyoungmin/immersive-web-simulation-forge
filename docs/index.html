@@ -23,6 +23,7 @@
       </a>
       <nav class="nav" aria-label="Primary navigation">
         <a href="#archive">Archive</a>
+        <a href="#install">Install</a>
         <a href="#method">Method</a>
         <a href="https://github.com/ictseoyoungmin/immersive-web-simulation-forge/blob/main/skills/immersive-web-simulation-forge/SKILL.md" target="_blank" rel="noopener">The skill</a>
       </nav>
@@ -73,6 +74,65 @@
         <span>01 / PRODUCT STRUCTURE</span><b>workflow and feedback</b>
         <span>02 / DOMAIN NOTES</span><b>model and limitations</b>
         <span>03 / RUNTIME CHECKS</span><b>lifecycle and measurement</b>
+      </section>
+
+      <section id="install" class="install section-rule">
+        <div class="install-layout">
+          <div class="install-copy">
+            <p class="kicker"><span class="signal-line"></span> Installation</p>
+            <h2>Install <em>Forge.</em></h2>
+            <p class="section-note">Choose the host first. Each host supports a direct skill install and a plugin marketplace install.</p>
+          </div>
+          <div class="install-products">
+            <article class="install-product product-claude">
+              <div class="product-head">
+                <div>
+                  <div class="product-badge">CLAUDE CODE</div>
+                  <h3>Claude Code</h3>
+                </div>
+              </div>
+              <div class="command-block">
+                <div class="command-head">
+                  <span>Direct skill install</span>
+                  <button class="copy-command" type="button" data-copy-target="install-claude-skill">Copy</button>
+                </div>
+                <pre><code id="install-claude-skill">npx skills add ictseoyoungmin/immersive-web-simulation-forge --agent claude-code</code></pre>
+              </div>
+              <div class="command-block">
+                <div class="command-head">
+                  <span>Plugin marketplace</span>
+                  <button class="copy-command" type="button" data-copy-target="install-claude-plugin">Copy</button>
+                </div>
+                <pre><code id="install-claude-plugin">/plugin marketplace add ictseoyoungmin/immersive-web-simulation-forge
+/plugin install immersive-web-simulation-forge@immersive-web-simulation-forge
+/reload-plugins</code></pre>
+              </div>
+            </article>
+            <article class="install-product product-codex">
+              <div class="product-head">
+                <div>
+                  <div class="product-badge">CODEX CLI</div>
+                  <h3>Codex CLI</h3>
+                </div>
+              </div>
+              <div class="command-block">
+                <div class="command-head">
+                  <span>Direct skill install</span>
+                  <button class="copy-command" type="button" data-copy-target="install-codex-skill">Copy</button>
+                </div>
+                <pre><code id="install-codex-skill">npx skills add ictseoyoungmin/immersive-web-simulation-forge --agent codex</code></pre>
+              </div>
+              <div class="command-block">
+                <div class="command-head">
+                  <span>Plugin marketplace</span>
+                  <button class="copy-command" type="button" data-copy-target="install-codex-plugin">Copy</button>
+                </div>
+                <pre><code id="install-codex-plugin">codex plugin marketplace add ictseoyoungmin/immersive-web-simulation-forge
+codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge</code></pre>
+              </div>
+            </article>
+          </div>
+        </div>
       </section>
 
       <section id="archive" class="archive section-rule">

@@ -1,0 +1,14 @@
+{
+  "name": "immersive-web-simulation-forge",
+  "owner": {
+    "name": "ictseoyoungmin"
+  },
+  "description": "Claude Code plugin marketplace for Immersive Web Simulation Forge.",
+  "plugins": [
+    {
+      "name": "immersive-web-simulation-forge",
+      "source": "./",
+      "description": "Design, implement, validate, harden, and package interactive browser worlds, simulation labs, design studios, data instruments, and operations panels."
+    }
+  ]
+}
