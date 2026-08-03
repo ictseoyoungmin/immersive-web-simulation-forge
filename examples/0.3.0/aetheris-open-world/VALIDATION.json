@@ -1,0 +1,47 @@
+{
+  "implemented": true,
+  "audit_status": "pass",
+  "static_checks": {
+    "status": "pass",
+    "files_checked": 7,
+    "syntax_failures": 0,
+    "glsl_js_leakage": 0
+  },
+  "browser": {
+    "executed": true,
+    "intended_route": false,
+    "console_errors": 0,
+    "page_errors": 0,
+    "request_failures": 0
+  },
+  "visual_review": {
+    "status": "creator-reviewed / provisional",
+    "hardening_rounds": 3,
+    "unresolved_defects": []
+  },
+  "performance": {
+    "measured": true,
+    "summary": "Chromium SwiftShader review: 17.1 average sampled FPS at 1440×900 with software-only adaptive scale 0.58; diagnostics also executed at 1920×1080 and 390×844. Hardware GPU performance was not available in this environment.",
+    "software_renderer": true,
+    "avg_sampled_fps": 17.1,
+    "render_scale": 0.58,
+    "draw_calls": 24,
+    "instances": 279,
+    "particles": 650
+  },
+  "target_sizes_reviewed": [
+    "1440x900",
+    "1920x1080",
+    "390x844"
+  ],
+  "limitations": [
+    "Administrator policy blocked local URL navigation in the review browser, so Chromium executed the exact packaged HTML, CSS, and JavaScript through page.set_content; the normal index.html route was not independently navigated.",
+    "Performance was measured only on SwiftShader software rendering. The hardware GPU path remains unmeasured.",
+    "Procedural audio requires a user gesture before playback."
+  ],
+  "artifact": {
+    "implementation_bytes": 87137,
+    "workbench_evidence_bytes": 7235293,
+    "evidence_to_implementation_ratio": 83.034
+  }
+}

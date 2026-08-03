@@ -1,0 +1,25 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# JavaScript dependencies and debug output
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Forge workbench, browser evidence, and local reports
+.forge/
+**/.forge/
+.playwright/
+coverage/
+
+# Local editor and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

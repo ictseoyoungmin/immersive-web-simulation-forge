@@ -1,0 +1,88 @@
+{
+  "version": 4,
+  "implemented": false,
+  "static_checks": {"status": "not-run"},
+  "browser": {
+    "executed": false,
+    "intended_route": false,
+    "console_errors": null,
+    "page_errors": null,
+    "request_failures": null
+  },
+  "workflow_review": {
+    "default_route": "not-run",
+    "first_use": "not-run",
+    "complete_loop": "not-run",
+    "comparison_or_validation": "not-run",
+    "completion_or_export": "not-run",
+    "failure_recovery": "not-run",
+    "claim_audit": {"status": "not-run", "claims": []}
+  },
+  "domain_validation": {
+    "status": "not-applicable",
+    "claim_level": "visual-concept",
+    "oracle": "",
+    "known_cases": [],
+    "tolerances_met": null,
+    "invariants_or_geometry_checks": [],
+    "round_trip": "not-applicable",
+    "limitations_disclosed": false,
+    "external_review": "not-applicable",
+    "unresolved_defects": []
+  },
+  "runtime_engineering": {
+    "status": "not-run",
+    "lifecycle": "not-run",
+    "history_persistence": "not-applicable",
+    "cancellation_recovery": "not-applicable",
+    "stale_result_rejection": "not-applicable",
+    "unresolved_defects": []
+  },
+  "visual_review": {
+    "status": "not-run",
+    "hardening_rounds": 0,
+    "unresolved_defects": []
+  },
+  "performance": {
+    "measured": false,
+    "measurement_block": "",
+    "source": "",
+    "warmup_ms": 0,
+    "sample_count": 0,
+    "scenarios": [],
+    "frame_time": {"median_ms": null, "p95_ms": null},
+    "job_latency": {
+      "scenarios": [],
+      "median_ms": null,
+      "p95_ms": null,
+      "cancellation_ms": null
+    },
+    "average_fps": null,
+    "application_telemetry_cross_checked": false,
+    "renderer": "unknown",
+    "software_renderer": null
+  },
+  "fidelity": {
+    "capture_preset": "",
+    "css_size": [],
+    "internal_size": [],
+    "effective_pixel_ratio": 0,
+    "adaptive_locked": false,
+    "reconstruction": "none",
+    "ui_native_resolution": false,
+    "icon_review": "not-run"
+  },
+  "input": {
+    "pointer_direction_review": "not-run",
+    "drag_pointerlock_parity": "not-run",
+    "selection_transform_review": "not-applicable",
+    "keyboard_path_review": "not-run"
+  },
+  "target_sizes_reviewed": [],
+  "limitations": [],
+  "artifact": {
+    "implementation_bytes": 0,
+    "compressed_package_bytes": 0,
+    "workbench_evidence_bytes": 0
+  }
+}

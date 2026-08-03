@@ -1,0 +1,12 @@
+{
+  "name": "aerolab-x4-drone-wind-tunnel",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "verify": "node scripts/static_verify.mjs && node tests/physics_verify.mjs",
+    "verify:browser": "node scripts/browser_verify.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

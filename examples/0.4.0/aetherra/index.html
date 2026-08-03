@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07110f">
+  <meta name="description" content="AETHERRA — a living procedural open world in the browser.">
+  <title>AETHERRA — The Breathing Expanse</title>
+  <link rel="stylesheet" href="assets/aetherra.css">
+</head>
+<body>
+  <main id="app" aria-label="AETHERRA interactive open world">
+    <div id="world" aria-hidden="true"></div>
+
+    <section id="boot" class="boot" aria-labelledby="boot-title">
+      <div class="boot-sky" aria-hidden="true">
+        <span class="boot-orbit orbit-a"></span><span class="boot-orbit orbit-b"></span><span class="boot-moon"></span>
+      </div>
+      <div class="boot-copy">
+        <p class="eyebrow"><span></span> Expedition 07 / Unknown Crown</p>
+        <h1 id="boot-title">AETHERRA</h1>
+        <p class="boot-subtitle">The Breathing Expanse</p>
+        <p class="boot-intro">A forgotten tide engine is waking beneath the grass. Cross the living basin. Read the wind. Let the world remember you.</p>
+        <div class="boot-rule"><i></i><span id="boot-status">Assembling terrain field</span><i></i></div>
+        <button id="enter" class="enter" type="button" disabled>
+          <span class="enter-icon" data-icon="compass"></span>
+          <span><b>ENTER THE EXPANSE</b><small>Headphones recommended · Mouse + keyboard</small></span>
+          <span class="enter-arrow" data-icon="chevronRight"></span>
+        </button>
+      </div>
+      <div class="boot-footer"><span>FIELD BUILD 1.0</span><span>WORLD SEED 07—AETH</span><span>LOCAL WEBGL</span></div>
+    </section>
+
+    <div id="hud" class="hud is-hidden">
+      <header class="topbar">
+        <div class="identity">
+          <span class="sigil" aria-hidden="true"><i></i><i></i><i></i></span>
+          <div><strong>AETHERRA</strong><small>FIELDWALK / 07</small></div>
+        </div>
+        <div id="compass" class="compass" aria-label="Compass heading">
+          <div class="compass-line"></div>
+          <div id="compass-track" class="compass-track"></div>
+          <i class="compass-index"></i>
+        </div>
+        <nav class="hud-actions" aria-label="World controls">
+          <button id="journal-button" class="icon-button" type="button" data-icon="scan" aria-label="Open field journal"><span></span></button>
+          <button id="audio-button" class="icon-button" type="button" data-icon="audio" aria-label="Mute world audio"><span></span></button>
+          <button id="cinema-button" class="icon-button" type="button" data-icon="cinema" aria-label="Toggle cinematic interface"><span></span></button>
+          <button id="settings-button" class="icon-button" type="button" data-icon="settings" aria-label="Open settings"><span></span></button>
+        </nav>
+      </header>
+
+      <aside class="field-panel" aria-label="Field conditions">
+        <div class="panel-kicker"><span class="pulse-dot"></span> Live field</div>
+        <div class="field-primary"><span id="region-name">VERDANT LIP</span><small id="altitude">ALT 000 M</small></div>
+        <div class="field-row"><span>Wind vector</span><b id="wind-readout">NE · 11.4</b></div>
+        <div class="field-row"><span>Tide state</span><b id="tide-readout">CROWNED</b></div>
+        <div class="field-row"><span>Light phase</span><b id="light-readout">OPEN SUN</b></div>
+        <div class="field-wave" aria-hidden="true"><canvas id="field-canvas" width="244" height="38"></canvas></div>
+      </aside>
+
+      <aside class="map-panel" aria-label="Local terrain map">
+        <div class="map-frame">
+          <canvas id="minimap" width="320" height="320" aria-label="Map of Aetherra"></canvas>
+          <span class="map-north">N</span><span class="map-scale">200 M</span>
+        </div>
+        <div class="map-caption"><span id="coordinates">0000 / 0000</span><b id="discovery-count">0 / 7 FOUND</b></div>
+      </aside>
+
+      <section class="objective" aria-live="polite">
+        <span class="objective-index">01</span>
+        <div><small>ACTIVE RESONANCE</small><strong id="objective-text">Follow the pale wind to the Tide Engine</strong></div>
+        <b id="objective-distance">312 M</b>
+      </section>
+
+      <section id="world-actions" class="world-actions" aria-label="World resonance abilities">
+        <button id="tide-button" class="resonance-button" type="button">
+          <span data-icon="storm"></span><i><small>RESONANCE 1</small><b>Release the tide</b></i><em id="tide-key">1</em>
+        </button>
+        <button id="eclipse-button" class="resonance-button" type="button">
+          <span data-icon="compass"></span><i><small>RESONANCE 2</small><b>Call the crown</b></i><em id="eclipse-key">2</em>
+        </button>
+      </section>
+
+      <div id="reticle" class="reticle" aria-hidden="true"><i></i><i></i><span></span></div>
+
+      <div class="motion-status">
+        <div class="stamina"><i id="stamina-fill"></i></div>
+        <span id="motion-label">WALK</span><b id="speed-readout">0.0</b><small>M/S</small>
+      </div>
+
+      <div id="interaction" class="interaction" aria-live="polite">
+        <kbd>E</kbd><span><small>EXAMINE</small><b id="interaction-name">Tide Engine</b></span>
+      </div>
+
+      <div class="controls-hint"><span><kbd>WASD</kbd> MOVE</span><span><kbd>SHIFT</kbd> SPRINT</span><span><kbd>SPACE</kbd> JUMP</span><span><kbd>E</kbd> INSPECT</span><span><kbd>H</kbd> GLIDE</span></div>
+
+      <section id="journal" class="drawer journal" aria-labelledby="journal-title">
+        <div class="drawer-head"><div><small>FIELD ARCHIVE</small><h2 id="journal-title">Seven echoes</h2></div><button class="drawer-close" type="button" data-close="journal" data-icon="close" aria-label="Close journal"><span></span></button></div>
+        <p class="drawer-lead">The island records contact as changes in wind, water and light. Find each echo to reconstruct the engine’s purpose.</p>
+        <ol id="echo-list" class="echo-list"></ol>
+      </section>
+
+      <section id="settings" class="drawer settings" aria-labelledby="settings-title">
+        <div class="drawer-head"><div><small>OPTICAL INSTRUMENT</small><h2 id="settings-title">Field settings</h2></div><button class="drawer-close" type="button" data-close="settings" data-icon="close" aria-label="Close settings"><span></span></button></div>
+        <label class="setting-row"><span><b>Render fidelity</b><small>Adaptive scene sampling</small></span><select id="quality-select"><option value="presentation">Presentation</option><option value="balanced">Balanced</option><option value="performance">Performance</option></select></label>
+        <label class="setting-row"><span><b>Look sensitivity</b><small>Pointer lock and drag</small></span><input id="sensitivity" type="range" min="0.7" max="2.2" value="1" step="0.05"></label>
+        <label class="setting-row"><span><b>Invert horizontal</b><small>Right movement turns left</small></span><input id="invert-x" type="checkbox"></label>
+        <label class="setting-row"><span><b>Invert vertical</b><small>Up movement looks down</small></span><input id="invert-y" type="checkbox"></label>
+        <label class="setting-row"><span><b>Reduced motion</b><small>Calmer camera and ecology</small></span><input id="reduced-motion" type="checkbox"></label>
+        <div class="diagnostic"><span>OUTPUT</span><b id="fidelity-readout">—</b></div>
+      </section>
+
+      <section id="inspection" class="inspection" aria-live="polite">
+        <button id="inspection-close" class="inspection-close" type="button" data-icon="close" aria-label="Close inspection"><span></span></button>
+        <div class="inspection-index"><span id="inspection-number">ECHO 01</span><i></i></div>
+        <small id="inspection-kind">TIDAL MECHANISM</small>
+        <h2 id="inspection-title">Aperture of Return</h2>
+        <p id="inspection-body">Its ceramic skin has been polished by water that has not moved for centuries.</p>
+        <div class="inspection-grid"><span>Material<b id="inspection-material">PELAGIC CERAMIC</b></span><span>Field response<b id="inspection-response">DORMANT</b></span></div>
+        <div class="inspection-causal"><span>WIND</span><i></i><span>JOINT</span><i></i><span>TIDE</span></div>
+      </section>
+
+      <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
+      <div id="letterbox" class="letterbox" aria-hidden="true"><i></i><i></i></div>
+
+      <div class="touch-controls" aria-hidden="true">
+        <div id="touch-move" class="touch-stick"><i></i></div>
+        <button id="touch-jump" type="button">JUMP</button><button id="touch-run" type="button">RUN</button><button id="touch-use" type="button">USE</button>
+      </div>
+    </div>
+
+    <section id="fallback" class="fallback" hidden>
+      <p class="eyebrow"><span></span> Renderer unavailable</p><h1>AETHERRA COULD NOT WAKE</h1><p>This world requires WebGL 2 or a modern WebGL-capable browser. Hardware acceleration may be disabled.</p>
+    </section>
+  </main>
+  <script src="assets/aetherra.js"></script>
+</body>
+</html>

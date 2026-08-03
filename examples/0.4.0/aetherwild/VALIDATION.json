@@ -1,0 +1,65 @@
+{
+  "implemented": true,
+  "audit_status": "pass",
+  "static_checks": {
+    "status": "pass",
+    "html": "pass",
+    "javascript": "pass",
+    "fidelity_audit": "pass"
+  },
+  "browser": {
+    "executed": true,
+    "intended_route": true,
+    "console_errors": 0,
+    "page_errors": 0,
+    "request_failures": 0
+  },
+  "visual_review": {
+    "status": "creator-reviewed / provisional",
+    "hardening_rounds": 3,
+    "unresolved_defects": []
+  },
+  "performance": {
+    "measured": true,
+    "summary": "SwiftShader measured approximately 21–24 FPS at 960x600 presentation after optimization. This is correctness evidence only and not a target-GPU performance claim.",
+    "renderer": "ANGLE Vulkan SwiftShader Device (Subzero)",
+    "software_renderer": true
+  },
+  "fidelity": {
+    "capture_preset": "presentation",
+    "css_size": [
+      960,
+      600
+    ],
+    "internal_size": [
+      960,
+      600
+    ],
+    "effective_pixel_ratio": 1.0,
+    "adaptive_locked": true,
+    "reconstruction": "none",
+    "ui_native_resolution": true,
+    "icon_review": "pass",
+    "pointer_direction_review": "pass"
+  },
+  "target_sizes_reviewed": [
+    [
+      960,
+      600
+    ],
+    [
+      1440,
+      900,
+      "responsive layout/static composition review"
+    ]
+  ],
+  "limitations": [
+    "Performance was measured only on a software renderer; no target-GPU FPS claim is made.",
+    "The world uses procedural SDF/heightfield geometry rather than authored mesh assets."
+  ],
+  "artifact": {
+    "implementation_bytes": 61417,
+    "workbench_evidence_bytes": 641217,
+    "evidence_to_implementation_ratio": 10.44
+  }
+}

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#06131b">
+  <title>AETHERIS — The Living Sky</title>
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <main id="experience" aria-label="Aetheris open world simulation">
+    <canvas id="world" aria-label="3D floating archipelago"></canvas>
+    <div id="postFx" aria-hidden="true"></div>
+
+    <header class="hud hud-top">
+      <section class="brand glass">
+        <div class="eyebrow">EXPEDITION 07 / AETHERIS</div>
+        <h1>THE LIVING SKY</h1>
+        <p id="locationLabel">Cloudline Approach · Altitude 684m</p>
+      </section>
+      <section class="telemetry glass" aria-label="world telemetry">
+        <div><span>FIELD</span><strong id="fieldValue">0.72</strong></div>
+        <div><span>WIND</span><strong id="windValue">18.4</strong><em>m/s</em></div>
+        <div><span>CHARGE</span><strong id="chargeValue">42</strong><em>%</em></div>
+        <div><span>FPS</span><strong id="fpsValue">60</strong></div>
+      </section>
+    </header>
+
+    <aside id="mission" class="mission glass">
+      <div class="mission-kicker">CURRENT SIGNAL</div>
+      <h2 id="missionTitle">Reach the Meridian Crown</h2>
+      <p id="missionBody">Follow the cobalt current toward the central spire. Click any island to enter deep scan.</p>
+      <div class="mission-progress"><i id="missionProgress"></i></div>
+    </aside>
+
+    <aside id="inspection" class="inspection glass" aria-live="polite">
+      <button id="closeInspection" class="icon-btn" aria-label="Close inspection">×</button>
+      <div class="inspection-kicker">DEEP SCAN / <span id="scanId">AE-01</span></div>
+      <h2 id="scanName">Meridian Crown</h2>
+      <p id="scanDesc">An ancient regulator island stabilizing the northern aether stream.</p>
+      <div class="scan-grid">
+        <div><span>BIOME</span><strong id="scanBiome">Luminous heath</strong></div>
+        <div><span>CORE</span><strong id="scanCore">Stable</strong></div>
+        <div><span>FLUX</span><strong id="scanFlux">0.84</strong></div>
+        <div><span>AGE</span><strong id="scanAge">2.7k cycles</strong></div>
+      </div>
+      <div class="reveal-list">
+        <span><i></i>Underside conduits visible</span>
+        <span><i></i>Local field vectors resolved</span>
+      </div>
+    </aside>
+
+    <nav class="controls glass" aria-label="simulation controls">
+      <button id="flightBtn" data-key="F"><b>F</b><span>TAKE CONTROL</span></button>
+      <button id="scanBtn" data-key="I"><b>I</b><span>DEEP SCAN</span></button>
+      <button id="stormBtn" data-key="1"><b>1</b><span>TEMPEST</span></button>
+      <button id="solarBtn" data-key="2"><b>2</b><span>SOLAR BRIDGES</span></button>
+      <button id="soundBtn" data-key="M" aria-pressed="false"><b>M</b><span>SOUND OFF</span></button>
+    </nav>
+
+    <section class="map glass" aria-label="navigation map">
+      <div class="map-head"><span>AETHER GRID</span><strong id="bearing">N 024°</strong></div>
+      <canvas id="minimap" width="240" height="150"></canvas>
+      <div class="map-legend"><span><i class="legend-you"></i>YOU</span><span><i class="legend-site"></i>SITE</span><span><i class="legend-flow"></i>FLOW</span></div>
+    </section>
+
+    <div id="reticle" aria-hidden="true"><i></i><i></i></div>
+    <div id="eventBanner" role="status"><span id="eventKicker">WORLD EVENT</span><strong id="eventName">TEMPEST BLOOM</strong><small id="eventPhase">ATMOSPHERIC COLLAPSE DETECTED</small></div>
+    <div id="toast" role="status"></div>
+    <div id="unsupported" hidden>
+      <h2>WebGL2 is required</h2>
+      <p>This world needs a modern browser with hardware-accelerated WebGL2.</p>
+    </div>
+
+    <div class="mobile-stick" id="mobileStick" aria-hidden="true"><i></i></div>
+    <div class="mobile-look" id="mobileLook" aria-hidden="true"></div>
+  </main>
+  <script src="src/runtime.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>

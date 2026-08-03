@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#071017" />
+  <title>AEROLAB X4 — Drone Physics & Wind Tunnel</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main id="app" class="app-shell" aria-label="AEROLAB X4 drone wind tunnel simulator">
+    <header class="topbar glass-panel">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <div>
+          <strong>AEROLAB <em>X4</em></strong>
+          <small>DRONE PHYSICS ENGINE · WIND TUNNEL</small>
+        </div>
+      </div>
+      <div class="run-state">
+        <span class="live-dot"></span>
+        <span id="runLabel">SIMULATION LIVE</span>
+        <b id="simRate">120 Hz</b>
+      </div>
+      <div class="top-actions" id="topActions"></div>
+    </header>
+
+    <aside class="left-rail glass-panel" aria-label="Simulation controls">
+      <nav class="tab-strip" id="controlTabs"></nav>
+      <section id="controlPanel" class="control-panel"></section>
+    </aside>
+
+    <section class="viewport-shell" aria-label="3D wind tunnel viewport">
+      <canvas id="glCanvas" aria-label="3D drone wind tunnel"></canvas>
+      <canvas id="fieldCanvas" aria-label="Wind flow visualization"></canvas>
+      <div class="viewport-vignette" aria-hidden="true"></div>
+      <div class="viewport-header">
+        <div class="mode-badge" id="modeBadge">HOVER PID</div>
+        <div class="wind-readout"><span>WIND</span><b id="windVectorReadout">0.0 m/s · 000°</b></div>
+      </div>
+      <div class="crosshair" aria-hidden="true"><i></i><i></i></div>
+      <div class="probe-card glass-panel" id="probeCard">
+        <span>LOCAL FLOW PROBE</span>
+        <strong id="probeSpeed">0.00 m/s</strong>
+        <small id="probePressure">ΔP 0 Pa · LAMINAR</small>
+      </div>
+      <div class="gizmo-hint glass-panel" id="gizmoHint">Click amber hardpoints to attach payload</div>
+      <div class="flow-legend glass-panel" aria-label="Flow velocity color scale"><span>FLOW ENERGY</span><i></i><div><b>LOW</b><b>HIGH</b></div></div>
+      <div class="viewport-footer">
+        <span><kbd>DRAG</kbd> ORBIT</span>
+        <span><kbd>WHEEL</kbd> ZOOM</span>
+        <span><kbd>CLICK</kbd> PAYLOAD</span>
+        <span><kbd>SPACE</kbd> PAUSE</span>
+      </div>
+    </section>
+
+    <aside class="right-rail glass-panel" aria-label="Telemetry panels">
+      <div class="rail-title">
+        <div><span>LIVE TELEMETRY</span><b id="telemetryClock">T+00:00.000</b></div>
+        <button class="icon-button" id="snapshotButton" title="Save telemetry snapshot" aria-label="Save telemetry snapshot"></button>
+      </div>
+      <section class="metric-grid" id="metricGrid"></section>
+      <section class="chart-card">
+        <header><span>ATTITUDE</span><small>ROLL / PITCH · DEG</small></header>
+        <canvas id="attitudeChart"></canvas>
+      </section>
+      <section class="chart-card">
+        <header><span>POWER CURVE</span><small>WATTS / WIND SPEED</small></header>
+        <canvas id="powerChart"></canvas>
+      </section>
+      <section class="rotor-card">
+        <header><span>ROTOR THRUST DISTRIBUTION</span><small id="thrustTotal">Σ 0.0 N</small></header>
+        <div id="rotorBars" class="rotor-bars"></div>
+      </section>
+    </aside>
+
+    <footer class="statusbar glass-panel">
+      <div><span class="status-key">FPS</span><b id="fpsValue">--</b><i id="fpsSpark"></i></div>
+      <div><span class="status-key">SOLVER</span><b id="solverStatus">STABLE</b></div>
+      <div><span class="status-key">PARTICLES</span><b id="particleCount">--</b></div>
+      <div><span class="status-key">PAYLOAD</span><b id="payloadMass">0.00 kg</b></div>
+      <div class="status-grow"><span class="status-key">EVENT</span><b id="eventLog">SYSTEM INITIALIZED</b></div>
+      <div><span class="status-key">QUALITY</span><b id="qualityLabel">HIGH</b></div>
+    </footer>
+  </main>
+  <noscript>This simulator requires JavaScript and WebGL2.</noscript>
+  <script type="module" src="./bootstrap.mjs"></script>
+</body>
+</html>

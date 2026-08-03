@@ -1,0 +1,62 @@
+# Systemic rendering patterns
+
+High visual density comes from coupling, not object count.
+
+## Canonical field
+
+Represent one phenomenon once, then expose it to every consumer. A shared field may contain velocity, temperature, pressure, occupancy, risk, influence, or semantic activity. Consumers can sample it at different rates and scales, but should not invent unrelated copies.
+
+Typical consumers:
+
+- geometry deformation;
+- particles and smoke;
+- material response;
+- lighting and atmosphere;
+- audio parameters;
+- telemetry and alerts;
+- camera feedback;
+- navigation or interaction.
+
+Use `kits/systems/shared-field.mjs` for CPU consumers and `kits/three/shared-field-texture.mjs` for GPU consumers.
+
+## Canonical document, run, or data state
+
+The shared source need not be a spatial field.
+
+- a parametric document drives geometry, measurements, validation, variants, and export;
+- a simulation run drives motion, plots, diagnostics, comparison, and CSV/JSON output;
+- a selected data subset drives marks, details, annotations, and derived statistics;
+- an operation state drives controls, progress, audit trace, and recovery affordances.
+
+Keep render objects and formatted labels as consumers. Do not let them become competing sources of truth.
+
+## Scale bands
+
+Near, middle, and far layers have different jobs:
+
+- near: contact, thickness, surface information, interaction;
+- middle: active mechanism and causal motion;
+- far: silhouette, context, atmosphere, destination.
+
+Do not render the same object vocabulary at every distance. Change representation, density, and update rate.
+
+## Pass architecture
+
+Add passes only when they solve a measured visual or performance problem:
+
+- depth prepass for high overdraw;
+- shadow proxy for expensive distant geometry;
+- reflection proxy for distorted/low-frequency reflections;
+- field bake when many fragments repeatedly evaluate the same expensive function;
+- post chain for a deliberate image-space thesis, not as a substitute for material quality.
+
+## Event transformations
+
+Events should perturb the existing system:
+
+1. anticipation changes field gradients or system tension;
+2. impact changes topology/silhouette or motion law;
+3. propagation reaches multiple consumers at different delays;
+4. recovery leaves a persistent state or scar.
+
+This creates a world response instead of a canned effect.

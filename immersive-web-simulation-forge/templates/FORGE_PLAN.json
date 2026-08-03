@@ -1,0 +1,243 @@
+{
+  "version": 4,
+  "profile": "simulation-lab",
+  "ambition": "production",
+  "experience_mode": "instrument",
+  "delivery_mode": "lean",
+  "user_request": {
+    "summary": "",
+    "primary_users": [],
+    "target_sizes": [],
+    "goals": [],
+    "requested_constraints": []
+  },
+  "derived_constraints": [],
+  "experience": {
+    "core_promise": "",
+    "first_use": {
+      "identity": "",
+      "starting_state": "",
+      "meaningful_action": "",
+      "visible_consequence": "",
+      "next_step": ""
+    },
+    "workflow": {
+      "kind": "instrument",
+      "job_to_be_done": "",
+      "entry_or_input": "",
+      "manipulate_or_run": "",
+      "inspect_or_interpret": "",
+      "compare_or_validate": "",
+      "complete_or_export": "",
+      "recover_or_resume": ""
+    },
+    "feature_budget": {
+      "hero_system": "",
+      "hero_motif": "",
+      "supporting_systems": [],
+      "deferred": [],
+      "expansion_rationale": ""
+    },
+    "scale_density": {
+      "world_bounds_m": [],
+      "area_basis": "not-applicable",
+      "computed_area_km2": null,
+      "walking_speed_mps": null,
+      "landmark_count": 0,
+      "typical_spacing_m": null,
+      "first_action_seconds": null,
+      "first_reward_seconds": null,
+      "density_rationale": ""
+    },
+    "claims": []
+  },
+  "concepts": {
+    "considered": [],
+    "selected": "",
+    "spikes_built": 0,
+    "selection_rationale": ""
+  },
+  "representation": {
+    "stack": "",
+    "required_capabilities": [],
+    "ceiling_rationale": "",
+    "renderer_capital": [],
+    "runtime_footprint_rationale": ""
+  },
+  "system": {
+    "source_of_truth": "",
+    "consumers": [],
+    "update_rates": {}
+  },
+  "domain": {
+    "claim_level": "visual-concept",
+    "authoritative_model": "",
+    "units": {
+      "system": "",
+      "coordinate_system": "",
+      "quantities": []
+    },
+    "inputs": [],
+    "outputs": [],
+    "assumptions": [],
+    "limitations": [],
+    "solver": {
+      "applicable": false,
+      "method": "",
+      "time_step_policy": "",
+      "initial_conditions": [],
+      "boundary_conditions": [],
+      "stability_or_convergence": "",
+      "invariants": [],
+      "failure_states": []
+    },
+    "validation": {
+      "oracle": "",
+      "known_cases": [],
+      "tolerances": [],
+      "uncertainty": "",
+      "external_reference": "",
+      "review_status": "not-run"
+    }
+  },
+  "authoring": {
+    "applicable": false,
+    "document_model": "",
+    "schema_version": "",
+    "stable_ids": false,
+    "parameter_graph": "",
+    "constraints": [],
+    "selection_model": "",
+    "transform_controls": [],
+    "snapping": "",
+    "measurements": [],
+    "undo_redo": false,
+    "autosave_or_explicit_save": "",
+    "variant_comparison": "",
+    "import_formats": [],
+    "export_formats": [],
+    "round_trip_validation": ""
+  },
+  "compute": {
+    "execution": "main-thread",
+    "workload": "interactive",
+    "workload_rationale": "",
+    "latency_budget_ms": null,
+    "memory_budget_mb": null,
+    "cancellable": false,
+    "progress_reporting": "not-applicable",
+    "deterministic_replay": false,
+    "stale_result_policy": "",
+    "persistence": "",
+    "fallback": ""
+  },
+  "data_contract": {
+    "applicable": false,
+    "schema_version": "",
+    "sources": [],
+    "provenance": "",
+    "freshness": "",
+    "transformations": [],
+    "missing_error_policy": "",
+    "action_confirmation": "",
+    "recovery": ""
+  },
+  "visual": {
+    "default_view": "",
+    "art_direction_rules": [],
+    "composition_roles": [],
+    "material_or_mark_families": [],
+    "hero_state_changes": [],
+    "inspection_reveals": [],
+    "ui_density_budget": ""
+  },
+  "fidelity": {
+    "clarity_intent": "",
+    "intentional_softness": false,
+    "softness_rationale": "",
+    "default_effective_pixel_ratio": 1.0,
+    "presentation_effective_pixel_ratio": 1.0,
+    "adaptive_min_ratio": 0.72,
+    "adaptive_max_ratio": 1.0,
+    "reconstruction": {
+      "enabled": false,
+      "method": "none",
+      "reviewed_at_target_size": false
+    },
+    "capture_mode": {
+      "locks_quality": true,
+      "preset": "presentation",
+      "records_internal_size": true,
+      "separates_visual_from_performance_capture": true
+    },
+    "native_output_space": ["ui", "text", "icons", "plots", "measurements"],
+    "frequency_partition": {
+      "scene_space": [],
+      "native_output_space": []
+    }
+  },
+  "interface": {
+    "visible_icon_count": 0,
+    "icon_system": "none",
+    "icon_grid": 24,
+    "optical_sizes": [],
+    "unicode_placeholder_count": 0,
+    "stroke_consistency": true,
+    "native_resolution": true,
+    "keyboard_path": "",
+    "compact_layout": ""
+  },
+  "input": {
+    "pointer_look": false,
+    "horizontal_default": "standard",
+    "vertical_default": "standard",
+    "direction_reviewed": false,
+    "drag_pointerlock_parity": false,
+    "invert_x_configurable": false,
+    "invert_y_configurable": false
+  },
+  "measurement": {
+    "wall_clock_source": "external-requestAnimationFrame",
+    "warmup_ms": 1500,
+    "measure_ms": 3000,
+    "samples": 3,
+    "performance_scenarios": [],
+    "frame_time_percentiles": ["p50", "p95"],
+    "job_scenarios": [],
+    "job_latency_percentiles": ["p50", "p95"],
+    "application_telemetry_cross_checked": false
+  },
+  "review": {
+    "hardening_rounds": 0,
+    "product_outcome": {
+      "default_route_reviewed": false,
+      "first_use_clear": false,
+      "primary_workflow_complete": false,
+      "art_direction_coherent": false,
+      "ui_density_acceptable": false,
+      "unresolved_blockers": []
+    },
+    "domain_validity": {
+      "status": "not-applicable",
+      "claim_level_matches_evidence": false,
+      "assumptions_visible": false,
+      "oracle_or_round_trip_run": false,
+      "tolerances_met": null,
+      "limitations_disclosed": false,
+      "unresolved_blockers": []
+    },
+    "runtime_engineering": {
+      "lifecycle_reviewed": false,
+      "history_persistence_reviewed": false,
+      "cancellation_recovery_reviewed": false,
+      "performance_reviewed_or_blocked": false,
+      "unresolved_blockers": []
+    },
+    "review_status": "creator-reviewed / provisional"
+  },
+  "package": {
+    "runtime_roots": ["index.html", "src", "assets"],
+    "include_preview": false,
+    "preview_path": ""
+  }
+}

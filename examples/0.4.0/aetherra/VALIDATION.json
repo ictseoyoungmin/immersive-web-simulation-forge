@@ -1,0 +1,102 @@
+{
+  "implemented": true,
+  "audit_status": "pass",
+  "static_checks": {
+    "status": "pass",
+    "html_glsl_check": "pass",
+    "flagship_fidelity_audit": "pass"
+  },
+  "browser": {
+    "executed": true,
+    "intended_route": true,
+    "console_errors": [],
+    "page_errors": [],
+    "request_failures": []
+  },
+  "visual_review": {
+    "status": "creator-reviewed / provisional",
+    "hardening_rounds": 2,
+    "unresolved_defects": []
+  },
+  "performance": {
+    "measured": true,
+    "summary": "Correctness-only samples on SwiftShader: 52.3 FPS in the short presentation capture sample and 11.4 FPS during the extended full-eclipse input QA. These are software-renderer measurements and are not target-GPU performance claims.",
+    "renderer": "ANGLE Vulkan SwiftShader",
+    "software_renderer": true
+  },
+  "fidelity": {
+    "capture_preset": "presentation",
+    "css_size": [
+      1440,
+      900
+    ],
+    "internal_size": [
+      1440,
+      900
+    ],
+    "effective_pixel_ratio": 1.0,
+    "adaptive_locked": true,
+    "reconstruction": "none",
+    "ui_native_resolution": true,
+    "icon_review": "pass",
+    "pointer_direction_review": "pass",
+    "pointer_review_detail": {
+      "right_drag_turns_right": true,
+      "left_drag_turns_left": true,
+      "up_drag_looks_up": true,
+      "down_drag_looks_down": true,
+      "drag_pointerlock_sign_parity": true,
+      "inversion_configurable": true
+    }
+  },
+  "target_sizes_reviewed": [
+    {
+      "css": [
+        1280,
+        720
+      ],
+      "internal": [
+        1152,
+        648
+      ],
+      "effective_ratio": 0.9,
+      "preset": "balanced",
+      "status": "pass"
+    },
+    {
+      "css": [
+        1440,
+        900
+      ],
+      "internal": [
+        1440,
+        900
+      ],
+      "effective_ratio": 1.0,
+      "preset": "presentation",
+      "status": "pass"
+    },
+    {
+      "css": [
+        1920,
+        1080
+      ],
+      "internal": [
+        1920,
+        1080
+      ],
+      "effective_ratio": 1.0,
+      "preset": "presentation",
+      "status": "pass"
+    }
+  ],
+  "limitations": [
+    "No representative hardware-GPU FPS claim was made because automated validation used SwiftShader.",
+    "Visual quality is creator-reviewed and provisional; no independent reviewer was available."
+  ],
+  "artifact": {
+    "implementation_bytes": 876396,
+    "workbench_evidence_bytes": 8603920,
+    "evidence_to_implementation_ratio": 9.817
+  }
+}

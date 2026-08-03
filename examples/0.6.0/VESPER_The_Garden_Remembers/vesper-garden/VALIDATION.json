@@ -1,0 +1,171 @@
+{
+  "version": 4,
+  "implemented": true,
+  "audit_status": "pass",
+  "static_checks": {
+    "status": "pass",
+    "checks": [
+      "JavaScript syntax",
+      "HTML/GLSL boundary",
+      "flagship fidelity source audit"
+    ]
+  },
+  "browser": {
+    "executed": true,
+    "intended_route": true,
+    "console_errors": 0,
+    "page_errors": 0,
+    "request_failures": 0
+  },
+  "visual_review": {
+    "status": "pass",
+    "hardening_rounds": 3,
+    "unresolved_defects": []
+  },
+  "workflow_review": {
+    "default_route": "pass",
+    "first_use": "pass",
+    "complete_loop": "pass",
+    "comparison_or_validation": "pass",
+    "completion_or_export": "pass",
+    "failure_recovery": "pass",
+    "claim_audit": {
+      "status": "pass",
+      "claims": [
+        {
+          "label": "night duration",
+          "displayed_value": 900,
+          "unit": "seconds",
+          "basis": "authoritative ritual timer",
+          "source": "CONFIG.GAME_DURATION_SECONDS",
+          "verified": true,
+          "display_policy": "displayed"
+        },
+        {
+          "label": "bells to awaken",
+          "displayed_value": 6,
+          "unit": "bells",
+          "basis": "active flower definition count",
+          "source": "CONFIG.ACTIVE_FLOWER_LIMIT",
+          "verified": true,
+          "display_policy": "displayed"
+        }
+      ]
+    }
+  },
+  "domain_validation": {
+    "status": "pass",
+    "claim_level": "visual-concept",
+    "oracle": "window.__FORGE__.verifyDomain and window.__FORGE__.verifyWorkflow",
+    "known_cases": [
+      "entry and six orbit activations",
+      "24 resonance gates",
+      "movement binding after voices 2 and 4",
+      "six-field return and coda",
+      "night-close and afterglow recovery",
+      "pause clock freeze",
+      "save round trip"
+    ],
+    "tolerances_met": true,
+    "invariants_or_geometry_checks": [
+      "finite position and velocity",
+      "focus and timer bounds",
+      "unique monotonic activation order",
+      "resonance gate bounds",
+      "completion gated by six active flowers"
+    ],
+    "round_trip": "pass — versioned local save restored with position equality within 0.001 garden units",
+    "limitations_disclosed": true,
+    "external_review": "not-applicable for visual-concept rules; human playtest pending",
+    "unresolved_defects": []
+  },
+  "runtime_engineering": {
+    "status": "pass",
+    "lifecycle": "pass",
+    "history_persistence": "pass",
+    "cancellation_recovery": "pass",
+    "stale_result_rejection": "not-applicable; no asynchronous jobs",
+    "unresolved_defects": []
+  },
+  "performance": {
+    "measured": true,
+    "measurement_block": "Headless Canvas2D exposes no GPU renderer string; results describe this validation runtime and are not a target-device FPS claim.",
+    "source": "external requestAnimationFrame wall clock",
+    "warmup_ms": 1800,
+    "sample_count": 3,
+    "scenarios": [
+      {
+        "name": "default-entry",
+        "median_average_fps": 57.68,
+        "median_frame_ms": 16.7,
+        "worst_p95_ms": 33.3
+      },
+      {
+        "name": "midgame-resonance",
+        "median_average_fps": 49.12,
+        "median_frame_ms": 16.7,
+        "worst_p95_ms": 33.4
+      },
+      {
+        "name": "six-bells-coda",
+        "median_average_fps": 47.14,
+        "median_frame_ms": 16.7,
+        "worst_p95_ms": 33.4,
+        "telemetry_relative_error": 0.168
+      }
+    ],
+    "frame_time": {
+      "median_ms": 16.7,
+      "p95_ms": 33.4
+    },
+    "job_latency": {
+      "scenarios": [],
+      "median_ms": null,
+      "p95_ms": null,
+      "cancellation_ms": null
+    },
+    "average_fps": 47.14,
+    "application_telemetry_cross_checked": true,
+    "renderer": "Canvas2D / headless Chromium 149",
+    "software_renderer": false
+  },
+  "fidelity": {
+    "capture_preset": "presentation",
+    "css_size": [
+      1440,
+      900
+    ],
+    "internal_size": [
+      1440,
+      900
+    ],
+    "effective_pixel_ratio": 1,
+    "adaptive_locked": true,
+    "reconstruction": "none",
+    "ui_native_resolution": true,
+    "icon_review": "pass"
+  },
+  "input": {
+    "pointer_direction_review": "not-applicable — no pointer-look camera",
+    "drag_pointerlock_parity": "pass — pointer drag and touch steering use the same standard screen-to-world direction; no pointer lock",
+    "selection_transform_review": "not-applicable",
+    "keyboard_path_review": "pass — movement, focus, pause, reform, modal confirmation"
+  },
+  "target_sizes_reviewed": [
+    "1280x720",
+    "1440x900",
+    "844x390 touch landscape"
+  ],
+  "limitations": [
+    "Human enjoyment and first-run 8–15 minute duration are design targets, not independently validated claims.",
+    "Desktop landscape is the primary composition; compact landscape uses a reduced HUD.",
+    "Procedural Web Audio timbre can vary by browser.",
+    "Arcade fields do not model real fluid dynamics, botany, or acoustics.",
+    "Performance measurements are validation-runtime evidence, not a consumer-device guarantee."
+  ],
+  "artifact": {
+    "implementation_bytes": 2261713,
+    "workbench_evidence_bytes": 10647168,
+    "evidence_to_implementation_ratio": 4.708
+  }
+}

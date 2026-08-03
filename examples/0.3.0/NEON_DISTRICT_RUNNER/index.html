@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta name="theme-color" content="#06080b" />
+<title>NEON DISTRICT RUNNER — Street-Level Open World</title>
+<style>
+:root{
+  --ink:#eafcff;--muted:#89a6ad;--cyan:#6af7ff;--yellow:#ffe36a;--mag:#ff5cd5;--lime:#a5ff87;
+  --glass:rgba(4,9,14,.62);--line:rgba(130,230,244,.18);--danger:#ff928e;
+}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020408;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{touch-action:none;user-select:none}
+button{font:inherit;color:inherit}
+#app{position:relative;width:100%;height:100%;isolation:isolate;background:#010205}
+#world{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;outline:none;background:radial-gradient(circle at 50% 26%,#163947,#05070c 64%,#020306)}
+#grain{position:absolute;inset:0;pointer-events:none;opacity:.17;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.58'/%3E%3C/svg%3E")}
+#vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 42%,rgba(0,6,10,.22) 72%,rgba(0,2,4,.8) 120%)}
+#hud{position:absolute;inset:0;pointer-events:none;transition:opacity .4s ease}
+.panel{background:linear-gradient(145deg,rgba(5,10,16,.76),rgba(5,10,15,.38));border:1px solid var(--line);box-shadow:0 16px 60px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.03);backdrop-filter:blur(14px) saturate(1.08)}
+.brand{position:absolute;top:22px;left:28px;display:flex;gap:14px;align-items:flex-start;text-shadow:0 2px 15px rgba(0,0,0,.65)}
+.brandmark{width:34px;height:34px;border:1px solid rgba(113,246,255,.55);border-radius:8px;display:grid;place-items:center;box-shadow:0 0 26px rgba(80,224,255,.16),inset 0 0 18px rgba(80,224,255,.06);position:relative;overflow:hidden}.brandmark:before{content:"";position:absolute;inset:6px;border:1px solid rgba(255,92,213,.48);transform:skew(-12deg)}.brandmark:after{content:"";width:13px;height:13px;background:linear-gradient(135deg,var(--cyan),var(--mag));clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.eyebrow{font-size:9px;letter-spacing:.32em;color:var(--cyan);font-weight:700;margin:1px 0 6px}.title{font-size:19px;letter-spacing:.16em;font-weight:630;line-height:1}.subtitle{margin-top:8px;font-size:10px;letter-spacing:.08em;color:var(--muted)}
+#objective{position:absolute;top:94px;left:28px;width:min(392px,calc(100vw - 56px));padding:14px 16px;border-radius:4px;overflow:hidden}#objective:before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(var(--cyan),var(--mag),transparent)}
+.obj-kicker{font-size:8px;letter-spacing:.28em;color:var(--cyan);font-weight:800}.obj-title{font-size:13px;margin-top:6px;letter-spacing:.03em}.obj-meta{font-size:10px;color:var(--muted);margin-top:5px;display:flex;justify-content:space-between;gap:14px}
+#telemetry{position:absolute;top:22px;right:28px;width:238px;padding:13px 14px;border-radius:4px}.tele-row{display:flex;justify-content:space-between;gap:16px;font-size:9px;letter-spacing:.12em;color:var(--muted);padding:4px 0}.tele-row b{color:var(--ink);font-weight:600}.bar{height:2px;background:rgba(255,255,255,.08);margin:4px 0 7px;overflow:hidden}.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--lime));box-shadow:0 0 14px var(--cyan);transition:width .25s}
+#worldState{position:absolute;right:28px;top:183px;text-align:right}.state-label{font-size:8px;color:var(--muted);letter-spacing:.24em}.state-value{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.15em;margin-top:5px;color:var(--yellow)}
+#compass{position:absolute;top:23px;left:50%;transform:translateX(-50%);width:min(540px,48vw);height:42px;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 18%,#000 82%,transparent);mask-image:linear-gradient(90deg,transparent,#000 18%,#000 82%,transparent)}
+#compassTape{position:absolute;left:50%;top:8px;height:26px;display:flex;align-items:flex-end;gap:39px;transform:translateX(-50%);white-space:nowrap;will-change:transform}.tick{font-size:8px;letter-spacing:.12em;color:rgba(214,246,250,.56);position:relative;min-width:20px;text-align:center}.tick.cardinal{font-size:10px;color:#fff}.tick:before{content:"";position:absolute;left:50%;top:-6px;width:1px;height:4px;background:rgba(255,255,255,.35)}#compass:after{content:"";position:absolute;left:50%;top:3px;width:1px;height:30px;background:linear-gradient(var(--cyan),transparent);box-shadow:0 0 10px var(--cyan)}
+#reticle{position:absolute;left:50%;top:50%;width:34px;height:34px;transform:translate(-50%,-50%);opacity:.8;transition:transform .2s,opacity .2s}#reticle:before,#reticle:after{content:"";position:absolute;inset:0;border:1px solid rgba(176,242,248,.58);border-radius:50%;clip-path:polygon(0 0,42% 0,42% 100%,0 100%)}#reticle:after{transform:rotate(180deg)}#reticle i{position:absolute;left:50%;top:50%;width:3px;height:3px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);transform:translate(-50%,-50%)}
+#cockpit{position:absolute;left:50%;bottom:-52px;width:min(520px,52vw);height:132px;transform:translateX(-50%);pointer-events:none;opacity:.56;clip-path:polygon(9% 40%,25% 8%,75% 8%,91% 40%,100% 100%,0 100%);background:linear-gradient(180deg,rgba(117,238,250,.07),rgba(2,8,12,.78) 42%,rgba(1,4,7,.96));border-top:1px solid rgba(148,241,250,.28);box-shadow:0 -12px 45px rgba(43,188,211,.04),inset 0 18px 30px rgba(67,206,228,.025)}#cockpit:before,#cockpit:after{content:"";position:absolute;top:9px;width:132px;height:1px;background:linear-gradient(90deg,transparent,rgba(125,240,250,.42));transform:rotate(-21deg);transform-origin:right}#cockpit:before{left:40px}#cockpit:after{right:40px;transform:rotate(21deg) scaleX(-1)}#cockpit i{position:absolute;left:50%;top:10px;width:72px;height:3px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,var(--mag),transparent);box-shadow:0 0 14px rgba(255,92,213,.4)}
+#speedLines{position:absolute;inset:-10%;opacity:0;pointer-events:none;transition:opacity .2s;background:repeating-conic-gradient(from 0deg at 50% 50%,transparent 0deg,transparent 5.2deg,rgba(171,244,255,.045) 5.5deg,transparent 6deg);-webkit-mask-image:radial-gradient(circle,transparent 0 28%,#000 80%);mask-image:radial-gradient(circle,transparent 0 28%,#000 80%)}#speedLines.on{opacity:.58;animation:warp .6s linear infinite}@keyframes warp{to{transform:scale(1.08) rotate(.3deg)}}
+#minimapWrap{position:absolute;left:28px;bottom:28px;width:164px;height:164px;border-radius:50%;padding:8px;background:rgba(2,9,13,.58);border:1px solid rgba(142,232,245,.22);box-shadow:0 15px 40px rgba(0,0,0,.25),inset 0 0 30px rgba(94,218,236,.04)}#minimap{width:148px;height:148px;border-radius:50%;display:block;opacity:.92}#minimapWrap:after{content:"";position:absolute;inset:18px;border:1px solid rgba(149,236,246,.13);border-radius:50%}#mapCaption{position:absolute;left:48px;bottom:13px;font-size:8px;letter-spacing:.2em;color:var(--muted)}
+#discoveries{position:absolute;right:28px;bottom:28px;width:260px;text-align:right}.disc-title{font-size:8px;letter-spacing:.28em;color:var(--muted);margin-bottom:9px}.landmark{font-size:10px;letter-spacing:.09em;margin:6px 0;color:rgba(220,245,247,.42);transition:.3s}.landmark:before{content:"◇";margin-right:8px;color:rgba(116,236,255,.38)}.landmark.found{color:#fff;text-shadow:0 0 18px rgba(112,241,255,.35)}.landmark.found:before{content:"◆";color:var(--cyan)}
+#controls{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:4px;background:rgba(3,10,14,.42);border:1px solid rgba(156,230,241,.13);backdrop-filter:blur(10px)}.hint{font-size:8px;letter-spacing:.08em;color:var(--muted);white-space:nowrap}.key{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;margin-right:4px;border:1px solid rgba(196,244,250,.28);border-bottom-color:rgba(196,244,250,.46);background:rgba(255,255,255,.04);color:#eaffff;font-size:8px;border-radius:3px;box-shadow:inset 0 -2px rgba(0,0,0,.18)}.sep{width:1px;height:16px;background:rgba(255,255,255,.12)}
+#interaction{position:absolute;left:50%;top:61%;transform:translate(-50%,-50%);padding:11px 16px;border-radius:3px;font-size:10px;letter-spacing:.08em;color:#fff;opacity:0;transition:.2s;background:rgba(5,18,24,.7);border:1px solid rgba(123,241,255,.35);box-shadow:0 0 35px rgba(75,220,255,.1)}#interaction.show{opacity:1;transform:translate(-50%,-55%)}
+#toast{position:absolute;left:50%;top:17%;transform:translate(-50%,-12px);min-width:260px;text-align:center;opacity:0;transition:.45s;padding:13px 20px;border-top:1px solid rgba(128,239,255,.45);background:linear-gradient(90deg,transparent,rgba(5,18,24,.72),transparent)}#toast.show{opacity:1;transform:translate(-50%,0)}#toast strong{display:block;font-size:10px;letter-spacing:.22em;color:var(--cyan)}#toast span{display:block;font-size:12px;margin-top:6px;letter-spacing:.04em}
+#modeRail{position:absolute;right:28px;top:240px;display:flex;flex-direction:column;gap:8px;pointer-events:auto}.iconBtn{width:38px;height:38px;border-radius:4px;border:1px solid rgba(142,232,245,.16);background:rgba(4,11,16,.58);display:grid;place-items:center;color:#dff;cursor:pointer;transition:.25s}.iconBtn:hover,.iconBtn.active{border-color:rgba(117,240,255,.5);box-shadow:0 0 24px rgba(100,232,255,.14),inset 0 0 16px rgba(100,232,255,.05)}.iconBtn svg{width:18px;height:18px;opacity:.88}
+#intro{position:absolute;inset:0;display:grid;place-items:center;padding:28px;background:radial-gradient(circle at 50% 30%,rgba(10,44,53,.52),rgba(2,5,8,.92) 68%)}.card{width:min(700px,92vw);padding:26px 28px 22px;border-radius:10px;background:linear-gradient(180deg,rgba(6,16,22,.84),rgba(5,10,14,.62));border:1px solid rgba(126,239,247,.18);box-shadow:0 24px 80px rgba(0,0,0,.4),inset 0 1px rgba(255,255,255,.04);backdrop-filter:blur(14px)}.card .hero{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.hero h1{margin:0;font-size:clamp(26px,3vw,42px);letter-spacing:.14em;line-height:1.02}.hero p{margin:12px 0 0;color:var(--muted);font-size:14px;line-height:1.6;max-width:530px}.accent{color:var(--yellow)}.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}.chipbox{padding:14px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}.chipbox h3{margin:0 0 8px;font-size:11px;letter-spacing:.2em;color:var(--cyan)}.chipbox p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}.actions{display:flex;gap:12px;align-items:center;margin-top:20px;flex-wrap:wrap}.enter{pointer-events:auto;border:none;padding:13px 18px;border-radius:7px;background:linear-gradient(90deg,var(--cyan),#5db6ff);color:#041219;font-weight:800;letter-spacing:.18em;cursor:pointer;box-shadow:0 12px 40px rgba(108,241,255,.22)}.ghost{pointer-events:auto;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);padding:12px 14px;border-radius:7px;color:#fff}.notice{font-size:11px;color:var(--muted)}
+body.started #intro{display:none}body.cinematic #hud{opacity:0}body.no-webgl #fallback{display:grid}#fallback{display:none;position:absolute;inset:0;place-items:center;background:#02050a;color:#dceff2;padding:24px;text-align:center}#fallback .msg{max-width:540px}.hidden{display:none}
+#mobileDock{display:none;position:absolute;left:50%;bottom:92px;transform:translateX(-50%);pointer-events:auto;gap:12px;align-items:flex-end}.mcluster{display:grid;grid-template-columns:repeat(3,56px);gap:8px}.mbtn{width:56px;height:56px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(5,12,18,.55);display:grid;place-items:center;color:#fff;backdrop-filter:blur(12px)}.mbtn.wide{width:120px}.mbtn svg{width:22px;height:22px;opacity:.9}.mstack{display:grid;gap:8px}
+@media (max-width:980px){#controls,#discoveries,#telemetry,#worldState{display:none}#compass{width:min(420px,72vw)}#minimapWrap{width:142px;height:142px}#minimap{width:126px;height:126px}#mobileDock{display:flex}.card-grid{grid-template-columns:1fr}.card .hero{display:block}}
+@media (max-width:740px){.brand{left:18px;top:16px}.brand .subtitle{max-width:260px}#objective{left:18px;top:80px;width:calc(100vw - 36px)}#modeRail{right:16px;top:auto;bottom:250px}#minimapWrap{left:16px;bottom:20px}#mapCaption{left:36px;bottom:6px}.card{padding:22px 18px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="world"></canvas>
+  <div id="grain"></div>
+  <div id="speedLines"></div>
+  <div id="vignette"></div>
+  <div id="hud">
+    <div class="brand">
+      <div class="brandmark"></div>
+      <div>
+        <div class="eyebrow">STREETLINE // GROUND MODE</div>
+        <div class="title">NEON DISTRICT RUNNER</div>
+        <div class="subtitle">Rain-soaked megacity, dense vertical skyline, grounded first-person locomotion with optional flight assist.</div>
+      </div>
+    </div>
+    <div id="objective" class="panel">
+      <div class="obj-kicker">PRIMARY CONTRACT</div>
+      <div id="objectiveTitle" class="obj-title">Wake the three district relays</div>
+      <div class="obj-meta"><span id="objectiveMeta">Street access 0 / 3</span><span id="objectiveDistance">—</span></div>
+    </div>
+    <div id="telemetry" class="panel">
+      <div class="tele-row"><span>MOVE</span><b id="speedValue">000 KM/H</b></div><div class="bar"><i id="speedBar"></i></div>
+      <div class="tele-row"><span>STANCE</span><b id="stanceValue">GROUND</b></div>
+      <div class="tele-row"><span>VERTICAL</span><b id="altValue">01.72 M</b></div>
+      <div class="tele-row"><span>FIELD STATE</span><b id="fieldValue">DRIZZLE</b></div>
+      <div class="tele-row"><span>PERFORMANCE</span><b id="perfValue">60 FPS</b></div>
+    </div>
+    <div id="worldState"><div class="state-label">DISTRICT SIGNAL</div><div class="state-value" id="stateValue">RAIN // ACTIVE</div></div>
+    <div id="compass"><div id="compassTape"></div></div>
+    <div id="reticle"><i></i></div>
+    <div id="cockpit"><i></i></div>
+    <div id="minimapWrap"><canvas id="minimap" width="148" height="148"></canvas></div>
+    <div id="mapCaption">DISTRICT GRID</div>
+    <div id="discoveries">
+      <div class="disc-title">LANDMARK INDEX</div>
+      <div class="landmark" data-id="spire">Cloudline Spire</div>
+      <div class="landmark" data-id="market">Neon Market Gate</div>
+      <div class="landmark" data-id="tram">Skytram Loop</div>
+      <div class="landmark" data-id="dock">Flooded Freight Dock</div>
+    </div>
+    <div id="controls">
+      <div class="hint"><span class="key">WASD</span> WALK / STRAFE</div>
+      <div class="sep"></div>
+      <div class="hint"><span class="key">SHIFT</span> RUN</div>
+      <div class="sep"></div>
+      <div class="hint"><span class="key">SPACE</span> JUMP</div>
+      <div class="sep"></div>
+      <div class="hint"><span class="key">F</span> TOGGLE FLY</div>
+      <div class="sep"></div>
+      <div class="hint"><span class="key">Q</span> SCAN</div>
+      <div class="sep"></div>
+      <div class="hint"><span class="key">E</span> INTERACT</div>
+    </div>
+    <div id="interaction">Press <b>E</b> to jack into the relay</div>
+    <div id="toast"><strong id="toastTitle">SIGNAL ONLINE</strong><span id="toastText">Streetline systems calibrated.</span></div>
+    <div id="modeRail">
+      <button class="iconBtn" id="audioBtn" title="Ambient audio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 9h4l5-4v14l-5-4H5z"/><path d="M17 8c1.5 1 2 2.3 2 4s-.5 3-2 4"/></svg>
+      </button>
+      <button class="iconBtn" id="weatherBtn" title="Cycle weather">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 18h10a4 4 0 0 0 1-7.87A6 6 0 0 0 5.08 8.8 3.5 3.5 0 0 0 6 18Z"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg>
+      </button>
+      <button class="iconBtn" id="flyBtn" title="Toggle fly mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 14l6-2 3-7 2 1-1 6 6 2-1 2-5-1-3 4-1-1 1-4-5 1z"/></svg>
+      </button>
+      <button class="iconBtn" id="cinemaBtn" title="Cinematic HUD toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h.01M11 9h.01M15 9h.01"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="intro">
+    <div class="card">
+      <div class="hero">
+        <div>
+          <div class="eyebrow">AWARD-GRADE WEB OPEN WORLD</div>
+          <h1>NIGHT CITY, <span class="accent">AT STREET LEVEL</span></h1>
+          <p>Inspired by rain-drenched anime cyberpunk skylines: start as a human on the pavement, feel grounded weight, acceleration, friction, and jump arcs, then unlock flight as an option instead of the default. Activate the district relays and explore the alleys, plazas, over-lit towers, and flooded docks.</p>
+        </div>
+      </div>
+      <div class="card-grid">
+        <div class="chipbox"><h3>LOCOMOTION</h3><p>Grounded by default. Smooth walking, sprinting, gravity, jump physics, collision against city blocks, and view bobbing. Press <b>F</b> only when you want free-flight.</p></div>
+        <div class="chipbox"><h3>WORLD</h3><p>Procedural neon streets, megatowers, animated billboards, rain, fog, puddle reflections, relay objectives, landmarks, and a live minimap packed into a single offline HTML.</p></div>
+      </div>
+      <div class="actions">
+        <button class="enter" id="enterBtn">ENTER DISTRICT</button>
+        <button class="ghost" id="pointerBtn">POINTER LOOK</button>
+        <div class="notice">Desktop: mouse look + WASD. Mobile: on-screen movement controls appear automatically.</div>
+      </div>
+    </div>
+  </div>
+  <div id="mobileDock">
+    <div class="mcluster">
+      <button class="mbtn" data-key="KeyQ" aria-label="scan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></button>
+      <div></div>
+      <button class="mbtn" data-key="Space" aria-label="jump"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 15l6-6 6 6"/></svg></button>
+      <button class="mbtn" data-key="KeyA" aria-label="left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 6l-6 6 6 6"/></svg></button>
+      <button class="mbtn" data-key="KeyW" aria-label="forward"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 15l6-6 6 6"/></svg></button>
+      <button class="mbtn" data-key="KeyD" aria-label="right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 6l6 6-6 6"/></svg></button>
+      <div></div>
+      <button class="mbtn" data-key="KeyS" aria-label="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="mbtn" data-key="KeyE" aria-label="interact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 12h14M12 5v14"/></svg></button>
+    </div>
+    <div class="mstack">
+      <button class="mbtn wide" id="mRun">RUN</button>
+      <button class="mbtn wide" id="mFly">FLY</button>
+    </div>
+  </div>
+  <div id="fallback"><div class="msg"><h2>WebGL2 is required</h2><p>This open world needs WebGL2. Please open it in a current Chrome, Edge, or Safari release with hardware acceleration enabled.</p></div></div>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s), canvas=$('#world');
+const gl=canvas.getContext('webgl2',{antialias:false,alpha:false,depth:false,stencil:false,preserveDrawingBuffer:false,powerPreference:'high-performance'});
+if(!gl){document.body.classList.add('no-webgl');return;}
+const VERT=`#version 300 es
+precision highp float;out vec2 vUv;void main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);vUv=p;gl_Position=vec4(p*2.-1.,0.,1.);}`;
+const FRAG=`#version 300 es
+precision highp float;
+out vec4 outColor;in vec2 vUv;
+uniform vec2 uRes;uniform float uTime,uDt,uMode,uScan,uRun,uRelayMask,uQuality,uReduced;uniform vec3 uCam;uniform mat3 uCamMat;
+#define FAR 130.
+#define PI 3.14159265359
+float sat(float x){return clamp(x,0.,1.);} 
+float hash11(float p){return fract(sin(p*127.1)*43758.5453123);} 
+float hash21(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);} 
+vec2 hash22(vec2 p){return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453123);} 
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);float a=hash21(i),b=hash21(i+vec2(1,0)),c=hash21(i+vec2(0,1)),d=hash21(i+vec2(1,1));return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);} 
+float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p=mat2(1.6,1.2,-1.2,1.6)*p+.17;a*=.5;}return v;} 
+float sdBox(vec3 p,vec3 b){vec3 q=abs(p)-b;return length(max(q,0.))+min(max(q.x,max(q.y,q.z)),0.);} 
+float sdRoundBox(vec3 p,vec3 b,float r){vec3 q=abs(p)-b;return length(max(q,0.))-r+min(max(q.x,max(q.y,q.z)),0.);} 
+float sdCyl(vec3 p,vec2 h){vec2 d=abs(vec2(length(p.xz),p.y))-h;return min(max(d.x,d.y),0.)+length(max(d,0.));}
+vec2 repeatCell(vec2 p,float s){return mod(p+s*.5,s)-s*.5;}
+float roadWidth=3.0;float walkWidth=4.6;float blockSize=18.0;
+float plazaMask(vec2 p){return 1.-smoothstep(8.,16.,length(p));}
+float roadMetric(vec2 p){vec2 q=repeatCell(p,blockSize);float a=min(abs(q.x),abs(q.y));float plaza=max(abs(p.x)-9.,abs(p.y)-7.);a=min(a,plaza);return a;}
+float groundH(vec2 p){float slope=.18*fbm(p*.025)-.06;return slope*0.0;}
+vec2 relayPos(int i){if(i==0)return vec2(-29.,2.);if(i==1)return vec2(34.,18.);return vec2(2.,-30.);} 
+vec2 landmarkPos(int i){if(i==0)return vec2(2.,-30.);if(i==1)return vec2(-34.,6.);if(i==2)return vec2(18.,22.);return vec2(28.,48.);} 
+float cellHeight(vec2 cid){float h=8.+pow(hash21(cid*1.23+3.1),2.)*44.;h+=hash21(cid*2.1+8.2)*12.;return h;} 
+vec2 mapScene(vec3 p){
+ float d=1e5,id=0.;
+ float ground=p.y-groundH(p.xz);d=ground;id=1.;
+ vec2 rp=repeatCell(p.xz,blockSize);vec2 cid=floor((p.xz+blockSize*.5)/blockSize);
+ float road=roadMetric(p.xz);
+ float plaza=max(abs(p.x)-10.5,abs(p.z)-8.5);
+ bool inPlaza=plaza<0.;
+ bool inRoad=road<roadWidth;
+ bool onWalk=road<walkWidth;
+ if(!inRoad&&!inPlaza){
+   vec2 rnd=hash22(cid);vec2 size=vec2(2.5+rnd.x*2.5,2.6+rnd.y*2.3);float h=cellHeight(cid);
+   float setback=.2+hash21(cid+9.2)*.4;size-=setback;
+   vec3 bp=vec3(rp.x,p.y-h*.5,rp.y);float bd=sdRoundBox(bp,vec3(size.x,h*.5,size.y),.18);if(bd<d){d=bd;id=2.;}
+   float signY=2.5+mod(hash21(cid+4.8)*8.,6.);vec3 sp=vec3(rp.x-sign(rp.x)*(size.x+.12),p.y-signY,rp.y);float sd=sdBox(sp,vec3(.05,.85,1.35));if(sd<d){d=sd;id=5.;}
+ }
+ vec3 tower=vec3(p.x-2.,p.y-26.,p.z+30.);float td=sdRoundBox(tower,vec3(6.5,26.,6.5),.35);if(td<d){d=td;id=3.;}
+ vec3 core=vec3(p.x-2.,p.y-44.,p.z+30.);float cd=sdRoundBox(core,vec3(3.5,18.,3.5),.2);if(cd<d){d=cd;id=3.;}
+ for(int i=0;i<3;i++){
+   vec2 bp=relayPos(i);vec3 rp3=vec3(p.x-bp.x,p.y-2.4,p.z-bp.y);float base=sdCyl(rp3,vec2(.75,2.4));if(base<d){d=base;id=4.+float(i)*0.01;}
+ }
+ // arches and skytram
+ vec3 tram=vec3(p.x-18.,p.y-11.,p.z-22.);float tr=max(sdBox(tram,vec3(11.,.38,.5)),-(abs(tram.x)-8.4));if(tr<d){d=tr;id=6.;}
+ vec3 arch=vec3(p.x+28.,p.y-9.,p.z-48.);float ad=sdRoundBox(arch,vec3(5.,9.,1.),.2);ad=max(ad,-sdBox(vec3(arch.x,arch.y-1.5,arch.z),vec3(2.4,7.8,3.)));if(ad<d){d=ad;id=6.;}
+ return vec2(d,id);
+}
+vec3 getNormal(vec3 p){vec2 e=vec2(.0035,0.);return normalize(vec3(mapScene(p+e.xyy).x-mapScene(p-e.xyy).x,mapScene(p+e.yxy).x-mapScene(p-e.yxy).x,mapScene(p+e.yyx).x-mapScene(p-e.yyx).x));}
+float softShadow(vec3 ro,vec3 rd,float k,int steps){float res=1.,t=.05;for(int i=0;i<56;i++){if(i>=steps)break;float h=mapScene(ro+rd*t).x;res=min(res,k*h/t);t+=clamp(h,.04,2.2);if(h<.001||t>80.)break;}return sat(res);} 
+float calcAO(vec3 p,vec3 n){float r=0.,w=1.;for(int i=1;i<=5;i++){float d=.14*float(i);r+=w*(d-mapScene(p+n*d).x);w*=.62;}return sat(1.-r*.75);} 
+vec3 sky(vec3 rd){float h=sat(rd.y*.5+.5);vec3 c=mix(vec3(.01,.02,.03),vec3(.02,.14,.16),pow(1.-h,1.6));c=mix(c,vec3(.0,.36,.42),pow(max(0.,1.-abs(rd.y+.08)),5.)*.18);float storm=smoothstep(.3,2.,uMode);c+=storm*vec3(.06,.03,.09)*(1.-h);float bloom=pow(max(dot(rd,normalize(vec3(.1,.15,-1.))),0.),48.);c+=vec3(.1,.7,.9)*bloom*.5;return c;}
+vec3 roadMat(vec3 p,vec3 n){vec2 q=repeatCell(p.xz,blockSize);float road=roadMetric(p.xz);float onRoad=1.-step(roadWidth,road);float onWalk=1.-step(walkWidth,road);float cross=step(abs(q.y),roadWidth-.2)*smoothstep(.35,.1,abs(q.x)-.65);float lane=step(abs(q.y),roadWidth-.15)*(1.-smoothstep(.08,.15,abs(abs(q.x)-1.15)));float plaza=1.-step(0.,max(abs(p.x)-10.5,abs(p.z)-8.5));float puddle=sat((fbm(p.xz*.24+uTime*.02)-.55)*3.)*(1.-onWalk*.35);float fres=pow(1.-sat(dot(n,-normalize(vec3(0.,1.,0.2)))),4.);vec3 c=mix(vec3(.03,.04,.05),vec3(.05,.06,.08),onWalk);c=mix(c,vec3(.09,.08,.06),plaza*.42);c+=vec3(.14,.14,.16)*cross*.8;c+=mix(vec3(.06,.55,.62),vec3(1.,.78,.25),step(.0,sin((floor((p.x+p.z)*.5))*0.2)))*lane*.8;vec3 neon=vec3(.02,.45,.55)+vec3(.18,.06,.15)*smoothstep(.5,2.,uMode);c=mix(c,mix(c,sky(reflect(normalize(vec3(.0,1.,0.)),n)),.65),puddle*(.5+.4*fres));c+=neon*puddle*.25;return c;}
+vec3 buildingMat(vec3 p,vec3 n){vec2 cid=floor((p.xz+blockSize*.5)/blockSize);float h=cellHeight(cid);float windows=smoothstep(.68,.98,sin(p.y*2.6+cid.x*4.1)*sin((p.x+p.z)*4.4+cid.y*3.1));float vert=pow(1.-abs(dot(n,vec3(0,1,0))),2.);vec3 base=mix(vec3(.035,.04,.05),vec3(.07,.08,.09),fbm(p.xz*.4));vec3 glow=mix(vec3(.08,.55,.62),vec3(1.,.25,.72),step(.5,hash21(cid+1.4)));base+=glow*(.06+.94*windows)*(vert*.8+.2);base+=vec3(.02,.03,.04)*(h/55.);float rim=pow(1.-abs(dot(n,normalize(uCam-p))),3.);base+=glow*rim*.22;return base;}
+vec3 towerMat(vec3 p,vec3 n){float stripes=smoothstep(.82,.98,sin(p.y*1.15)*.5+.5);float logo=smoothstep(.92,.99,sin(atan(p.z,p.x)*9.+p.y*.18-uTime*.4)*.5+.5);vec3 c=vec3(.06,.07,.08)+vec3(.08,.24,.26)*stripes;c+=vec3(.12,.78,.92)*stripes*.45;c+=vec3(1.,.26,.74)*logo*.3;float rim=pow(1.-abs(dot(n,normalize(uCam-p))),3.);c+=vec3(.14,.9,1.)*rim*.26;return c;}
+vec3 relayMat(vec3 p,float idx){float on=step(.5,mod(floor(uRelayMask/pow(2.,idx)),2.));vec3 c=mix(vec3(.08,.12,.14),vec3(.04,.85,1.0),.25+on*.75);c+=vec3(1.,.25,.7)*pow(sat(1.-abs(p.y-4.2)*.4),8.)*(.25+.75*on);return c;}
+float relayGlow(vec3 ro,vec3 rd,float maxT){float g=0.;for(int i=0;i<3;i++){vec2 bp=relayPos(i);vec3 a=vec3(bp.x,1.2,bp.y),b=vec3(bp.x,10.,bp.y);vec3 ba=b-a,oa=ro-a;float baba=dot(ba,ba),bard=dot(ba,rd),baoa=dot(ba,oa),rdoa=dot(rd,oa);float den=baba-bard*bard;float t=(bard*baoa-baba*rdoa)/max(den,.001);float h=sat((baoa+bard*t)/baba);vec3 q=oa+rd*t-ba*h;float dist=length(q);float on=step(.5,mod(floor(uRelayMask/pow(2.,float(i))),2.));g+=(.25+.75*on)*exp(-dist*5.)*step(0.,t)*step(t,maxT);}return g;}
+vec4 rainLayer(vec3 ro,vec3 rd,float maxT){float sum=0.;vec3 col=vec3(0);for(int i=0;i<18;i++){float fi=float(i);float z=fract((uTime*(.5+.05*fi))+fi*.37);float t=mix(2.,maxT,min(z,.96));vec3 p=ro+rd*t;vec2 cell=floor(p.xz*1.7+fi*7.);vec2 rnd=hash22(cell);float dx=fract(p.x*1.7+rnd.x)-.5;float dz=fract(p.z*1.7+rnd.y)-.5;float line=exp(-(dx*dx*70.+dz*dz*10.));float streak=sat(1.-abs(fract((p.y+uTime*18.+fi)*.7)-.5)*5.);sum+=line*streak*.03;}
+ col+=vec3(.08,.45,.55)*sum*(.8+.6*uMode);
+ return vec4(col,sat(sum*1.2));}
+void main(){
+ vec2 frag=vUv*uRes;vec2 uv=(frag-.5*uRes)/uRes.y;float lens=dot(uv,uv);uv*=1.+lens*.04;vec3 rd=normalize(uCamMat*vec3(uv,1.36));vec3 ro=uCam;
+ float t=0.,id=-1.;vec3 p=ro;int steps=int(mix(82.,126.,uQuality));
+ for(int i=0;i<130;i++){if(i>=steps)break;p=ro+rd*t;vec2 h=mapScene(p);float eps=.0035+.0012*t;if(h.x<eps){id=h.y;break;}t+=clamp(h.x*.72,.03,2.6);if(t>FAR)break;}
+ vec3 col=sky(rd);float sceneT=min(t,FAR);
+ if(id>0.&&t<FAR){vec3 n=getNormal(p);vec3 sunDir=normalize(vec3(-.3,.45,-.75));float dif=max(dot(n,sunDir),0.);float sha=softShadow(p+n*.04,sunDir,.08,34);float ao=calcAO(p,n);if(id<1.5)col=roadMat(p,n);else if(id<2.5)col=buildingMat(p,n);else if(id<3.5)col=towerMat(p,n);else if(id<5.)col=relayMat(p,id<4.01?0.:id<4.02?1.:2.);else if(id<5.5)col=mix(vec3(.08,.7,.8),vec3(1.,.35,.82),step(.5,sin(p.y*5.+p.z*2.)));else col=vec3(.08,.12,.14)+vec3(.18,.75,.95)*pow(1.-abs(dot(n,normalize(uCam-p))),3.);
+ float spec=pow(max(dot(reflect(-sunDir,n),-rd),0.),mix(18.,64.,step(1.5,id)));col*=.18+.28*n.y+dif*sha*1.1;col+=spec*sha*.4;col*=ao;float fog=1.-exp(-t*(.018+.01*uMode));vec3 fogCol=sky(normalize(vec3(rd.x,.02,rd.z)));col=mix(col,fogCol,fog);} 
+ vec4 rain=rainLayer(ro,rd,sceneT);col=col*(1.-rain.a)+rain.rgb;float glow=relayGlow(ro,rd,sceneT);col+=vec3(.08,.95,1.)*glow*(.5+.4*uScan);float horizon=pow(max(0.,1.-abs(rd.y+.02)),7.);col+=vec3(.3,.14,.24)*horizon*smoothstep(.4,2.,uMode)*.45;float vign=1.-dot(uv*.72,uv*.72);col*=.8+.2*sat(vign);col*=1.+uRun*.05*(1.-lens);col=col/(col+.78);col=pow(col,vec3(.85));float grain=(hash21(frag+fract(uTime)*91.)-.5)*.024;col+=grain*(1.-uReduced);float scanLine=.5+.5*sin(frag.y*1.4-uTime*16.);col+=uScan*vec3(.018,.12,.15)*scanLine*.08;outColor=vec4(col,1.);
+}`;
+function compile(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){const log=gl.getShaderInfoLog(s);console.error(log);throw new Error(log)}return s}
+let program;
+try{program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,VERT));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,FRAG));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));}
+catch(err){document.body.classList.add('no-webgl');$('#fallback .msg p').textContent='Shader compilation failed: '+err.message;throw err;}
+gl.useProgram(program);const vao=gl.createVertexArray();gl.bindVertexArray(vao);
+const U={};['uRes','uTime','uDt','uCam','uCamMat','uMode','uScan','uRun','uRelayMask','uQuality','uReduced'].forEach(n=>U[n]=gl.getUniformLocation(program,n));
+const params=new URLSearchParams(location.search);
+const state={started:false,paused:false,last:performance.now(),time:0,pos:{x:0,y:1.72,z:16},vel:{x:0,y:0,z:0},yaw:Math.PI,pitch:-0.05,mode:0,scanner:0,run:0,fps:60,frames:0,fpsAt:performance.now(),hudAt:0,mapAt:0,renderScale:params.get('test')==='1'?.4:(innerWidth<800?.58:.74),quality:params.get('test')==='1'?.52:.9,pointer:false,drag:false,lastX:0,lastY:0,keys:{},startedAudio:false,audio:false,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,flight:false,grounded:true,jumpLock:false,relays:0,nearest:null,discoveries:new Set(),headBob:0,walkPulse:0};
+const relays=[{x:-29,z:2,name:'Market Relay'},{x:34,z:18,name:'Dock Relay'},{x:2,z:-30,name:'Spire Relay'}];
+const landmarks=[{id:'spire',name:'Cloudline Spire',x:2,z:-30,r:10},{id:'market',name:'Neon Market Gate',x:-34,z:6,r:12},{id:'tram',name:'Skytram Loop',x:18,z:22,r:12},{id:'dock',name:'Flooded Freight Dock',x:28,z:48,r:14}];
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function resize(){const dpr=Math.min(devicePixelRatio||1,1.4),w=Math.max(2,Math.floor(innerWidth*dpr*state.renderScale)),h=Math.max(2,Math.floor(innerHeight*dpr*state.renderScale));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h)}}addEventListener('resize',resize,{passive:true});resize();
+function jsHash(x,y){const s=Math.sin(x*127.1+y*311.7)*43758.5453123;return s-Math.floor(s)}
+function repeatCell(v,s){return ((v+s*.5)%s+s)%s-s*.5}
+function roadMetric(x,z){const qx=repeatCell(x,18),qz=repeatCell(z,18);let a=Math.min(Math.abs(qx),Math.abs(qz));const plaza=Math.max(Math.abs(x)-9,Math.abs(z)-7);a=Math.min(a,plaza);return a}
+function groundHeight(x,z){return 0}
+function isBlocked(x,z){if(Math.abs(x-2)<6.9&&Math.abs(z+30)<6.9)return true;const plaza=Math.max(Math.abs(x)-10.5,Math.abs(z)-8.5)<0;if(plaza)return false;const road=roadMetric(x,z)<3.0;if(road)return false;const qx=repeatCell(x,18),qz=repeatCell(z,18),cx=Math.floor((x+9)/18),cz=Math.floor((z+9)/18);const r1=jsHash(cx*1.23+3.1,cz*1.23+3.1),r2=jsHash(cx*2.7+9.1,cz*1.7+2.4);let sx=2.5+r1*2.5,sz=2.6+r2*2.3;const setback=.2+jsHash(cx+9.2,cz+9.2)*.4;sx-=setback;sz-=setback;return Math.abs(qx)<sx+.3&&Math.abs(qz)<sz+.3}
+function vecForward(){const cp=Math.cos(state.pitch);return {x:Math.sin(state.yaw)*cp,y:Math.sin(state.pitch),z:-Math.cos(state.yaw)*cp}}
+function setKey(code,on){state.keys[code]=on}
+addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();setKey(e.code,true);if(e.code==='KeyQ'&&!e.repeat)toggleScan();if(e.code==='KeyE'&&!e.repeat)interact();if(e.code==='KeyV'&&!e.repeat)cycleWeather();if(e.code==='KeyF'&&!e.repeat)toggleFlight();if(e.code==='KeyH'&&!e.repeat)document.body.classList.toggle('cinematic');},{passive:false});addEventListener('keyup',e=>{setKey(e.code,false);if(e.code==='Space')state.jumpLock=false;});
+canvas.addEventListener('mousedown',e=>{state.drag=true;state.lastX=e.clientX;state.lastY=e.clientY});addEventListener('mouseup',()=>state.drag=false);addEventListener('mousemove',e=>{let dx=0,dy=0;if(document.pointerLockElement===canvas){dx=e.movementX;dy=e.movementY}else if(state.drag){dx=e.clientX-state.lastX;dy=e.clientY-state.lastY;state.lastX=e.clientX;state.lastY=e.clientY}if(dx||dy){state.yaw-=dx*.0021;state.pitch=clamp(state.pitch-dy*.00175,-1.18,1.08)}});
+canvas.addEventListener('click',()=>{if(state.started&&document.pointerLockElement!==canvas&&canvas.requestPointerLock){try{const p=canvas.requestPointerLock({unadjustedMovement:true});if(p&&p.catch)p.catch(()=>canvas.requestPointerLock())}catch(_){try{canvas.requestPointerLock()}catch(__){}}}});
+document.addEventListener('pointerlockchange',()=>state.pointer=document.pointerLockElement===canvas);$('#pointerBtn').addEventListener('click',()=>{try{canvas.requestPointerLock?.()}catch(_){}});
+let touchLook=null;canvas.addEventListener('touchstart',e=>{if(e.touches.length){const t=e.touches[e.touches.length-1];touchLook={x:t.clientX,y:t.clientY}}},{passive:true});canvas.addEventListener('touchmove',e=>{if(!touchLook||!e.touches.length)return;const t=e.touches[e.touches.length-1];state.yaw-=(t.clientX-touchLook.x)*.003;state.pitch=clamp(state.pitch-(t.clientY-touchLook.y)*.0026,-1.1,1.05);touchLook={x:t.clientX,y:t.clientY}},{passive:true});canvas.addEventListener('touchend',()=>touchLook=null,{passive:true});
+document.querySelectorAll('.mbtn[data-key]').forEach(btn=>{const code=btn.dataset.key;const on=e=>{e.preventDefault();setKey(code,true);if(code==='KeyQ')toggleScan();if(code==='KeyE')interact()};const off=e=>{e.preventDefault();setKey(code,false);if(code==='Space')state.jumpLock=false};btn.addEventListener('pointerdown',on);btn.addEventListener('pointerup',off);btn.addEventListener('pointercancel',off);btn.addEventListener('pointerleave',off)});$('#mRun').addEventListener('pointerdown',e=>{e.preventDefault();setKey('ShiftLeft',true)});['pointerup','pointercancel','pointerleave'].forEach(ev=>$('#mRun').addEventListener(ev,e=>{e.preventDefault();setKey('ShiftLeft',false)}));$('#mFly').addEventListener('click',toggleFlight);
+function toggleScan(){state.scanner=state.scanner>.5?0:1;toast(state.scanner?'DEEP SCAN ENABLED':'SCAN STANDBY',state.scanner?'Relay signatures and traffic veins highlighted':'Sensor overlay disengaged');}
+function cycleWeather(){state.mode=(state.mode+1)%3;const names=[['RAIN // ACTIVE','Street drizzle with open sightlines'],['TEMPEST // DENSE','Heavy rain, more glow, heavier fog'],['BLACKOUT // PULSE','Magenta charge rolls through the skyline']];toast(...names[state.mode])}
+function toggleFlight(){state.flight=!state.flight;state.vel.y=0;if(state.flight){toast('FLIGHT ASSIST ONLINE','Free-fly controls enabled. Press F again to return to grounded play.');}else{state.pos.y=Math.max(state.pos.y,groundHeight(state.pos.x,state.pos.z)+1.72);toast('GROUND MODE RESTORED','Walking, running, jumping, and gravity re-engaged.');}$('#flyBtn').classList.toggle('active',state.flight)}
+function interact(){if(state.nearest&&state.nearest.dist<5.3){const bit=1<<state.nearest.i;if(!(state.relays&bit)){state.relays|=bit;toast('RELAY AWAKENED',`${state.nearest.name} linked — ${countBits(state.relays)} / 3 online`);playChime(280+state.nearest.i*95);if(state.relays===7){state.mode=2;setTimeout(()=>toast('CITY GRID OPEN','All relays awakened. Blackout pulse unlocked.'),500);}}}}
+function countBits(n){return (n&1)+((n>>1)&1)+((n>>2)&1)}
+let toastTimer;function toast(title,text){$('#toastTitle').textContent=title;$('#toastText').textContent=text;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3400)}
+function moveAndCollide(nextX,nextZ){const radius=.33;let x=state.pos.x,z=state.pos.z;if(!isBlocked(nextX,z-radius)&&!isBlocked(nextX,z+radius)&&!isBlocked(nextX-radius,z)&&!isBlocked(nextX+radius,z))x=nextX;else state.vel.x*=.18;if(!isBlocked(x-radius,nextZ)&&!isBlocked(x+radius,nextZ)&&!isBlocked(x,nextZ-radius)&&!isBlocked(x,nextZ+radius))z=nextZ;else state.vel.z*=.18;state.pos.x=x;state.pos.z=z;}
+function update(dt){const f=vecForward(),right={x:Math.cos(state.yaw),z:Math.sin(state.yaw)};let mx=0,mz=0,my=0;if(state.keys.KeyW)mz+=1;if(state.keys.KeyS)mz-=1;if(state.keys.KeyD)mx+=1;if(state.keys.KeyA)mx-=1;if(state.flight){if(state.keys.Space)my+=1;if(state.keys.KeyC||state.keys.ControlLeft)my-=1;}const len=Math.hypot(mx,mz,my)||1;mx/=len;mz/=len;my/=len;const isRunning=(state.keys.ShiftLeft||state.keys.ShiftRight)&&!state.flight;state.run+=( (isRunning?1:0)-state.run )*Math.min(1,dt*(isRunning?5:4));state.run=clamp(state.run,0,1);
+ if(state.flight){const speed=6.2+state.run*8.2+(state.keys.ShiftLeft||state.keys.ShiftRight?5.2:0);const tx=(right.x*mx+f.x*mz)*speed,ty=(my+f.y*mz*.3)*speed*.75,tz=(right.z*mx+f.z*mz)*speed;const accel=1-Math.exp(-dt*5.5);state.vel.x+=(tx-state.vel.x)*accel;state.vel.y+=(ty-state.vel.y)*accel;state.vel.z+=(tz-state.vel.z)*accel;state.pos.x+=state.vel.x*dt;state.pos.y+=state.vel.y*dt;state.pos.z+=state.vel.z*dt;state.pos.y=clamp(state.pos.y,1.2,58);}else{
+   const targetSpeed=(isRunning?5.9:3.1);const tx=(right.x*mx+f.x*mz)*targetSpeed,tz=(right.z*mx+f.z*mz)*targetSpeed;const accel=(state.grounded?1-Math.exp(-dt*(isRunning?16:14)):1-Math.exp(-dt*4.5));state.vel.x+=(tx-state.vel.x)*accel;state.vel.z+=(tz-state.vel.z)*accel;if(!mx&&!mz&&state.grounded){state.vel.x*=Math.exp(-dt*12);state.vel.z*=Math.exp(-dt*12);}if(state.grounded&&state.keys.Space&&!state.jumpLock){state.vel.y=7.3;state.grounded=false;state.jumpLock=true;}state.vel.y-=22*dt;moveAndCollide(state.pos.x+state.vel.x*dt,state.pos.z+state.vel.z*dt);state.pos.y+=state.vel.y*dt;const floor=groundHeight(state.pos.x,state.pos.z)+1.72;if(state.pos.y<=floor){state.pos.y=floor;state.vel.y=0;state.grounded=true;}else state.grounded=false;state.headBob+=(Math.hypot(state.vel.x,state.vel.z)*dt)*(state.grounded?1.6:0);} 
+ state.pos.x=clamp(state.pos.x,-74,74);state.pos.z=clamp(state.pos.z,-74,74);state.nearest=null;for(let i=0;i<relays.length;i++){const r=relays[i],dist=Math.hypot(state.pos.x-r.x,state.pos.z-r.z);if(!state.nearest||dist<state.nearest.dist)state.nearest={i,dist,name:r.name,x:r.x,z:r.z};}
+ for(const l of landmarks){const d=Math.hypot(state.pos.x-l.x,state.pos.z-l.z);if(d<l.r&&!state.discoveries.has(l.id)){state.discoveries.add(l.id);document.querySelector(`.landmark[data-id="${l.id}"]`)?.classList.add('found');toast('LANDMARK ARCHIVED',l.name);playChime(420);}}
+ state.time+=dt;updateAudio();}
+function cameraMat(){const bob=state.flight?0:Math.sin(state.headBob*7.5)*0.028*Math.min(1,Math.hypot(state.vel.x,state.vel.z)/3.5);const sway=state.flight?0:Math.sin(state.headBob*3.75)*0.008*Math.min(1,Math.hypot(state.vel.x,state.vel.z)/3.5);const cp=Math.cos(state.pitch+sway),sp=Math.sin(state.pitch+sway),cy=Math.cos(state.yaw),sy=Math.sin(state.yaw);const f={x:sy*cp,y:sp,z:-cy*cp};const r=[cy,0,sy];let u=[-f.y*r[2],f.x*r[2]-f.z*r[0],f.y*r[0]];const ul=Math.hypot(...u)||1;u=u.map(v=>v/ul);state.camY=state.pos.y+bob;return {mat:new Float32Array([r[0],r[1],r[2],u[0],u[1],u[2],f.x,f.y,f.z]),f};}
+function render(dt){resize();const c=cameraMat();gl.useProgram(program);gl.uniform2f(U.uRes,canvas.width,canvas.height);gl.uniform1f(U.uTime,state.time);gl.uniform1f(U.uDt,dt);gl.uniform3f(U.uCam,state.pos.x,state.camY,state.pos.z);gl.uniformMatrix3fv(U.uCamMat,false,c.mat);gl.uniform1f(U.uMode,state.mode);gl.uniform1f(U.uScan,state.scanner);gl.uniform1f(U.uRun,state.run);gl.uniform1f(U.uRelayMask,state.relays);gl.uniform1f(U.uQuality,state.quality);gl.uniform1f(U.uReduced,state.reduced?1:0);gl.drawArrays(gl.TRIANGLES,0,3)}
+function compassLabel(d){const nd=(d%360+360)%360;return nd%90===0?['N','E','S','W'][nd/90]:String(nd).padStart(3,'0')}
+function buildCompass(){const tape=$('#compassTape');let html='';for(let i=-24;i<=24;i++)html+=`<span class="tick" data-off="${i}"></span>`;tape.innerHTML=html}buildCompass();
+const map=$('#minimap'),mctx=map.getContext('2d');function drawMap(){const W=map.width,H=map.height;mctx.clearRect(0,0,W,H);const g=mctx.createRadialGradient(W*.5,H*.45,10,W*.5,H*.5,W*.52);g.addColorStop(0,'rgba(17,53,58,.9)');g.addColorStop(1,'rgba(2,10,14,.96)');mctx.fillStyle=g;mctx.fillRect(0,0,W,H);mctx.save();mctx.translate(W/2,H/2);mctx.rotate(-state.yaw);const scale=1.65;for(let gy=-15;gy<=15;gy++){for(let gx=-15;gx<=15;gx++){const wx=state.pos.x+gx*2.8,wz=state.pos.z+gy*2.8;const road=roadMetric(wx,wz);if(road<3)mctx.fillStyle='rgba(80,160,176,.38)';else if(isBlocked(wx,wz))mctx.fillStyle='rgba(230,240,250,.24)';else mctx.fillStyle='rgba(12,24,28,.48)';mctx.fillRect(gx*2.8*scale-3,gy*2.8*scale-3,6,6)}}for(let i=0;i<relays.length;i++){const r=relays[i];const dx=(r.x-state.pos.x)*scale,dz=(r.z-state.pos.z)*scale;mctx.strokeStyle=state.relays&(1<<i)?'#77f9ff':'rgba(255,92,213,.7)';mctx.lineWidth=2;mctx.beginPath();mctx.arc(dx,dz,5,0,Math.PI*2);mctx.stroke();}mctx.restore();mctx.fillStyle='#dff';mctx.beginPath();mctx.moveTo(W/2,H/2-10);mctx.lineTo(W/2-6,H/2+7);mctx.lineTo(W/2+6,H/2+7);mctx.closePath();mctx.fill();mctx.strokeStyle='rgba(126,238,247,.22)';mctx.lineWidth=2;mctx.beginPath();mctx.arc(W/2,H/2,W*.47,0,Math.PI*2);mctx.stroke();}
+function updateHUD(now){if(now-state.hudAt<90)return;state.hudAt=now;const speed=Math.hypot(state.vel.x,state.vel.y,state.vel.z);$('#speedValue').textContent=String(Math.round(speed*20)).padStart(3,'0')+' KM/H';$('#speedBar').style.width=Math.min(100,speed/8*100)+'%';$('#stanceValue').textContent=state.flight?'FLY':'GROUND';$('#altValue').textContent=(state.camY||state.pos.y).toFixed(2)+' M';$('#fieldValue').textContent=['DRIZZLE','TEMPEST','BLACKOUT'][state.mode];$('#perfValue').textContent=Math.round(state.fps)+' FPS';$('#stateValue').textContent=['RAIN // ACTIVE','TEMPEST // DENSE','BLACKOUT // PULSE'][state.mode];$('#speedLines').classList.toggle('on',state.run>.45||state.flight&&(state.keys.ShiftLeft||state.keys.ShiftRight));$('#reticle').style.transform=`translate(-50%,-50%) scale(${1+state.run*.15})`;const n=countBits(state.relays);$('#objectiveTitle').textContent=n<3?'Wake the three district relays':'All relays online — roam the awakened city';$('#objectiveMeta').textContent=n<3?`Street access ${n} / 3`:'Blackout pulse unlocked';$('#objectiveDistance').textContent=state.nearest?Math.round(state.nearest.dist*100)+' M':'—';const show=state.nearest&&state.nearest.dist<5.3&&!(state.relays&(1<<state.nearest.i));$('#interaction').classList.toggle('show',!!show);const deg=((state.yaw*180/Math.PI)%360+360)%360,base=Math.round(deg/15)*15,frac=deg-base;document.querySelectorAll('#compassTape .tick').forEach(el=>{const d=base+Number(el.dataset.off)*15,nd=(d%360+360)%360;el.textContent=compassLabel(d);el.classList.toggle('cardinal',nd%90===0)});$('#compassTape').style.transform=`translateX(calc(-50% + ${frac*2.6}px))`;if(now-state.mapAt>160){state.mapAt=now;drawMap()}}
+function adapt(now){state.frames++;if(now-state.fpsAt>1500){state.fps=state.frames*1000/(now-state.fpsAt);state.frames=0;state.fpsAt=now;if(state.fps<38&&state.renderScale>.48){state.renderScale=Math.max(.48,state.renderScale-.07);state.quality=Math.max(.62,state.quality-.08)}else if(state.fps>58&&state.renderScale<.86){state.renderScale=Math.min(.86,state.renderScale+.02);state.quality=Math.min(1,state.quality+.03)}}}
+let audioCtx,noiseSource,windGain,humGain,filter;
+function initAudio(){if(audioCtx)return;audioCtx=new (window.AudioContext||window.webkitAudioContext)();const len=audioCtx.sampleRate*3,buffer=audioCtx.createBuffer(1,len,audioCtx.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<len;i++)data[i]=(Math.random()*2-1)*(.55+.35*Math.sin(i*.0012));noiseSource=audioCtx.createBufferSource();noiseSource.buffer=buffer;noiseSource.loop=true;filter=audioCtx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=520;windGain=audioCtx.createGain();windGain.gain.value=.0001;noiseSource.connect(filter).connect(windGain).connect(audioCtx.destination);noiseSource.start();const osc=audioCtx.createOscillator();osc.type='sawtooth';osc.frequency.value=42;humGain=audioCtx.createGain();humGain.gain.value=.0001;osc.connect(humGain).connect(audioCtx.destination);osc.start();}
+function toggleAudio(){initAudio();state.audio=!state.audio;$('#audioBtn').classList.toggle('active',state.audio);if(audioCtx.state==='suspended')audioCtx.resume();const t=audioCtx.currentTime;windGain.gain.cancelScheduledValues(t);windGain.gain.linearRampToValueAtTime(state.audio?.06:.0001,t+.8);humGain.gain.linearRampToValueAtTime(state.audio?.03:.0001,t+.8)}
+function updateAudio(){if(!audioCtx||!state.audio)return;const s=Math.hypot(state.vel.x,state.vel.z);const t=audioCtx.currentTime;filter.frequency.setTargetAtTime(260+s*60+state.mode*170,t,.22);windGain.gain.setTargetAtTime(.018+s*.006+state.mode*.013,t,.3);humGain.gain.setTargetAtTime(.015+state.mode*.009,t,.4)}
+function playChime(freq){if(!audioCtx||!state.audio)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime;o.type='triangle';o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(freq*2.05,t+1.1);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.06,t+.05);g.gain.exponentialRampToValueAtTime(.0001,t+1.4);o.connect(g).connect(audioCtx.destination);o.start(t);o.stop(t+1.5)}
+$('#audioBtn').addEventListener('click',toggleAudio);$('#weatherBtn').addEventListener('click',cycleWeather);$('#flyBtn').addEventListener('click',toggleFlight);$('#cinemaBtn').addEventListener('click',()=>document.body.classList.toggle('cinematic'));
+function start(fromUser=false){if(state.started)return;state.started=true;document.body.classList.add('started');if(fromUser&&!state.reduced&&canvas.requestPointerLock){try{const p=canvas.requestPointerLock();if(p&&p.catch)p.catch(()=>{})}catch(_){}}if(fromUser&&!state.audio)toggleAudio();toast('SIGNAL ONLINE','Ground mode engaged. Walk the district and wake the relays.');}
+$('#enterBtn').addEventListener('click',()=>start(true));
+function loop(now){const dt=Math.min(.033,(now-state.last)/1000||.016);state.last=now;if(state.started&&!state.paused)update(dt);render(dt);updateHUD(now);adapt(now);requestAnimationFrame(loop)}
+document.addEventListener('visibilitychange',()=>{state.paused=document.hidden;if(!state.paused)state.last=performance.now();if(audioCtx)document.hidden?audioCtx.suspend():state.audio&&audioCtx.resume()});canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();state.paused=true;toast('RENDERER SUSPENDED','WebGL context was lost')});canvas.addEventListener('webglcontextrestored',()=>location.reload());setTimeout(()=>document.body.classList.add('loaded'),250);if(params.get('autoplay')==='1')setTimeout(()=>start(false),350);requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

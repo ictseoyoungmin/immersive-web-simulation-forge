@@ -1,0 +1,144 @@
+{
+  "version": 4,
+  "implemented": true,
+  "static_checks": {
+    "status": "pass",
+    "tool": "check_html.mjs",
+    "syntax_failures": 0,
+    "glsl_js_leakage": 0
+  },
+  "browser": {
+    "executed": true,
+    "intended_route": true,
+    "console_errors": 0,
+    "page_errors": 0,
+    "request_failures": 0
+  },
+  "workflow_review": {
+    "default_route": "pass: road start to city safety center beacon",
+    "first_use": "pass: movement and H-key are visible before interaction",
+    "complete_loop": "pass: enter, walk, complete objective, receive reward, continue",
+    "comparison_or_validation": "pass: info, quest, danger and event categories plus standard/expanded modes",
+    "completion_or_export": "pass: three sequential objectives and reset path",
+    "failure_recovery": "pass: Escape, resetDemo and explicit WebGL2 failure screen",
+    "claim_audit": {
+      "status": "pass",
+      "claims": [
+        {
+          "label": "walk speed",
+          "value": 4.2,
+          "unit": "m/s",
+          "verified": true
+        },
+        {
+          "label": "near plane",
+          "value": 0.08,
+          "unit": "m",
+          "verified": true
+        },
+        {
+          "label": "bounding area",
+          "value": 0.03096,
+          "unit": "km2",
+          "verified": true
+        }
+      ]
+    }
+  },
+  "domain_validation": {
+    "status": "pass",
+    "claim_level": "visual-concept",
+    "oracle": "window.__FORGE__.verifyDomain() and CDP capture",
+    "known_cases": [
+      "WebGL2 context",
+      "0.08m near plane",
+      "10 collision volumes",
+      "player bounds",
+      "4.2m/s walk speed"
+    ],
+    "tolerances_met": true,
+    "invariants_or_geometry_checks": [
+      "player remains inside world bounds",
+      "camera pitch is clamped",
+      "building collision prevents penetration"
+    ],
+    "round_trip": "not-applicable",
+    "limitations_disclosed": true,
+    "external_review": "not-applicable",
+    "unresolved_defects": []
+  },
+  "runtime_engineering": {
+    "status": "pass",
+    "lifecycle": "pass: resize, visibility suspend/resume and destroy paths",
+    "history_persistence": "pass: UI preferences use guarded localStorage",
+    "cancellation_recovery": "pass: panel close, pointer-lock escape and reset",
+    "stale_result_rejection": "pass: latest frame state is rate-limited into HoloStore",
+    "unresolved_defects": []
+  },
+  "visual_review": {
+    "status": "pass",
+    "hardening_rounds": 2,
+    "unresolved_defects": []
+  },
+  "performance": {
+    "measured": false,
+    "measurement_block": "Browser validation used SwiftShader software rendering; its frame time is not representative of target hardware.",
+    "source": "CDP validation capture",
+    "warmup_ms": 3000,
+    "sample_count": 0,
+    "scenarios": [
+      "default WebGL world plus standard status panel"
+    ],
+    "frame_time": {
+      "median_ms": null,
+      "p95_ms": null
+    },
+    "job_latency": {
+      "scenarios": [],
+      "median_ms": null,
+      "p95_ms": null,
+      "cancellation_ms": null
+    },
+    "average_fps": null,
+    "application_telemetry_cross_checked": true,
+    "renderer": "WebKit WebGL / SwiftShader validation environment",
+    "software_renderer": true
+  },
+  "fidelity": {
+    "capture_preset": "presentation",
+    "css_size": [
+      1439,
+      760
+    ],
+    "internal_size": [
+      1094,
+      578
+    ],
+    "effective_pixel_ratio": 0.76,
+    "adaptive_locked": false,
+    "reconstruction": "none",
+    "ui_native_resolution": true,
+    "icon_review": "pass: one inline SVG stroke system"
+  },
+  "input": {
+    "pointer_direction_review": "pass: right turns right, up looks up",
+    "drag_pointerlock_parity": "pass",
+    "selection_transform_review": "not-applicable",
+    "keyboard_path_review": "pass: WASD, Shift, H, Tab, Q, R, E, Escape"
+  },
+  "target_sizes_reviewed": [
+    "1440x900",
+    "1280x720",
+    "mobile responsive CSS under 680px"
+  ],
+  "limitations": [
+    "Procedural low-poly city; not a reconstruction of Seoul GIS, traffic or facility data.",
+    "No Unity, Unreal or Godot native adapter is included.",
+    "Performance numbers are intentionally withheld because the available browser renderer was software-based."
+  ],
+  "artifact": {
+    "implementation_bytes": 182217,
+    "compressed_package_bytes": 98782,
+    "workbench_evidence_bytes": 10804000
+  }
+}

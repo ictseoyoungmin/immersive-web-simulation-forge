@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071116">
+  <meta name="description" content="WebGL2 한국형 오픈월드 보행 데모와 이식 가능한 홀로그램 상태창 에셋">
+  <title>K-HOLO STATUS // 서울 재난대응구역</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app">
+    <div class="sky" aria-hidden="true"><i class="sun"></i><i class="cloud cloud-a"></i><i class="cloud cloud-b"></i></div>
+    <canvas id="world" aria-label="서울형 미래 재난대응구역 WebGL 보행 데모"></canvas>
+    <div class="grade" aria-hidden="true"></div>
+
+    <header class="brand" aria-label="프로젝트 식별">
+      <span class="brand-mark" aria-hidden="true"><i></i></span>
+      <span><strong>K-HOLO STATUS</strong><small>SEOUL RESILIENCE NETWORK // WEBGL FIELD TEST</small></span>
+    </header>
+
+    <section class="mission-chip" id="mission-chip" aria-live="polite">
+      <span class="mission-symbol" aria-hidden="true"></span>
+      <span class="mission-copy"><small id="district-label">서울 북악 재난대응구역</small><strong id="objective-label">도시안전센터 접속</strong><em id="objective-detail">푸른 표식까지 도보 이동</em></span>
+      <b id="objective-distance">86m</b>
+    </section>
+
+    <div class="crosshair" aria-hidden="true"><i></i></div>
+
+    <aside class="telemetry" id="telemetry" aria-label="개발자 텔레메트리">
+      <span id="fps-readout">-- FPS</span><span id="speed-readout">0.0 m/s</span><span id="position-readout">0, 18</span><span>WEBGL2</span>
+    </aside>
+
+    <section class="onboarding" id="onboarding">
+      <small>GROUND TRAVERSAL / 실제 3D 공간</small>
+      <h1>서울 재난대응구역 현장 접속</h1>
+      <p>도로를 따라 도시안전센터로 이동하십시오. 건물과 시설물에는 충돌 판정이 적용됩니다.</p>
+      <div><kbd>WASD</kbd> 이동 <kbd>SHIFT</kbd> 달리기 <kbd>마우스</kbd> 시점 <kbd>H</kbd> 상태창 <kbd>TAB</kbd> 확장</div>
+    </section>
+
+    <nav class="demo-actions" aria-label="상태창 기능 시연">
+      <button class="primary" id="toggle-panel">상태창 <kbd>H</kbd></button>
+      <button id="quest-event">임무</button>
+      <button class="danger" id="danger-event">위험</button>
+      <button class="special" id="special-event">특수</button>
+      <button id="settings-button" aria-expanded="false">설정</button>
+    </nav>
+
+    <section class="settings" id="settings" aria-hidden="true">
+      <header><strong>표시 및 접근성</strong><button id="settings-close" aria-label="설정 닫기">×</button></header>
+      <label><span>상태창 크기<small>게임별 안전영역에 맞춰 조절</small></span><output id="scale-output">100%</output><input id="ui-scale" type="range" min="0.78" max="1.18" step="0.02" value="1"></label>
+      <label><span>모션 최소화<small>홀로그램 전개와 알림 이동 감소</small></span><input id="reduce-motion" type="checkbox"></label>
+      <label><span>개발자 텔레메트리<small>FPS, 속도, 월드 좌표 표시</small></span><input id="telemetry-toggle" type="checkbox" checked></label>
+      <button id="reset-demo">시작 지점으로 초기화</button>
+    </section>
+
+    <div class="mobile-pad" aria-label="모바일 이동 패드">
+      <button data-move="forward">▲</button><button data-move="left">◀</button><button data-move="back">▼</button><button data-move="right">▶</button>
+    </div>
+
+    <k-holo-status id="holo-status"></k-holo-status>
+  </main>
+
+  <script src="src/holo-status-window.js"></script>
+  <script src="src/world-webgl.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>

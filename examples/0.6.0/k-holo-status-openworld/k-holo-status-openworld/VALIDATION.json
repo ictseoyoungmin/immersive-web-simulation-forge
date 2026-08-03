@@ -1,0 +1,146 @@
+{
+  "version": 4,
+  "implemented": true,
+  "audit_status": "pass",
+  "static_checks": {
+    "status": "pass",
+    "html_syntax": "pass",
+    "module_syntax": "pass",
+    "forge_audit": "pass"
+  },
+  "browser": {
+    "executed": true,
+    "intended_route": true,
+    "console_errors": 0,
+    "page_errors": 0,
+    "request_failures": 0
+  },
+  "visual_review": {
+    "status": "creator-reviewed / provisional",
+    "hardening_rounds": 3,
+    "unresolved_defects": []
+  },
+  "workflow_review": {
+    "default_route": "pass: 보행 시작점과 북악 관제탑 목표가 즉시 표시됨",
+    "first_use": "pass: WASD/H 조작과 첫 임무 알림이 첫 화면에 제공됨",
+    "complete_loop": "pass: 탐색→구역/목표 상태 변화→목표 완료→다음 목표 활성화",
+    "comparison_or_validation": "pass: 정보·임무·위험·특수 카테고리 및 compact/standard/expanded 비교",
+    "completion_or_export": "pass: 목표 도달 시 완료, 자원 보상, 다음 목표 전이",
+    "failure_recovery": "pass: 포인터 잠금 실패 시 드래그 대체, ESC 닫기, resetDemo 복구",
+    "claim_audit": {
+      "status": "pass",
+      "claims": [
+        {
+          "label": "월드 경계",
+          "value": "600 × 600 m",
+          "basis": "런타임 경계 -300..300",
+          "verified": true
+        },
+        {
+          "label": "보행 속도",
+          "value": "4.2 m/s",
+          "basis": "KoreanOpenWorldDemo.WALK_SPEED",
+          "verified": true
+        }
+      ]
+    }
+  },
+  "domain_validation": {
+    "status": "pass",
+    "claim_level": "visual-concept",
+    "oracle": "window.__FORGE__.verifyDomain('reference-case')",
+    "known_cases": [
+      "플레이어 월드 경계 내부",
+      "목표 거리 유한값",
+      "기록된 보행 속도 4.2 m/s"
+    ],
+    "tolerances_met": true,
+    "invariants_or_geometry_checks": [
+      "x,z 좌표가 -300..300 m 내부",
+      "목표 완료 반경 14 m",
+      "지면 높이 고정"
+    ],
+    "round_trip": "UI 환경설정 localStorage 저장/복원; 접근 불가 환경은 안전한 기본값",
+    "limitations_disclosed": true,
+    "external_review": "not-applicable",
+    "unresolved_defects": []
+  },
+  "runtime_engineering": {
+    "status": "pass",
+    "lifecycle": "mount, resize, suspend, resume, destroy 구현 및 visibilitychange 연결",
+    "history_persistence": "UI 크기·모션·텔레메트리 환경설정 저장",
+    "cancellation_recovery": "not-applicable; 프레임 루프 suspend/resume 및 reset 제공",
+    "stale_result_rejection": "이벤트/상태는 단일 저장소 최신 상태만 소비",
+    "unresolved_defects": []
+  },
+  "performance": {
+    "measured": true,
+    "measurement_block": "headless Chromium software-rendered requestAnimationFrame wall-clock sample",
+    "source": "Python Playwright + /usr/bin/chromium",
+    "warmup_ms": 1100,
+    "sample_count": 60,
+    "scenarios": [
+      {
+        "name": "default",
+        "p50_ms": 33.3,
+        "p95_ms": 33.4
+      },
+      {
+        "name": "panel-open",
+        "p50_ms": 16.7,
+        "p95_ms": 33.3
+      }
+    ],
+    "frame_time": {
+      "median_ms": 16.7,
+      "p95_ms": 33.4
+    },
+    "job_latency": {
+      "scenarios": [],
+      "median_ms": null,
+      "p95_ms": null,
+      "cancellation_ms": null
+    },
+    "average_fps": null,
+    "application_telemetry_cross_checked": false,
+    "renderer": "Canvas 2D + DOM/Shadow DOM",
+    "software_renderer": true
+  },
+  "fidelity": {
+    "capture_preset": "presentation",
+    "css_size": [
+      1440,
+      900
+    ],
+    "internal_size": [
+      1440,
+      900
+    ],
+    "effective_pixel_ratio": 1.0,
+    "adaptive_locked": false,
+    "reconstruction": "none",
+    "ui_native_resolution": true,
+    "icon_review": "pass: authored 24-unit inline SVG path system"
+  },
+  "input": {
+    "pointer_direction_review": "pass: 오른쪽 이동은 오른쪽 회전, 위 이동은 위 보기",
+    "drag_pointerlock_parity": "pass: 동일 민감도와 부호 사용",
+    "selection_transform_review": "not-applicable",
+    "keyboard_path_review": "pass: H, Tab, Q/R/E/F, Escape, settings"
+  },
+  "target_sizes_reviewed": [
+    "1440x900",
+    "1280x720",
+    "844x390"
+  ],
+  "limitations": [
+    "월드는 실제 3D 엔진이 아닌 Canvas 2D 원근 투영 visual-concept입니다.",
+    "물리 모델은 평탄 지면, 단순 AABB 충돌, 보행 가속/감속으로 제한됩니다.",
+    "성능 수치는 headless Chromium 소프트웨어 렌더링 환경의 참고값이며 사용자 GPU 성능을 주장하지 않습니다."
+  ],
+  "artifact": {
+    "implementation_bytes": 162952,
+    "workbench_evidence_bytes": 10772360,
+    "evidence_to_implementation_ratio": 66.108
+  }
+}

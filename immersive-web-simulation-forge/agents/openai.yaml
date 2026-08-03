@@ -1,0 +1,14 @@
+interface:
+  display_name: Immersive Web Simulation Forge
+  short_description: Build browser worlds, labs, and design studios
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+  default_prompt: Use $immersive-web-simulation-forge to build and validate a high-fidelity
+    interactive browser world, simulation lab, or parametric design studio.
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

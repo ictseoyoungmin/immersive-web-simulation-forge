@@ -1,0 +1,1393 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071116">
+  <meta name="description" content="한국형 오픈월드에 적용된 모듈형 홀로그램 상태창 HTML 데모">
+  <title>K-HOLO STATUS // 한국형 오픈월드 UI 에셋</title>
+  <style>
+:root{color-scheme:dark;--cyan:#54e5ff;--ink:#071116;--glass:rgba(3,14,19,.72);font-family:Pretendard,"Noto Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;background:#070b0e;color:#eefcff}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#070b0e}button,input{font:inherit}button{color:inherit}body::after{content:"";position:fixed;inset:0;z-index:35;pointer-events:none;opacity:0;transition:opacity .42s;background:radial-gradient(circle at 68% 48%,rgba(78,226,255,.17),transparent 40%)}body[data-flash="danger"]::after{opacity:1;background:radial-gradient(circle at 68% 48%,rgba(255,59,57,.2),transparent 42%)}body[data-flash="quest"]::after{opacity:1;background:radial-gradient(circle at 68% 48%,rgba(255,174,53,.18),transparent 42%)}body[data-flash="event"]::after{opacity:1;background:radial-gradient(circle at 68% 48%,rgba(176,104,255,.2),transparent 42%)}body[data-flash="info"]::after{opacity:1}
+#app{position:relative;width:100%;height:100%;isolation:isolate;background:#0c1417}#world{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}.film{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(3,9,13,.08),transparent 30%,rgba(3,7,9,.12)),repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px);opacity:.72}.film::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 44%,transparent 38%,rgba(0,0,0,.32) 100%)}
+.brand{position:absolute;z-index:10;left:24px;top:20px;display:flex;align-items:center;gap:11px;pointer-events:none}.brand-mark{position:relative;width:36px;height:36px;border:1px solid rgba(84,229,255,.55);clip-path:polygon(18% 0,100% 0,100% 82%,82% 100%,0 100%,0 18%);box-shadow:0 0 16px rgba(84,229,255,.12) inset}.brand-mark::before{content:"";position:absolute;inset:9px;border:2px solid var(--cyan);transform:rotate(45deg);box-shadow:0 0 10px rgba(84,229,255,.3)}.brand-copy strong,.brand-copy small{display:block}.brand-copy strong{font-size:12px;letter-spacing:.14em}.brand-copy small{margin-top:3px;color:rgba(225,249,255,.52);font:9px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.09em}
+.objective-hud{position:absolute;z-index:10;left:24px;top:80px;width:min(330px,32vw);border-left:2px solid var(--cyan);background:linear-gradient(90deg,rgba(4,17,22,.8),rgba(4,17,22,.08));box-shadow:0 10px 38px rgba(0,0,0,.14)}.objective-hud .hud-top{display:flex;justify-content:space-between;gap:10px;padding:8px 11px 5px;color:rgba(208,246,255,.55);font-size:9px;letter-spacing:.08em}.objective-hud .hud-main{display:grid;grid-template-columns:32px 1fr auto;gap:8px;align-items:center;padding:5px 11px 10px}.objective-hud .hud-icon{width:30px;height:30px;display:grid;place-items:center;border:1px solid rgba(84,229,255,.28);transform:rotate(45deg)}.objective-hud .hud-icon::before{content:"";width:8px;height:8px;border:1px solid var(--cyan)}.objective-hud .hud-copy strong,.objective-hud .hud-copy small{display:block}.objective-hud .hud-copy strong{font-size:12px}.objective-hud .hud-copy small{margin-top:2px;color:rgba(230,250,255,.5);font-size:9px}.objective-hud .hud-distance{color:var(--cyan);font:600 13px ui-monospace,monospace}.objective-hud[data-complete="true"]{border-color:#71f1b5}.objective-hud[data-complete="true"] .hud-icon{border-color:#71f1b5}.objective-hud[data-complete="true"] .hud-icon::before{border-color:#71f1b5;background:#71f1b5}.objective-hud[data-complete="true"] .hud-distance{color:#71f1b5}
+.debug-hud{position:absolute;z-index:10;right:22px;bottom:22px;display:flex;gap:7px;color:rgba(225,249,255,.62);font:9px ui-monospace,SFMono-Regular,Consolas,monospace;pointer-events:none}.debug-hud span{padding:5px 7px;border:1px solid rgba(84,229,255,.13);background:rgba(1,9,12,.48)}.crosshair{position:absolute;z-index:8;left:50%;top:50%;width:17px;height:17px;transform:translate(-50%,-50%);pointer-events:none;opacity:.42}.crosshair::before,.crosshair::after{content:"";position:absolute;background:#dffbff;box-shadow:0 0 5px rgba(84,229,255,.5)}.crosshair::before{left:8px;top:0;width:1px;height:17px}.crosshair::after{left:0;top:8px;width:17px;height:1px}.crosshair i{position:absolute;inset:5px;border:1px solid rgba(223,251,255,.8);transform:rotate(45deg)}
+.controls{position:absolute;z-index:12;left:50%;bottom:18px;display:flex;gap:7px;transform:translateX(-50%);pointer-events:auto}.controls button,.settings-toggle{min-height:34px;border:1px solid rgba(84,229,255,.18);background:rgba(3,14,19,.62);color:rgba(229,251,255,.74);cursor:pointer;transition:.16s}.controls button{padding:0 12px;font-size:10px;letter-spacing:.04em}.controls button:hover,.controls button:focus-visible,.settings-toggle:hover,.settings-toggle:focus-visible{outline:none;color:#fff;border-color:rgba(84,229,255,.7);background:rgba(27,84,97,.28);box-shadow:0 0 18px rgba(84,229,255,.08)}.controls button.primary{color:#081316;background:rgba(84,229,255,.82);border-color:#8cf0ff;font-weight:700}.controls button.danger{border-color:rgba(255,78,73,.35)}.controls button.event{border-color:rgba(180,105,255,.35)}
+.intro{position:absolute;z-index:11;left:50%;top:68%;transform:translate(-50%,-50%);width:min(620px,88vw);padding:20px 24px;text-align:center;border-top:1px solid rgba(84,229,255,.22);border-bottom:1px solid rgba(84,229,255,.12);background:linear-gradient(90deg,transparent,rgba(3,15,19,.56) 18% 82%,transparent);pointer-events:none;transition:opacity .5s,transform .5s}.intro.quiet{opacity:0;transform:translate(-50%,-42%)}.intro .eyebrow{color:#76eaff;font:10px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.16em}.intro h1{margin:7px 0 8px;font-size:clamp(22px,3vw,38px);font-weight:700;letter-spacing:-.04em}.intro p{margin:0;color:rgba(229,248,252,.62);font-size:12px;line-height:1.7}.intro .keys{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin-top:12px}.key{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:25px;padding:0 8px;border:1px solid rgba(223,251,255,.18);background:rgba(255,255,255,.035);color:rgba(240,253,255,.8);font:10px ui-monospace,monospace}
+.settings-toggle{position:absolute;z-index:13;right:22px;top:20px;width:38px;height:38px;display:grid;place-items:center;border-radius:2px 10px 2px 10px}.settings-panel{position:absolute;z-index:50;right:20px;top:66px;width:min(330px,calc(100vw - 40px));padding:14px;border:1px solid rgba(84,229,255,.25);background:rgba(4,15,20,.92);box-shadow:0 20px 70px rgba(0,0,0,.4);opacity:0;visibility:hidden;transform:translateY(-8px);transition:.2s}.settings-panel.open{opacity:1;visibility:visible;transform:translateY(0)}.settings-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(84,229,255,.13)}.settings-head strong{font-size:13px}.settings-head button{width:30px;height:30px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.08);background:none;cursor:pointer}.setting-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 2px;border-bottom:1px solid rgba(255,255,255,.05)}.setting-row label{font-size:11px}.setting-row small{display:block;margin-top:3px;color:rgba(225,249,255,.43);font-size:9px}.setting-row input[type="range"]{grid-column:1/-1;width:100%;accent-color:#54e5ff}.switch{position:relative;width:38px;height:20px}.switch input{position:absolute;opacity:0}.switch i{display:block;width:38px;height:20px;border:1px solid rgba(84,229,255,.22);background:rgba(255,255,255,.04)}.switch i::before{content:"";position:absolute;width:14px;height:14px;left:3px;top:3px;background:rgba(225,249,255,.5);transition:.18s}.switch input:checked+i{background:rgba(84,229,255,.16);border-color:rgba(84,229,255,.55)}.switch input:checked+i::before{left:21px;background:#74ebff;box-shadow:0 0 8px rgba(84,229,255,.5)}.settings-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:12px}.settings-actions button{min-height:34px;border:1px solid rgba(84,229,255,.18);background:rgba(84,229,255,.06);cursor:pointer;font-size:10px}
+.mobile-help{display:none}
+html[data-reduced-motion="true"] *,html[data-reduced-motion="true"] *::before,html[data-reduced-motion="true"] *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+@media(max-width:900px){.brand{left:14px;top:14px}.objective-hud{left:14px;top:68px;width:min(310px,45vw)}.controls{bottom:12px}.controls button:nth-child(n+4){display:none}.debug-hud{right:14px;bottom:58px}.settings-toggle{right:14px;top:14px}.intro{top:65%}}
+@media(max-width:680px){.brand-copy small{display:none}.objective-hud{width:calc(100vw - 76px);max-width:330px}.intro{top:58%;padding:14px 12px}.intro h1{font-size:22px}.intro p{font-size:10px}.intro .keys{display:none}.controls{left:10px;right:10px;bottom:8px;transform:none;display:grid;grid-template-columns:1.2fr repeat(3,1fr)}.controls button{padding:0 6px}.debug-hud{display:none}.crosshair{opacity:.3}.mobile-help{display:block;position:absolute;z-index:9;left:12px;bottom:54px;color:rgba(235,252,255,.45);font-size:9px;pointer-events:none}}
+@media(max-height:560px){.intro{top:50%}.objective-hud{top:58px}.brand{top:10px}.settings-toggle{top:10px}.controls{bottom:6px}}
+
+  </style>
+</head>
+<body>
+  <main id="app">
+    <canvas id="world" aria-label="한국형 미래 도시 보행 오픈월드 데모"></canvas>
+    <div class="film"></div>
+
+    <header class="brand" aria-label="프로젝트 식별">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-copy"><strong>K-HOLO STATUS</strong><small>SEOUL RESILIENCE NETWORK // MODULE 06</small></span>
+    </header>
+
+    <section id="objective-hud" class="objective-hud" aria-label="현재 목표">
+      <div class="hud-top"><span class="hud-district">한강 북부 방재로</span><span>LIVE OBJECTIVE</span></div>
+      <div class="hud-main"><span class="hud-icon" aria-hidden="true"></span><span class="hud-copy"><strong class="hud-objective">북악 관제탑 접속</strong><small>도시 안전망 연결 복구</small></span><b class="hud-distance">108m</b></div>
+    </section>
+
+    <div class="crosshair" aria-hidden="true"><i></i></div>
+
+    <section id="intro" class="intro" aria-label="시작 안내">
+      <div class="eyebrow">K-URBAN OPEN WORLD // ON-FOOT DEMO</div>
+      <h1>서울 방재구역에 진입했습니다</h1>
+      <p>화면을 클릭해 시점을 고정하고 북악 관제탑으로 이동하십시오. 홀로그램 상태창은 플레이어 앞 우측에 호출됩니다.</p>
+      <div class="keys"><span class="key">WASD 이동</span><span class="key">SHIFT 달리기</span><span class="key">마우스 시점</span><span class="key">H 상태창</span><span class="key">TAB 확장</span><span class="key">Q/R/E 이벤트</span></div>
+    </section>
+
+    <div id="debug-hud" class="debug-hud" aria-label="런타임 텔레메트리"><span class="debug-speed">0.0 m/s</span><span class="debug-fps">60 FPS</span><span class="debug-pos">0, 245</span></div>
+
+    <nav class="controls" aria-label="데모 제어">
+      <button id="panel-button" class="primary" type="button">H 상태창</button>
+      <button id="event-info" type="button">정보</button>
+      <button id="event-quest" type="button">임무</button>
+      <button id="event-danger" class="danger" type="button">위험</button>
+      <button id="event-special" class="event" type="button">특수 이벤트</button>
+    </nav>
+    <span class="mobile-help">화면 드래그: 시점 · 좌측 하단 버튼: 상태창</span>
+
+    <button id="settings-toggle" class="settings-toggle" type="button" aria-label="설정 열기" aria-expanded="false"></button>
+    <aside id="settings-panel" class="settings-panel" aria-hidden="true">
+      <div class="settings-head"><strong>표시 및 검증 설정</strong><button id="settings-close" type="button" aria-label="설정 닫기"></button></div>
+      <div class="setting-row"><label for="ui-scale">상태창 크기 <output id="scale-output">100%</output><small>Shadow DOM 내부 스케일</small></label><input id="ui-scale" type="range" min="0.78" max="1.18" step="0.02" value="1"></div>
+      <div class="setting-row"><label for="reduced-motion">모션 최소화<small>스캔라인과 전환 애니메이션 감소</small></label><label class="switch"><input id="reduced-motion" type="checkbox"><i></i></label></div>
+      <div class="setting-row"><label for="telemetry-toggle">텔레메트리 표시<small>속도·FPS·월드 좌표</small></label><label class="switch"><input id="telemetry-toggle" type="checkbox" checked><i></i></label></div>
+      <div class="settings-actions"><button id="reset-demo" type="button">출발 지점 초기화</button><button type="button" onclick="document.querySelector('#holo-status').show({mode:'expanded'})">확장 패널 열기</button></div>
+    </aside>
+
+    <k-holo-status id="holo-status"></k-holo-status>
+  </main>
+  <script type="module">
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const escapeHTML = (value = '') => String(value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+
+const CATEGORY = Object.freeze({
+  info: { label: '정보', rgb: '63, 218, 255', accent: '#3fdaff' },
+  danger: { label: '위험', rgb: '255, 76, 72', accent: '#ff4c48' },
+  quest: { label: '임무', rgb: '255, 177, 56', accent: '#ffb138' },
+  event: { label: '특수', rgb: '176, 104, 255', accent: '#b068ff' }
+});
+
+const ICON_PATHS = {
+  close: '<path d="M7 7l10 10M17 7L7 17"/>',
+  expand: '<path d="M8 4H4v4M16 4h4v4M20 16v4h-4M4 16v4h4"/>',
+  collapse: '<path d="M9 4v5H4M15 4v5h5M20 15h-5v5M4 15h5v5"/>',
+  shield: '<path d="M12 3l7 3v5c0 4.5-2.8 7.7-7 10-4.2-2.3-7-5.5-7-10V6l7-3z"/><path d="M12 7v9"/>',
+  pulse: '<path d="M3 12h4l2-5 4 10 2-5h6"/>',
+  person: '<circle cx="12" cy="8" r="3"/><path d="M5.5 20c.8-4.2 3-6 6.5-6s5.7 1.8 6.5 6"/>',
+  box: '<path d="M4 7l8-4 8 4-8 4-8-4zM4 7v10l8 4 8-4V7M12 11v10"/>',
+  target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  map: '<path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6zM9 3v15M15 6v15"/>',
+  alert: '<path d="M12 3l9 17H3L12 3z"/><path d="M12 9v5M12 17h.01"/>',
+  quest: '<path d="M12 3l9 9-9 9-9-9 9-9z"/><circle cx="12" cy="12" r="2"/>',
+  event: '<path d="M12 3c4 0 7 2.4 7 5.5 0 4.8-6.3 3.7-6.3 7.2 0 1.5 1.3 2.3 3.1 2.3 2 0 3.6-1 4.7-2.7-.7 3.5-3.5 5.7-7.2 5.7-4 0-7.3-2.5-7.3-5.8 0-4.6 6.2-3.8 6.2-7 0-1.3-1.2-2.1-2.8-2.1-2 0-3.8 1-5 2.8C5.2 5.2 8.1 3 12 3z"/>',
+  check: '<path d="M5 12l4 4L19 6"/>',
+  pin: '<path d="M12 21s6-5.2 6-11a6 6 0 10-12 0c0 5.8 6 11 6 11z"/><circle cx="12" cy="10" r="2"/>',
+  coin: '<circle cx="12" cy="12" r="8"/><path d="M9 9.5c.8-1.5 5.2-1.5 6 0 .8 2-5.5 1.5-5.5 4s5.1 2.3 5.9.5M12 6v12"/>',
+  signal: '<path d="M5 17v2M9 14v5M13 10v9M17 7v12M21 4v15"/>',
+  speed: '<path d="M4 17a8 8 0 1116 0M12 13l5-4"/>',
+  eye: '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h16"/>'
+};
+
+function icon(name, size = 20, label = '') {
+  const path = ICON_PATHS[name] || ICON_PATHS.pulse;
+  return `<svg class="icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="${label ? 'false' : 'true'}"${label ? ` role="img"><title>${escapeHTML(label)}</title>` : '>'}${path}</svg>`;
+}
+
+class HoloStore {
+  #state;
+  #listeners = new Set();
+
+  constructor(initialState = {}) {
+    this.#state = structuredClone(initialState);
+  }
+
+  getState() { return this.#state; }
+
+  subscribe(listener) {
+    this.#listeners.add(listener);
+    listener(this.#state, null);
+    return () => this.#listeners.delete(listener);
+  }
+
+  set(nextState, meta = {}) {
+    const previous = this.#state;
+    this.#state = typeof nextState === 'function' ? nextState(previous) : nextState;
+    for (const listener of this.#listeners) listener(this.#state, previous, meta);
+  }
+
+  patch(partial, meta = {}) {
+    this.set(previous => ({ ...previous, ...partial }), meta);
+  }
+}
+
+const DEFAULT_STATE = {
+  location: { district: '한강 북부 방재구역', subtitle: '도시 안전망 정상', coordinate: { x: 0, z: 245 } },
+  player: { hp: 100, shield: 76, energy: 64, speed: 0 },
+  resources: { credits: 7450, data: 320, kits: 3 },
+  objectives: [
+    { id: 'control', title: '북악 관제탑 접속', detail: '관제 비콘까지 이동', progress: 0, total: 1, distance: 108, status: 'active', x: 24, z: 145 },
+    { id: 'sensor', title: '도시 센서망 복구', detail: '중계기 3개 동기화', progress: 1, total: 3, status: 'pending', x: -90, z: 40 }
+  ],
+  alerts: [
+    { time: '22:54', category: 'info', message: '보행 모드가 활성화되었습니다.' },
+    { time: '22:53', category: 'quest', message: '북악 관제탑 좌표를 수신했습니다.' }
+  ],
+  nearby: [],
+  telemetry: { fps: 60, frameP95: 16.7 }
+};
+
+class HoloStatusWindow extends HTMLElement {
+  #store = null;
+  #unsubscribe = null;
+  #open = false;
+  #mode = 'standard';
+  #category = 'info';
+  #notifications = [];
+  #notificationTimer = null;
+  #renderTimer = null;
+  #lastRenderAt = 0;
+  #state = structuredClone(DEFAULT_STATE);
+
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this.shadowRoot.innerHTML = this.#template();
+    this.#bindInternalEvents();
+  }
+
+  connectedCallback() {
+    this.setAttribute('role', 'region');
+    this.setAttribute('aria-label', '홀로그램 상태창');
+    if (!this.hasAttribute('tabindex')) this.tabIndex = -1;
+    this.#syncAttributes();
+  }
+
+  disconnectedCallback() { this.destroy(); }
+
+  bind(store) {
+    this.#unsubscribe?.();
+    this.#store = store;
+    this.#unsubscribe = store?.subscribe?.(state => {
+      this.#state = { ...DEFAULT_STATE, ...state };
+      if (this.#open) this.#scheduleRender();
+    }) || null;
+    return this;
+  }
+
+  show(options = {}) {
+    this.#category = options.category || this.#category;
+    this.#mode = options.mode || this.#mode;
+    this.#open = true;
+    this.#renderState();
+    this.#syncAttributes();
+    this.dispatchEvent(new CustomEvent('holo:open', { bubbles: true, detail: { category: this.#category, mode: this.#mode } }));
+  }
+
+  hide(reason = 'user') {
+    this.#open = false;
+    this.#syncAttributes();
+    this.dispatchEvent(new CustomEvent('holo:close', { bubbles: true, detail: { reason } }));
+  }
+
+  toggle(options = {}) { this.#open ? this.hide('toggle') : this.show(options); }
+
+  setMode(mode) {
+    this.#mode = ['compact', 'standard', 'expanded'].includes(mode) ? mode : 'standard';
+    this.#syncAttributes();
+  }
+
+  setCategory(category) {
+    if (CATEGORY[category]) this.#category = category;
+    this.#syncAttributes();
+  }
+
+  notify({ category = 'info', title = '시스템 알림', message = '', icon: iconName, duration = 4200 } = {}) {
+    const id = crypto.randomUUID?.() || `notice-${Date.now()}-${Math.random()}`;
+    const notice = { id, category: CATEGORY[category] ? category : 'info', title, message, icon: iconName || category, duration };
+    this.#notifications.push(notice);
+    this.#renderNotifications();
+    window.setTimeout(() => this.dismissNotification(id), duration);
+    return id;
+  }
+
+  dismissNotification(id) {
+    this.#notifications = this.#notifications.filter(item => item.id !== id);
+    this.#renderNotifications();
+  }
+
+  update(partial) {
+    this.#state = { ...this.#state, ...partial };
+    if (this.#open) this.#scheduleRender();
+  }
+
+  getSnapshot() {
+    return { open: this.#open, mode: this.#mode, category: this.#category, notifications: this.#notifications.length, state: structuredClone(this.#state) };
+  }
+
+  destroy() {
+    this.#unsubscribe?.();
+    this.#unsubscribe = null;
+    if (this.#notificationTimer) clearTimeout(this.#notificationTimer);
+    if (this.#renderTimer) clearTimeout(this.#renderTimer);
+  }
+
+  #syncAttributes() {
+    this.toggleAttribute('open', this.#open);
+    this.dataset.mode = this.#mode;
+    this.dataset.category = this.#category;
+    const theme = CATEGORY[this.#category] || CATEGORY.info;
+    this.style.setProperty('--holo-rgb', theme.rgb);
+    this.style.setProperty('--holo-accent', theme.accent);
+    this.shadowRoot.querySelector('.category-label').textContent = theme.label;
+    this.shadowRoot.querySelector('.panel').setAttribute('aria-hidden', String(!this.#open));
+    this.shadowRoot.querySelector('[data-action="mode"]').innerHTML = this.#mode === 'expanded' ? icon('collapse', 18, '축소') : icon('expand', 18, '확장');
+    this.shadowRoot.querySelector('[data-action="mode"]').setAttribute('aria-label', this.#mode === 'expanded' ? '상태창 축소' : '상태창 확장');
+  }
+
+  #bindInternalEvents() {
+    this.shadowRoot.addEventListener('click', event => {
+      const action = event.target.closest('[data-action]')?.dataset.action;
+      if (action === 'close') this.hide('button');
+      if (action === 'mode') this.setMode(this.#mode === 'expanded' ? 'standard' : 'expanded');
+      const category = event.target.closest('[data-category]')?.dataset.category;
+      if (category) this.setCategory(category);
+    });
+  }
+
+  #scheduleRender() {
+    if (this.#renderTimer) return;
+    const elapsed = performance.now() - this.#lastRenderAt;
+    const wait = Math.max(0, 220 - elapsed);
+    this.#renderTimer = window.setTimeout(() => {
+      this.#renderTimer = null;
+      if (this.#open) this.#renderState();
+    }, wait);
+  }
+
+  #renderState() {
+    this.#lastRenderAt = performance.now();
+    const state = this.#state || DEFAULT_STATE;
+    const location = state.location || DEFAULT_STATE.location;
+    const player = state.player || DEFAULT_STATE.player;
+    const resources = state.resources || DEFAULT_STATE.resources;
+    const objectives = Array.isArray(state.objectives) ? state.objectives : [];
+    const alerts = Array.isArray(state.alerts) ? state.alerts : [];
+
+    this.shadowRoot.querySelector('.district').textContent = location.district || '미확인 구역';
+    this.shadowRoot.querySelector('.district-sub').textContent = location.subtitle || '연결 상태 확인 중';
+    this.shadowRoot.querySelector('.speed-value').textContent = `${Number(player.speed || 0).toFixed(1)} m/s`;
+    this.shadowRoot.querySelector('.coordinate').textContent = `${Math.round(location.coordinate?.x || 0)}, ${Math.round(location.coordinate?.z || 0)}`;
+
+    this.#setMeter('hp', player.hp ?? 0);
+    this.#setMeter('shield', player.shield ?? 0);
+    this.#setMeter('energy', player.energy ?? 0);
+
+    this.shadowRoot.querySelector('.objectives').innerHTML = objectives.map(item => {
+      const completed = item.status === 'complete' || item.progress >= item.total;
+      const progress = item.total > 1 ? `${item.progress}/${item.total}` : completed ? '완료' : `${Math.max(0, Math.round(item.distance || 0))}m`;
+      return `<li class="objective ${completed ? 'complete' : ''}">
+        <span class="objective-icon">${icon(completed ? 'check' : item.status === 'active' ? 'target' : 'quest', 16)}</span>
+        <span class="objective-copy"><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.detail || '')}</small></span>
+        <span class="objective-progress">${escapeHTML(progress)}</span>
+      </li>`;
+    }).join('') || '<li class="empty">활성 목표가 없습니다.</li>';
+
+    this.shadowRoot.querySelector('.alerts').innerHTML = alerts.slice(0, 5).map(item => `<li class="alert-line" data-level="${escapeHTML(item.category || 'info')}"><time>${escapeHTML(item.time || '--:--')}</time><span>${escapeHTML(item.message)}</span></li>`).join('');
+    this.shadowRoot.querySelector('.credit-value').textContent = Number(resources.credits || 0).toLocaleString('ko-KR');
+    this.shadowRoot.querySelector('.data-value').textContent = Number(resources.data || 0).toLocaleString('ko-KR');
+    this.shadowRoot.querySelector('.kit-value').textContent = Number(resources.kits || 0).toLocaleString('ko-KR');
+    this.#renderRadar(objectives, location.coordinate || { x: 0, z: 0 });
+  }
+
+  #setMeter(name, value) {
+    const safe = clamp(Number(value) || 0, 0, 100);
+    const meter = this.shadowRoot.querySelector(`[data-meter="${name}"]`);
+    meter.style.setProperty('--value', safe);
+    meter.querySelector('b').textContent = `${Math.round(safe)}`;
+    meter.setAttribute('aria-valuenow', String(Math.round(safe)));
+  }
+
+  #renderRadar(objectives, coordinate) {
+    const radar = this.shadowRoot.querySelector('.radar-marks');
+    const range = 180;
+    radar.innerHTML = objectives.filter(item => item.status !== 'complete').slice(0, 6).map((item, index) => {
+      const dx = clamp(((item.x ?? coordinate.x) - coordinate.x) / range, -1, 1);
+      const dz = clamp(((item.z ?? coordinate.z) - coordinate.z) / range, -1, 1);
+      const x = 50 + dx * 38;
+      const y = 50 + dz * 38;
+      const shape = item.status === 'active' ? 'diamond' : 'dot';
+      return `<span class="radar-mark ${shape}" style="--x:${x}%;--y:${y}%" aria-label="${escapeHTML(item.title)}"></span>`;
+    }).join('');
+  }
+
+  #renderNotifications() {
+    const host = this.shadowRoot.querySelector('.notice-stack');
+    host.innerHTML = this.#notifications.slice(-3).map(item => {
+      const theme = CATEGORY[item.category];
+      return `<article class="notice" style="--notice-rgb:${theme.rgb}" data-id="${item.id}">
+        <span class="notice-icon">${icon(item.icon, 22)}</span>
+        <span class="notice-copy"><b>${escapeHTML(item.title)}</b><small>${escapeHTML(item.message)}</small></span>
+        <button type="button" aria-label="알림 닫기" data-dismiss="${item.id}">${icon('close', 14)}</button>
+      </article>`;
+    }).join('');
+    host.querySelectorAll('[data-dismiss]').forEach(button => button.addEventListener('click', () => this.dismissNotification(button.dataset.dismiss), { once: true }));
+  }
+
+  #template() {
+    return `
+      <style>${COMPONENT_CSS}</style>
+      <div class="anchor" aria-live="polite">
+        <div class="notice-stack"></div>
+        <section class="panel" aria-hidden="true">
+          <i class="scanline"></i>
+          <header class="panel-header">
+            <span class="crest" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="header-copy"><strong class="district">한강 북부 방재구역</strong><small class="district-sub">도시 안전망 정상</small></span>
+            <span class="header-status"><span class="category-label">정보</span>${icon('signal', 18)}</span>
+            <button type="button" data-action="mode" aria-label="상태창 확장">${icon('expand', 18)}</button>
+            <button type="button" data-action="close" aria-label="상태창 닫기">${icon('close', 18)}</button>
+          </header>
+
+          <nav class="category-tabs" aria-label="상태 카테고리 미리보기">
+            <button type="button" data-category="info" aria-label="정보 색상">${icon('shield', 18)}<span>정보</span></button>
+            <button type="button" data-category="quest" aria-label="임무 색상">${icon('quest', 18)}<span>임무</span></button>
+            <button type="button" data-category="danger" aria-label="위험 색상">${icon('alert', 18)}<span>위험</span></button>
+            <button type="button" data-category="event" aria-label="특수 이벤트 색상">${icon('event', 18)}<span>특수</span></button>
+          </nav>
+
+          <div class="panel-grid">
+            <main>
+              <section class="module objective-module">
+                <div class="module-title"><span>현재 임무</span><small>LIVE</small></div>
+                <ul class="objectives"></ul>
+              </section>
+              <section class="module vitals-module">
+                <div class="meter" data-meter="hp" role="meter" aria-label="생명력" aria-valuemin="0" aria-valuemax="100"><span>생명력</span><i></i><b>100</b></div>
+                <div class="meter" data-meter="shield" role="meter" aria-label="보호막" aria-valuemin="0" aria-valuemax="100"><span>보호막</span><i></i><b>76</b></div>
+                <div class="meter" data-meter="energy" role="meter" aria-label="동력" aria-valuemin="0" aria-valuemax="100"><span>동력</span><i></i><b>64</b></div>
+              </section>
+            </main>
+
+            <aside>
+              <section class="module radar-module">
+                <div class="module-title"><span>근접 레이더</span><small>180m</small></div>
+                <div class="radar" role="img" aria-label="플레이어 주변 목표 레이더">
+                  <span class="radar-cross x"></span><span class="radar-cross y"></span>
+                  <span class="radar-ring r1"></span><span class="radar-ring r2"></span><span class="radar-ring r3"></span>
+                  <span class="radar-player"></span><div class="radar-marks"></div>
+                </div>
+                <div class="position-row"><span>${icon('speed', 15)} <b class="speed-value">0.0 m/s</b></span><span>${icon('pin', 15)} <b class="coordinate">0, 245</b></span></div>
+              </section>
+              <section class="module feed-module">
+                <div class="module-title"><span>상황 기록</span><small>최근 5건</small></div>
+                <ul class="alerts"></ul>
+              </section>
+            </aside>
+          </div>
+
+          <footer class="resource-strip">
+            <span>${icon('coin', 17)}<b class="credit-value">7,450</b><small>크레딧</small></span>
+            <span>${icon('pulse', 17)}<b class="data-value">320</b><small>도시 데이터</small></span>
+            <span>${icon('box', 17)}<b class="kit-value">3</b><small>복구 키트</small></span>
+            <span class="system-mark">K-URBAN // HSW-06</span>
+          </footer>
+        </section>
+      </div>`;
+  }
+}
+
+const COMPONENT_CSS = `
+:host{display:block;--holo-rgb:63,218,255;--holo-accent:#3fdaff;--holo-scale:1;position:fixed;inset:0;z-index:40;pointer-events:none;color:#eafcff;font-family:Pretendard,"Noto Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;contain:layout style paint}
+*{box-sizing:border-box}.icon{display:block;flex:0 0 auto}.anchor{position:absolute;inset:0;overflow:hidden}.panel{position:absolute;right:clamp(22px,5vw,84px);top:50%;width:min(570px,42vw);max-height:min(760px,78vh);transform:translate3d(54px,-48%,0) scale(calc(var(--holo-scale)*.97));transform-origin:right center;opacity:0;visibility:hidden;pointer-events:none;overflow:hidden;border:1px solid rgba(var(--holo-rgb),.7);border-radius:3px 18px 4px 18px;background:linear-gradient(145deg,rgba(2,12,18,.97),rgba(3,23,29,.94));box-shadow:0 0 0 1px rgba(var(--holo-rgb),.12) inset,0 0 18px rgba(var(--holo-rgb),.12),0 18px 52px rgba(0,0,0,.32);transition:opacity .22s ease,transform .38s cubic-bezier(.17,.85,.2,1),visibility .38s}
+.panel::before,.panel::after{content:"";position:absolute;z-index:4;pointer-events:none}.panel::before{inset:6px;border:1px solid rgba(var(--holo-rgb),.18);clip-path:polygon(0 0,34% 0,36% 5px,68% 5px,70% 0,100% 0,100% 100%,75% 100%,73% calc(100% - 5px),25% calc(100% - 5px),23% 100%,0 100%)}.panel::after{inset:0;background:linear-gradient(90deg,transparent 0 18%,rgba(var(--holo-rgb),.08) 18.2%,transparent 18.4% 82%,rgba(var(--holo-rgb),.07) 82.2%,transparent 82.4%),repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 4px);opacity:.42}
+:host([open]) .panel{opacity:1;visibility:visible;pointer-events:auto;transform:translate3d(0,-50%,0) scale(var(--holo-scale))}:host([open]) .panel[aria-hidden]{aria-hidden:false}.scanline{display:none;position:absolute;z-index:5;left:0;right:0;height:20%;top:-20%;background:linear-gradient(180deg,transparent,rgba(var(--holo-rgb),.12),transparent);animation:scan 5.5s linear infinite;pointer-events:none}@keyframes scan{to{top:120%}}
+.panel-header{position:relative;z-index:6;display:grid;grid-template-columns:46px 1fr auto 36px 36px;gap:9px;align-items:center;padding:17px 18px 14px;border-bottom:1px solid rgba(var(--holo-rgb),.3);background:linear-gradient(90deg,rgba(var(--holo-rgb),.11),transparent 60%)}.crest{position:relative;width:42px;height:42px;display:grid;place-items:center;border:1px solid rgba(var(--holo-rgb),.65);clip-path:polygon(20% 0,100% 0,100% 80%,80% 100%,0 100%,0 20%);box-shadow:0 0 15px rgba(var(--holo-rgb),.28) inset}.crest::before{content:"";width:18px;height:18px;border:2px solid var(--holo-accent);transform:rotate(45deg);box-shadow:0 0 10px rgba(var(--holo-rgb),.4)}.crest i{position:absolute;width:2px;height:8px;background:var(--holo-accent);opacity:.7}.crest i:nth-child(1){top:5px}.crest i:nth-child(2){right:6px;bottom:5px;transform:rotate(45deg)}.crest i:nth-child(3){left:6px;bottom:5px;transform:rotate(-45deg)}.header-copy{min-width:0}.header-copy strong{display:block;font-size:16px;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.header-copy small{display:block;margin-top:3px;color:rgba(var(--holo-rgb),.9);font-size:11px;letter-spacing:.08em}.header-status{display:flex;align-items:center;gap:8px;color:var(--holo-accent);font-size:11px;letter-spacing:.1em}.panel button{appearance:none;border:0;color:inherit;background:none;font:inherit}.panel-header button{width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(var(--holo-rgb),.22);border-radius:4px;cursor:pointer;transition:.16s}.panel-header button:hover,.panel-header button:focus-visible{outline:none;border-color:rgba(var(--holo-rgb),.85);background:rgba(var(--holo-rgb),.13);box-shadow:0 0 14px rgba(var(--holo-rgb),.16)}
+.category-tabs{position:relative;z-index:6;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:9px 13px;border-bottom:1px solid rgba(var(--holo-rgb),.15)}.category-tabs button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:34px;color:rgba(235,252,255,.68);border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.018);cursor:pointer;font-size:11px;letter-spacing:.05em}.category-tabs button:hover,.category-tabs button:focus-visible{color:#fff;outline:none;border-color:rgba(var(--holo-rgb),.55);background:rgba(var(--holo-rgb),.09)}:host([data-category="info"]) [data-category="info"],:host([data-category="quest"]) [data-category="quest"],:host([data-category="danger"]) [data-category="danger"],:host([data-category="event"]) [data-category="event"]{color:var(--holo-accent);border-color:rgba(var(--holo-rgb),.62);box-shadow:0 0 12px rgba(var(--holo-rgb),.1) inset}
+.panel-grid{position:relative;z-index:6;display:grid;grid-template-columns:1.08fr .92fr;gap:9px;padding:10px 13px}.panel-grid>main,.panel-grid>aside{display:grid;gap:9px;align-content:start}.module{border:1px solid rgba(var(--holo-rgb),.18);background:linear-gradient(145deg,rgba(255,255,255,.025),rgba(var(--holo-rgb),.025));clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,8px 100%,0 calc(100% - 8px));}.module-title{display:flex;justify-content:space-between;align-items:center;padding:8px 10px 6px;border-bottom:1px solid rgba(var(--holo-rgb),.13);color:var(--holo-accent);font-size:11px;letter-spacing:.08em}.module-title small{font-size:9px;color:rgba(238,252,255,.42)}.objectives,.alerts{list-style:none;margin:0;padding:6px}.objective{display:grid;grid-template-columns:23px minmax(0,1fr) auto;gap:7px;align-items:center;min-height:48px;padding:6px;border-bottom:1px solid rgba(255,255,255,.045)}.objective:last-child{border-bottom:0}.objective-icon{color:var(--holo-accent)}.objective-copy{min-width:0}.objective-copy strong,.objective-copy small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.objective-copy strong{font-size:12px;font-weight:600}.objective-copy small{margin-top:3px;color:rgba(235,252,255,.5);font-size:10px}.objective-progress{font-size:10px;color:rgba(var(--holo-rgb),.9)}.objective.complete{opacity:.54}.objective.complete .objective-copy strong{text-decoration:line-through}.empty{padding:14px;color:rgba(255,255,255,.4);font-size:11px}.vitals-module{padding:9px}.meter{display:grid;grid-template-columns:42px 1fr 28px;gap:8px;align-items:center;padding:4px 0;font-size:9px;color:rgba(235,252,255,.65)}.meter i{height:5px;background:rgba(255,255,255,.07);box-shadow:0 0 0 1px rgba(255,255,255,.05) inset;overflow:hidden}.meter i::before{content:"";display:block;width:calc(var(--value)*1%);height:100%;background:linear-gradient(90deg,rgba(var(--holo-rgb),.45),var(--holo-accent));box-shadow:0 0 8px rgba(var(--holo-rgb),.45)}.meter b{text-align:right;color:#fff;font-size:10px}.radar-module{padding-bottom:8px}.radar{position:relative;width:min(156px,15vw);aspect-ratio:1;margin:10px auto;border-radius:50%;border:1px solid rgba(var(--holo-rgb),.55);background:radial-gradient(circle,rgba(var(--holo-rgb),.08),transparent 62%);box-shadow:0 0 18px rgba(var(--holo-rgb),.08) inset}.radar-ring,.radar-cross,.radar-player,.radar-mark{position:absolute}.radar-ring{inset:var(--inset);border:1px solid rgba(var(--holo-rgb),.17);border-radius:50%}.r1{--inset:16%}.r2{--inset:32%}.r3{--inset:45%}.radar-cross.x{left:0;right:0;top:50%;border-top:1px solid rgba(var(--holo-rgb),.18)}.radar-cross.y{top:0;bottom:0;left:50%;border-left:1px solid rgba(var(--holo-rgb),.18)}.radar::after{content:"";position:absolute;inset:4%;border-radius:50%;background:conic-gradient(from 8deg,rgba(var(--holo-rgb),.18),transparent 22%,transparent);transform:rotate(18deg)}@keyframes radar{to{transform:rotate(1turn)}}.radar-player{z-index:2;left:50%;top:50%;width:7px;height:7px;transform:translate(-50%,-50%) rotate(45deg);background:#fff;box-shadow:0 0 10px var(--holo-accent)}.radar-mark{z-index:3;left:var(--x);top:var(--y);width:6px;height:6px;transform:translate(-50%,-50%);border:1px solid var(--holo-accent);background:rgba(var(--holo-rgb),.3);box-shadow:0 0 8px var(--holo-accent)}.radar-mark.diamond{transform:translate(-50%,-50%) rotate(45deg)}.radar-mark.dot{border-radius:50%;width:4px;height:4px}.position-row{display:flex;justify-content:center;gap:12px;color:rgba(235,252,255,.6);font-size:9px}.position-row span{display:flex;align-items:center;gap:4px}.position-row b{color:#fff}.feed-module{display:none}.alerts{font-size:10px}.alert-line{display:grid;grid-template-columns:36px 1fr;gap:6px;padding:5px;border-bottom:1px solid rgba(255,255,255,.04);color:rgba(235,252,255,.7)}.alert-line time{color:rgba(var(--holo-rgb),.8)}.alert-line[data-level="danger"] span{color:#ff7875}.alert-line[data-level="quest"] span{color:#ffd07e}.alert-line[data-level="event"] span{color:#caa1ff}
+.resource-strip{position:relative;z-index:6;display:flex;gap:18px;align-items:center;min-height:48px;padding:9px 16px;border-top:1px solid rgba(var(--holo-rgb),.22);background:rgba(var(--holo-rgb),.035)}.resource-strip>span{display:grid;grid-template-columns:18px auto;column-gap:6px;align-items:center}.resource-strip b{font-size:12px}.resource-strip small{grid-column:2;color:rgba(235,252,255,.4);font-size:8px}.resource-strip .system-mark{display:block;margin-left:auto;color:rgba(var(--holo-rgb),.5);font:9px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.06em}
+:host([data-mode="compact"]) .panel{width:min(410px,38vw)}:host([data-mode="compact"]) .category-tabs,:host([data-mode="compact"]) .panel-grid aside,:host([data-mode="compact"]) .vitals-module,:host([data-mode="compact"]) .resource-strip small{display:none}:host([data-mode="compact"]) .panel-grid{display:block}:host([data-mode="compact"]) .resource-strip{min-height:36px;padding-block:6px}:host([data-mode="expanded"]) .panel{width:min(690px,50vw)}:host([data-mode="expanded"]) .feed-module{display:block}:host([data-mode="expanded"]) .panel-grid{grid-template-columns:1.08fr .92fr}:host([data-mode="expanded"]) .radar{width:min(184px,16vw)}
+.notice-stack{position:absolute;right:clamp(24px,5vw,84px);top:14%;display:grid;gap:8px;width:min(390px,36vw);pointer-events:none}.notice{--notice-rgb:63,218,255;display:grid;grid-template-columns:40px 1fr 26px;gap:8px;align-items:center;padding:11px 10px;border:1px solid rgba(var(--notice-rgb),.58);border-radius:2px 12px 2px 12px;background:linear-gradient(110deg,rgba(2,13,18,.94),rgba(var(--notice-rgb),.12));box-shadow:0 8px 24px rgba(0,0,0,.25),0 0 12px rgba(var(--notice-rgb),.09);animation:notice-in .36s cubic-bezier(.16,.8,.24,1);pointer-events:auto}@keyframes notice-in{from{opacity:0;transform:translateX(30px) scale(.96)}}.notice-icon{width:36px;height:36px;display:grid;place-items:center;color:rgb(var(--notice-rgb));border:1px solid rgba(var(--notice-rgb),.35);clip-path:polygon(20% 0,100% 0,100% 80%,80% 100%,0 100%,0 20%)}.notice-copy{min-width:0}.notice-copy b,.notice-copy small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.notice-copy b{font-size:12px;letter-spacing:.04em}.notice-copy small{margin-top:3px;color:rgba(237,252,255,.62);font-size:10px}.notice button{width:24px;height:24px;display:grid;place-items:center;color:rgba(255,255,255,.55);cursor:pointer}
+@media(max-width:900px){.panel{right:18px;width:min(540px,58vw)}:host([data-mode="expanded"]) .panel{width:min(620px,70vw)}.header-status{display:none}.panel-header{grid-template-columns:42px 1fr 34px 34px}.radar{width:min(142px,19vw)}}
+@media(max-width:720px){:host{--holo-scale:1}.panel,:host([data-mode="expanded"]) .panel,:host([data-mode="compact"]) .panel{left:10px;right:10px;top:auto;bottom:10px;width:auto;max-height:72vh;transform:translateY(40px) rotateX(2deg);transform-origin:center bottom;border-radius:12px 12px 3px 3px}:host([open]) .panel{transform:translateY(0) rotateX(0)}.panel-grid,:host([data-mode="expanded"]) .panel-grid{grid-template-columns:1fr}.panel-grid aside{display:none}:host([data-mode="expanded"]) .panel-grid aside{display:grid;grid-template-columns:1fr 1fr}.category-tabs span{display:none}.notice-stack{left:10px;right:10px;top:10px;width:auto}.resource-strip{gap:12px}.resource-strip .system-mark{display:none}.header-copy strong{font-size:14px}}
+@media(max-width:460px){.panel-header{padding:12px 12px 10px}.category-tabs{padding:7px 10px}.panel-grid{padding:8px 10px}.resource-strip{overflow:hidden}.resource-strip>span:nth-child(3){display:none}:host([data-mode="expanded"]) .panel-grid aside{grid-template-columns:1fr}.radar{width:138px}}
+@media(prefers-reduced-motion:reduce){.panel,.notice{transition:none;animation:none}.scanline,.radar::after{animation:none}}
+`;
+
+customElements.define('k-holo-status', HoloStatusWindow);
+
+
+const TAU = Math.PI * 2;
+const worldClamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const distance2D = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+
+function seededRandom(seed = 7619) {
+  let value = seed >>> 0;
+  return () => {
+    value += 0x6D2B79F5;
+    let t = value;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hexToRgb(hex) {
+  const value = parseInt(hex.slice(1), 16);
+  return { r: (value >> 16) & 255, g: (value >> 8) & 255, b: value & 255 };
+}
+
+function mixColor(a, b, t) {
+  const ca = hexToRgb(a), cb = hexToRgb(b);
+  return `rgb(${Math.round(lerp(ca.r, cb.r, t))},${Math.round(lerp(ca.g, cb.g, t))},${Math.round(lerp(ca.b, cb.b, t))})`;
+}
+
+class KoreanOpenWorldDemo {
+  static WORLD_BOUNDS = Object.freeze({ minX: -300, minZ: -300, maxX: 300, maxZ: 300 });
+  static WALK_SPEED = 4.2;
+  static RUN_SPEED = 7.2;
+
+  constructor({ canvas, onState, onEvent, onObjectiveComplete } = {}) {
+    if (!(canvas instanceof HTMLCanvasElement)) throw new TypeError('canvas가 필요합니다.');
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+    this.onState = onState || (() => {});
+    this.onEvent = onEvent || (() => {});
+    this.onObjectiveComplete = onObjectiveComplete || (() => {});
+    this.player = { x: 0, z: 245, vx: 0, vz: 0, yaw: 0, pitch: -0.015, eye: 1.72, bob: 0, distance: 0 };
+    this.keys = new Set();
+    this.dragging = false;
+    this.pointerLocked = false;
+    this.running = false;
+    this.frameId = 0;
+    this.lastTime = 0;
+    this.stateAccumulator = 0;
+    this.elapsed = 0;
+    this.suspended = false;
+    this.destroyed = false;
+    this.renderScale = 1;
+    this.frameSamples = [];
+    this.lastDistrict = '';
+    this.objectiveCompleted = new Set();
+    this.activeObjective = { id: 'control', title: '북악 관제탑 접속', x: 24, z: 145, radius: 14 };
+    this.landmarks = [
+      { id: 'control', name: '북악 관제탑', x: 24, z: 145, kind: 'tower', color: '#49e5ff' },
+      { id: 'gate', name: '한강 북부 관문', x: 0, z: 210, kind: 'gate', color: '#75f3d1' },
+      { id: 'relay', name: '청계 중계기', x: -92, z: 42, kind: 'relay', color: '#ffb138' },
+      { id: 'market', name: '을지 보급소', x: 105, z: 35, kind: 'market', color: '#75f3d1' },
+      { id: 'wall', name: '성곽 방재벽', x: -165, z: -70, kind: 'wall', color: '#ff6a63' },
+      { id: 'archive', name: '도시기록원', x: 135, z: -135, kind: 'archive', color: '#b686ff' },
+      { id: 'summit', name: '북악 전망대', x: 0, z: -245, kind: 'summit', color: '#49e5ff' }
+    ];
+    this.buildings = this.#makeBuildings();
+    this.props = this.#makeProps();
+    this.collisionBoxes = this.buildings.filter(b => b.solid).map(b => ({ x: b.x, z: b.z, hw: b.w * .5 + .8, hd: b.d * .5 + .8 }));
+    this.boundTick = time => this.#tick(time);
+    this.boundResize = () => this.resize();
+    this.boundKeyDown = event => this.#onKeyDown(event);
+    this.boundKeyUp = event => this.keys.delete(event.code);
+    this.boundMouseMove = event => this.#onMouseMove(event);
+    this.boundPointerChange = () => { this.pointerLocked = document.pointerLockElement === this.canvas; };
+    this.boundMouseDown = event => this.#onMouseDown(event);
+    this.boundMouseUp = () => { this.dragging = false; };
+    this.boundClick = () => this.requestPointerLock();
+  }
+
+  mount() {
+    window.addEventListener('resize', this.boundResize, { passive: true });
+    window.addEventListener('keydown', this.boundKeyDown);
+    window.addEventListener('keyup', this.boundKeyUp);
+    window.addEventListener('mousemove', this.boundMouseMove, { passive: true });
+    window.addEventListener('mouseup', this.boundMouseUp, { passive: true });
+    document.addEventListener('pointerlockchange', this.boundPointerChange);
+    this.canvas.addEventListener('mousedown', this.boundMouseDown);
+    this.canvas.addEventListener('click', this.boundClick);
+    this.resize();
+    this.lastTime = performance.now();
+    this.frameId = requestAnimationFrame(this.boundTick);
+    return this;
+  }
+
+  requestPointerLock() {
+    if (!this.pointerLocked && this.canvas.requestPointerLock) this.canvas.requestPointerLock().catch?.(() => {});
+  }
+
+  suspend() { this.suspended = true; }
+  resume() { this.suspended = false; this.lastTime = performance.now(); }
+
+  reset() {
+    Object.assign(this.player, { x: 0, z: 245, vx: 0, vz: 0, yaw: 0, pitch: -0.015, bob: 0, distance: 0 });
+    this.objectiveCompleted.clear();
+    this.activeObjective = { id: 'control', title: '북악 관제탑 접속', x: 24, z: 145, radius: 14 };
+    this.onEvent({ category: 'info', title: '시뮬레이션 초기화', message: '출발 지점으로 복귀했습니다.' });
+  }
+
+  resize() {
+    const rect = this.canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.6) * this.renderScale;
+    const width = Math.max(1, Math.round(rect.width * dpr));
+    const height = Math.max(1, Math.round(rect.height * dpr));
+    if (this.canvas.width !== width || this.canvas.height !== height) {
+      this.canvas.width = width;
+      this.canvas.height = height;
+    }
+    this.width = width;
+    this.height = height;
+    this.cssWidth = rect.width;
+    this.cssHeight = rect.height;
+  }
+
+  destroy() {
+    this.destroyed = true;
+    cancelAnimationFrame(this.frameId);
+    window.removeEventListener('resize', this.boundResize);
+    window.removeEventListener('keydown', this.boundKeyDown);
+    window.removeEventListener('keyup', this.boundKeyUp);
+    window.removeEventListener('mousemove', this.boundMouseMove);
+    window.removeEventListener('mouseup', this.boundMouseUp);
+    document.removeEventListener('pointerlockchange', this.boundPointerChange);
+    this.canvas.removeEventListener('mousedown', this.boundMouseDown);
+    this.canvas.removeEventListener('click', this.boundClick);
+  }
+
+  getState() {
+    const objective = this.activeObjective;
+    const distance = objective ? Math.max(0, distance2D(this.player, objective) - objective.radius) : 0;
+    const speed = Math.hypot(this.player.vx, this.player.vz);
+    return {
+      position: { x: this.player.x, z: this.player.z },
+      yaw: this.player.yaw,
+      pitch: this.player.pitch,
+      speed,
+      running: this.running,
+      district: this.#districtAt(this.player.x, this.player.z),
+      objective: objective ? { ...objective, distance } : null,
+      fps: this.#fpsEstimate(),
+      frameP95: this.#percentile(this.frameSamples, .95)
+    };
+  }
+
+  teleportNearObjective() {
+    if (!this.activeObjective) return;
+    this.player.x = this.activeObjective.x - 8;
+    this.player.z = this.activeObjective.z + 8;
+    this.player.vx = 0;
+    this.player.vz = 0;
+  }
+
+  #onKeyDown(event) {
+    if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight'].includes(event.code)) {
+      this.keys.add(event.code);
+      if (event.code.startsWith('Arrow')) event.preventDefault();
+    }
+  }
+
+  #onMouseDown(event) {
+    this.dragging = true;
+    this.lastPointerX = event.clientX;
+    this.lastPointerY = event.clientY;
+  }
+
+  #onMouseMove(event) {
+    if (!this.pointerLocked && !this.dragging) return;
+    const dx = this.pointerLocked ? event.movementX : event.clientX - (this.lastPointerX ?? event.clientX);
+    const dy = this.pointerLocked ? event.movementY : event.clientY - (this.lastPointerY ?? event.clientY);
+    this.lastPointerX = event.clientX;
+    this.lastPointerY = event.clientY;
+    const sensitivity = 0.00215;
+    this.player.yaw += dx * sensitivity;
+    this.player.pitch = worldClamp(this.player.pitch - dy * sensitivity, -0.38, 0.3);
+  }
+
+  #tick(time) {
+    if (this.destroyed) return;
+    const rawDelta = (time - this.lastTime) / 1000;
+    const delta = worldClamp(rawDelta, 0, .05);
+    this.lastTime = time;
+    if (rawDelta > 0 && rawDelta < .1) this.frameSamples.push(rawDelta * 1000);
+    if (this.frameSamples.length > 180) this.frameSamples.shift();
+    if (!this.suspended) {
+      this.elapsed += delta;
+      this.#update(delta);
+      this.#render();
+      this.stateAccumulator += delta;
+      if (this.stateAccumulator >= .1) {
+        this.stateAccumulator = 0;
+        this.#publishState();
+      }
+      this.#adaptResolution();
+    }
+    this.frameId = requestAnimationFrame(this.boundTick);
+  }
+
+  #update(delta) {
+    let forward = 0;
+    let strafe = 0;
+    if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) forward += 1;
+    if (this.keys.has('KeyS') || this.keys.has('ArrowDown')) forward -= 1;
+    if (this.keys.has('KeyD') || this.keys.has('ArrowRight')) strafe += 1;
+    if (this.keys.has('KeyA') || this.keys.has('ArrowLeft')) strafe -= 1;
+    const magnitude = Math.hypot(forward, strafe) || 1;
+    forward /= magnitude;
+    strafe /= magnitude;
+    this.running = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
+    const maxSpeed = this.running ? KoreanOpenWorldDemo.RUN_SPEED : KoreanOpenWorldDemo.WALK_SPEED;
+    const accel = forward || strafe ? 13 : 0;
+    const sin = Math.sin(this.player.yaw), cos = Math.cos(this.player.yaw);
+    const targetVx = (sin * forward + cos * strafe) * maxSpeed;
+    const targetVz = (-cos * forward + sin * strafe) * maxSpeed;
+    const response = 1 - Math.exp(-(forward || strafe ? accel : 7.5) * delta);
+    this.player.vx = lerp(this.player.vx, targetVx, response);
+    this.player.vz = lerp(this.player.vz, targetVz, response);
+
+    const previousX = this.player.x;
+    const previousZ = this.player.z;
+    this.player.x += this.player.vx * delta;
+    this.player.z += this.player.vz * delta;
+    this.#resolveWorldBounds();
+    if (this.#collides(this.player.x, this.player.z)) {
+      this.player.x = previousX;
+      this.player.z = previousZ;
+      this.player.vx *= -.08;
+      this.player.vz *= -.08;
+    }
+    const speed = Math.hypot(this.player.vx, this.player.vz);
+    this.player.distance += speed * delta;
+    this.player.bob += speed * delta * (this.running ? 2.5 : 2.1);
+    this.#checkObjective();
+    this.#checkDistrictEvent();
+  }
+
+  #resolveWorldBounds() {
+    const b = KoreanOpenWorldDemo.WORLD_BOUNDS;
+    this.player.x = worldClamp(this.player.x, b.minX + 1, b.maxX - 1);
+    this.player.z = worldClamp(this.player.z, b.minZ + 1, b.maxZ - 1);
+  }
+
+  #collides(x, z) {
+    const radius = .7;
+    return this.collisionBoxes.some(box => Math.abs(x - box.x) < box.hw + radius && Math.abs(z - box.z) < box.hd + radius);
+  }
+
+  #checkObjective() {
+    if (!this.activeObjective) return;
+    const dist = distance2D(this.player, this.activeObjective);
+    if (dist > this.activeObjective.radius || this.objectiveCompleted.has(this.activeObjective.id)) return;
+    const completed = this.activeObjective;
+    this.objectiveCompleted.add(completed.id);
+    this.onObjectiveComplete({ ...completed });
+    if (completed.id === 'control') {
+      this.activeObjective = { id: 'relay', title: '청계 중계기 동기화', x: -92, z: 42, radius: 13 };
+    } else if (completed.id === 'relay') {
+      this.activeObjective = { id: 'archive', title: '도시기록원 진입', x: 135, z: -135, radius: 16 };
+    } else {
+      this.activeObjective = null;
+    }
+  }
+
+  #checkDistrictEvent() {
+    const district = this.#districtAt(this.player.x, this.player.z);
+    if (district === this.lastDistrict) return;
+    const previous = this.lastDistrict;
+    this.lastDistrict = district;
+    if (!previous) return;
+    const category = district.includes('통제') ? 'danger' : district.includes('기록') ? 'event' : 'info';
+    this.onEvent({ category, title: '구역 전환', message: `${district}에 진입했습니다.` });
+  }
+
+  #publishState() { this.onState(this.getState()); }
+
+  #adaptResolution() {
+    if (this.frameSamples.length < 90) return;
+    const p95 = this.#percentile(this.frameSamples, .95);
+    const next = p95 > 27 ? Math.max(.72, this.renderScale - .04) : p95 < 18 ? Math.min(1, this.renderScale + .02) : this.renderScale;
+    if (Math.abs(next - this.renderScale) > .001) {
+      this.renderScale = next;
+      this.resize();
+    }
+  }
+
+  #fpsEstimate() {
+    const p50 = this.#percentile(this.frameSamples, .5) || 16.7;
+    return Math.round(1000 / p50);
+  }
+
+  #percentile(values, p) {
+    if (!values.length) return 0;
+    const sorted = [...values].sort((a, b) => a - b);
+    return sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * p))];
+  }
+
+  #districtAt(x, z) {
+    if (z > 175) return '한강 북부 방재로';
+    if (z > 80) return '북악 관제구역';
+    if (z > -45 && x < 20) return '청계 기술지구';
+    if (z > -45) return '을지 생활권';
+    if (x < -70) return '성곽 통제구역';
+    if (x > 75) return '도시기록 특별구역';
+    return '북악 심층구역';
+  }
+
+  #render() {
+    const ctx = this.ctx;
+    const w = this.width;
+    const h = this.height;
+    if (!w || !h) return;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    this.#prepareProjection(w, h);
+    this.#drawSky(ctx, w, h);
+    this.#drawMountains(ctx, w, h);
+    this.#drawGround(ctx, w, h);
+    this.#drawWorldObjects(ctx, w, h);
+    this.#drawAtmosphere(ctx, w, h);
+    this.#drawObjectiveBeacon(ctx, w, h);
+  }
+
+  #camera() {
+    const speed = Math.hypot(this.player.vx, this.player.vz);
+    const bobStrength = worldClamp(speed / KoreanOpenWorldDemo.RUN_SPEED, 0, 1);
+    return {
+      x: this.player.x,
+      z: this.player.z,
+      y: this.player.eye + Math.sin(this.player.bob * 3.6) * .025 * bobStrength,
+      yaw: this.player.yaw,
+      pitch: this.player.pitch + Math.cos(this.player.bob * 7.2) * .004 * bobStrength
+    };
+  }
+
+  #prepareProjection(w = this.width, h = this.height) {
+    const camera = this.#camera();
+    this.projection = {
+      camera,
+      cosY: Math.cos(camera.yaw),
+      sinY: Math.sin(camera.yaw),
+      cosP: Math.cos(camera.pitch),
+      sinP: Math.sin(camera.pitch),
+      focal: Math.min(w, h) * .94,
+      centerX: w * .5,
+      centerY: h * .54
+    };
+  }
+
+  #project(point) {
+    const p = this.projection;
+    if (!p) this.#prepareProjection();
+    const q = this.projection;
+    const dx = point.x - q.camera.x;
+    const dy = point.y - q.camera.y;
+    const dz = point.z - q.camera.z;
+    const rx = q.cosY * dx + q.sinY * dz;
+    let rz = q.sinY * dx - q.cosY * dz;
+    const ry = q.cosP * dy - q.sinP * rz;
+    rz = q.sinP * dy + q.cosP * rz;
+    if (rz <= .5) return null;
+    return { x: q.centerX + rx / rz * q.focal, y: q.centerY - ry / rz * q.focal, depth: rz, scale: q.focal / rz };
+  }
+
+  #drawSky(ctx, w, h) {
+    const sky = ctx.createLinearGradient(0, 0, 0, h * .72);
+    sky.addColorStop(0, '#8fa8bf');
+    sky.addColorStop(.28, '#a9b2b9');
+    sky.addColorStop(.57, '#e7a779');
+    sky.addColorStop(1, '#493a3d');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, w, h);
+    const sunX = w * (.17 - Math.sin(this.player.yaw) * .08);
+    const sunY = h * .22;
+    const sun = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, h * .2);
+    sun.addColorStop(0, 'rgba(255,244,213,.85)');
+    sun.addColorStop(.08, 'rgba(255,222,174,.5)');
+    sun.addColorStop(.35, 'rgba(255,179,112,.12)');
+    sun.addColorStop(1, 'rgba(255,160,90,0)');
+    ctx.fillStyle = sun;
+    ctx.fillRect(0, 0, w, h * .7);
+    ctx.globalAlpha = .18;
+    ctx.fillStyle = '#eef5f8';
+    for (let i = 0; i < 8; i++) {
+      const x = ((i * 173 + this.player.yaw * 90) % (w + 300)) - 150;
+      const y = h * (.12 + (i % 3) * .06);
+      ctx.beginPath();
+      ctx.ellipse(x, y, w * .08, h * .025, 0, 0, TAU);
+      ctx.ellipse(x + w * .05, y + 4, w * .07, h * .02, 0, 0, TAU);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  #drawMountains(ctx, w, h) {
+    const horizon = h * (.53 + this.player.pitch * .42);
+    const shift = ((this.player.yaw / TAU) * w * .72) % w;
+    for (let layer = 0; layer < 3; layer++) {
+      ctx.beginPath();
+      ctx.moveTo(0, horizon + layer * 15);
+      const step = w / 11;
+      for (let i = -2; i <= 13; i++) {
+        const x = i * step - shift * (0.22 + layer * .08);
+        const peak = Math.sin(i * 2.13 + layer * 1.7) * .5 + .5;
+        const y = horizon - (42 + peak * 110) * (1 - layer * .18);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x + step * .55, horizon - 20 - peak * 32 + layer * 8);
+      }
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.closePath();
+      ctx.fillStyle = layer === 0 ? 'rgba(42,48,56,.82)' : layer === 1 ? 'rgba(60,57,61,.74)' : 'rgba(79,66,64,.64)';
+      ctx.fill();
+    }
+  }
+
+  #drawGround(ctx, w, h) {
+    const horizon = h * (.54 + this.player.pitch * .42);
+    const ground = ctx.createLinearGradient(0, horizon, 0, h);
+    ground.addColorStop(0, '#4e4542');
+    ground.addColorStop(.4, '#302b2a');
+    ground.addColorStop(1, '#16191a');
+    ctx.fillStyle = ground;
+    ctx.fillRect(0, horizon, w, h - horizon);
+
+    this.#drawRoad(ctx);
+    this.#drawGrid(ctx);
+  }
+
+  #drawRoad(ctx) {
+    const slices = [];
+    for (let d = 12; d <= 300; d += 7) {
+      const centerX = Math.sin((this.player.z - d) * .012) * 12;
+      const half = 9 + Math.sin((this.player.z - d) * .025) * 1.5;
+      const z = this.player.z - d;
+      const left = this.#project({ x: centerX - half, y: 0, z });
+      const right = this.#project({ x: centerX + half, y: 0, z });
+      if (left && right && left.x > -this.width * .4 && right.x < this.width * 1.4 && left.y > this.height * .42 && right.y > this.height * .42) slices.push({ left, right, d });
+    }
+    if (slices.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(slices[0].left.x, slices[0].left.y);
+    for (const slice of slices) ctx.lineTo(slice.left.x, slice.left.y);
+    for (let i = slices.length - 1; i >= 0; i--) ctx.lineTo(slices[i].right.x, slices[i].right.y);
+    ctx.closePath();
+    const road = ctx.createLinearGradient(0, slices.at(-1).left.y, 0, slices[0].left.y);
+    road.addColorStop(0, 'rgba(52,55,56,.55)');
+    road.addColorStop(1, 'rgba(23,26,27,.96)');
+    ctx.fillStyle = road;
+    ctx.fill();
+
+    for (let d = 15; d < 260; d += 24) {
+      const z1 = this.player.z - d;
+      const z2 = this.player.z - d - 10;
+      const x1 = Math.sin(z1 * .012) * 12;
+      const x2 = Math.sin(z2 * .012) * 12;
+      const a = this.#project({ x: x1, y: .02, z: z1 });
+      const b = this.#project({ x: x2, y: .02, z: z2 });
+      if (!a || !b) continue;
+      ctx.strokeStyle = `rgba(255,218,146,${worldClamp(1 - a.depth / 300, .08, .42)})`;
+      ctx.lineWidth = worldClamp(a.scale * .18, 1, 6);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    }
+  }
+
+  #drawGrid(ctx) {
+    const w = this.width, h = this.height;
+    ctx.lineWidth = 1;
+    const gridColor = 'rgba(123,157,163,.08)';
+    ctx.strokeStyle = gridColor;
+    for (let x = -300; x <= 300; x += 40) {
+      const points = [];
+      for (let z = -300; z <= 300; z += 25) {
+        const p = this.#project({ x, y: .01, z });
+        if (p && p.depth > 8 && p.depth < 280 && p.x > -w * .25 && p.x < w * 1.25 && p.y > h * .43 && p.y < h * 1.12) points.push(p);
+      }
+      if (points.length > 1) {
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (const p of points.slice(1)) ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  #drawWorldObjects(ctx) {
+    const drawables = [];
+    for (const building of this.buildings) {
+      const center = this.#project({ x: building.x, y: building.h * .5, z: building.z });
+      if (center && center.depth > 8 && center.depth < 330) drawables.push({ depth: center.depth, kind: 'building', object: building });
+    }
+    for (const prop of this.props) {
+      const base = this.#project({ x: prop.x, y: 0, z: prop.z });
+      if (base && base.depth > 4 && base.depth < 280) drawables.push({ depth: base.depth, kind: 'prop', object: prop });
+    }
+    for (const landmark of this.landmarks) {
+      const base = this.#project({ x: landmark.x, y: 0, z: landmark.z });
+      if (base && base.depth > 4 && base.depth < 340) drawables.push({ depth: base.depth - .1, kind: 'landmark', object: landmark });
+    }
+    drawables.sort((a, b) => b.depth - a.depth);
+    for (const item of drawables) {
+      if (item.kind === 'building') this.#drawBuilding(ctx, item.object);
+      else if (item.kind === 'prop') this.#drawProp(ctx, item.object);
+      else this.#drawLandmark(ctx, item.object);
+    }
+  }
+
+  #drawBuilding(ctx, b) {
+    const hw = b.w / 2, hd = b.d / 2;
+    const corners = {
+      nwl: this.#project({ x: b.x - hw, y: 0, z: b.z - hd }),
+      nwr: this.#project({ x: b.x + hw, y: 0, z: b.z - hd }),
+      swl: this.#project({ x: b.x - hw, y: 0, z: b.z + hd }),
+      swr: this.#project({ x: b.x + hw, y: 0, z: b.z + hd }),
+      tnwl: this.#project({ x: b.x - hw, y: b.h, z: b.z - hd }),
+      tnwr: this.#project({ x: b.x + hw, y: b.h, z: b.z - hd }),
+      tswl: this.#project({ x: b.x - hw, y: b.h, z: b.z + hd }),
+      tswr: this.#project({ x: b.x + hw, y: b.h, z: b.z + hd })
+    };
+    if (Object.values(corners).filter(Boolean).length < 5) return;
+    const faces = [
+      [corners.nwl, corners.nwr, corners.tnwr, corners.tnwl, mixColor(b.color, '#10171b', .16)],
+      [corners.nwr, corners.swr, corners.tswr, corners.tnwr, mixColor(b.color, '#080d10', .38)],
+      [corners.swl, corners.nwl, corners.tnwl, corners.tswl, mixColor(b.color, '#d7b99b', .16)],
+      [corners.tnwl, corners.tnwr, corners.tswr, corners.tswl, mixColor(b.color, '#e8cbb0', .2)]
+    ];
+    const fade = worldClamp(1 - (this.#project({ x: b.x, y: b.h * .5, z: b.z })?.depth || 300) / 360, .16, 1);
+    ctx.globalAlpha = fade;
+    for (const face of faces) {
+      const [a, c, d, e, color] = face;
+      if (!a || !c || !d || !e) continue;
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.lineTo(e.x, e.y); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(175,210,215,.12)'; ctx.stroke();
+    }
+    const frontBottom = corners.nwl && corners.nwr ? { x: (corners.nwl.x + corners.nwr.x) / 2, y: (corners.nwl.y + corners.nwr.y) / 2 } : null;
+    const frontTop = corners.tnwl && corners.tnwr ? { x: (corners.tnwl.x + corners.tnwr.x) / 2, y: (corners.tnwl.y + corners.tnwr.y) / 2 } : null;
+    if (frontBottom && frontTop && Math.abs(frontBottom.y - frontTop.y) > 18) {
+      const height = Math.abs(frontBottom.y - frontTop.y);
+      const width = Math.abs((corners.nwr?.x || 0) - (corners.nwl?.x || 0));
+      ctx.fillStyle = 'rgba(82,208,224,.25)';
+      const rows = Math.max(1, Math.min(5, Math.floor(b.h / 5)));
+      const cols = Math.max(1, Math.min(4, Math.floor(b.w / 5)));
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const wx = (corners.nwl.x + 6) + (width - 12) * ((c + .5) / cols);
+        const wy = frontTop.y + height * ((r + .55) / rows);
+        const ww = worldClamp(width / cols * .28, 1, 8);
+        const wh = worldClamp(height / rows * .08, 1, 4);
+        ctx.fillRect(wx - ww / 2, wy, ww, wh);
+      }
+      if (b.sign && width > 55 && height > 42) {
+        ctx.font = `${worldClamp(height * .08, 8, 15)}px "Noto Sans KR",sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(232,253,255,.68)';
+        ctx.fillText(b.sign, frontTop.x, frontTop.y + height * .28);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  #drawProp(ctx, p) {
+    const base = this.#project({ x: p.x, y: 0, z: p.z });
+    const top = this.#project({ x: p.x, y: p.h, z: p.z });
+    if (!base || !top) return;
+    const alpha = worldClamp(1 - base.depth / 300, .1, .9);
+    ctx.globalAlpha = alpha;
+    if (p.kind === 'light') {
+      ctx.strokeStyle = '#20292d';
+      ctx.lineWidth = worldClamp(base.scale * .1, 1, 5);
+      ctx.beginPath(); ctx.moveTo(base.x, base.y); ctx.lineTo(top.x, top.y); ctx.stroke();
+      const glow = worldClamp(base.scale * .22, 2, 12);
+      const grad = ctx.createRadialGradient(top.x, top.y, 0, top.x, top.y, glow * 3);
+      grad.addColorStop(0, 'rgba(110,239,255,.88)'); grad.addColorStop(1, 'rgba(110,239,255,0)');
+      ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(top.x, top.y, glow * 3, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#d8fbff'; ctx.fillRect(top.x - glow * .45, top.y - glow * .18, glow * .9, glow * .36);
+    } else if (p.kind === 'tree') {
+      const size = worldClamp(base.scale * 1.7, 2, 28);
+      ctx.strokeStyle = '#2b2621'; ctx.lineWidth = worldClamp(size * .12, 1, 4);
+      ctx.beginPath(); ctx.moveTo(base.x, base.y); ctx.lineTo(top.x, top.y); ctx.stroke();
+      ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(top.x, top.y + size * .1, size * .62, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.arc(top.x - size * .35, top.y + size * .28, size * .45, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.arc(top.x + size * .35, top.y + size * .28, size * .45, 0, TAU); ctx.fill();
+    } else {
+      const size = worldClamp(base.scale * p.w, 2, 50);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(base.x - size * .5, top.y, size, base.y - top.y);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  #drawLandmark(ctx, l) {
+    const base = this.#project({ x: l.x, y: 0, z: l.z });
+    if (!base) return;
+    const depthAlpha = worldClamp(1 - base.depth / 350, .18, 1);
+    ctx.globalAlpha = depthAlpha;
+    if (l.kind === 'tower' || l.kind === 'relay' || l.kind === 'summit') {
+      const height = l.kind === 'tower' ? 42 : l.kind === 'summit' ? 28 : 24;
+      const top = this.#project({ x: l.x, y: height, z: l.z });
+      if (top) {
+        ctx.strokeStyle = '#212b2f';
+        ctx.lineWidth = worldClamp(base.scale * .16, 1, 7);
+        ctx.beginPath(); ctx.moveTo(base.x, base.y); ctx.lineTo(top.x, top.y); ctx.stroke();
+        for (let i = 1; i <= 4; i++) {
+          const y = lerp(base.y, top.y, i / 5);
+          const width = worldClamp(base.scale * (4 - i * .45), 3, 28);
+          ctx.strokeStyle = 'rgba(136,171,179,.55)';
+          ctx.beginPath(); ctx.moveTo(base.x - width, y); ctx.lineTo(base.x + width, y); ctx.stroke();
+        }
+        const dish = this.#project({ x: l.x, y: height * .78, z: l.z });
+        if (dish) {
+          const radius = worldClamp(base.scale * 2.2, 3, 24);
+          ctx.strokeStyle = l.color; ctx.lineWidth = worldClamp(radius * .08, 1, 3);
+          ctx.beginPath(); ctx.ellipse(dish.x, dish.y, radius, radius * .45, -.25, Math.PI, TAU); ctx.stroke();
+        }
+      }
+    } else if (l.kind === 'gate') {
+      const left = this.#project({ x: l.x - 10, y: 0, z: l.z });
+      const right = this.#project({ x: l.x + 10, y: 0, z: l.z });
+      const tl = this.#project({ x: l.x - 10, y: 8, z: l.z });
+      const tr = this.#project({ x: l.x + 10, y: 8, z: l.z });
+      if (left && right && tl && tr) {
+        ctx.strokeStyle = '#1c282d'; ctx.lineWidth = worldClamp(base.scale * .45, 3, 16);
+        ctx.beginPath(); ctx.moveTo(left.x, left.y); ctx.lineTo(tl.x, tl.y); ctx.lineTo(tr.x, tr.y); ctx.lineTo(right.x, right.y); ctx.stroke();
+        ctx.strokeStyle = l.color; ctx.lineWidth = worldClamp(base.scale * .08, 1, 3);
+        ctx.beginPath(); ctx.moveTo(tl.x, tl.y); ctx.lineTo(tr.x, tr.y); ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  #drawAtmosphere(ctx, w, h) {
+    const mist = ctx.createLinearGradient(0, h * .38, 0, h);
+    mist.addColorStop(0, 'rgba(200,208,210,.22)');
+    mist.addColorStop(.24, 'rgba(181,178,174,.08)');
+    mist.addColorStop(1, 'rgba(18,23,25,0)');
+    ctx.fillStyle = mist;
+    ctx.fillRect(0, h * .34, w, h * .42);
+    const vignette = ctx.createRadialGradient(w * .5, h * .47, Math.min(w, h) * .25, w * .5, h * .47, Math.max(w, h) * .72);
+    vignette.addColorStop(0, 'rgba(0,0,0,0)');
+    vignette.addColorStop(1, 'rgba(3,7,10,.58)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = 'rgba(255,255,255,.018)';
+    for (let i = 0; i < 90; i++) {
+      const x = (i * 977 + this.elapsed * 8) % w;
+      const y = (i * 421) % h;
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
+
+  #drawObjectiveBeacon(ctx) {
+    if (!this.activeObjective) return;
+    const point = this.#project({ x: this.activeObjective.x, y: 15, z: this.activeObjective.z });
+    if (!point || point.depth > 360) return;
+    const size = worldClamp(point.scale * 1.6, 8, 28);
+    const distance = Math.max(0, distance2D(this.player, this.activeObjective) - this.activeObjective.radius);
+    ctx.save();
+    ctx.translate(point.x, point.y);
+    ctx.rotate(Math.PI / 4);
+    ctx.strokeStyle = '#56e5ff';
+    ctx.lineWidth = worldClamp(size * .09, 1, 3);
+    ctx.shadowColor = '#56e5ff';
+    ctx.shadowBlur = size * .7;
+    ctx.strokeRect(-size / 2, -size / 2, size, size);
+    ctx.restore();
+    ctx.shadowBlur = 0;
+    ctx.textAlign = 'center';
+    ctx.font = `600 ${worldClamp(size * .48, 9, 14)}px "Noto Sans KR",sans-serif`;
+    ctx.fillStyle = 'rgba(224,252,255,.94)';
+    ctx.fillText(`${Math.round(distance)}m`, point.x, point.y + size * 1.2);
+  }
+
+  #makeBuildings() {
+    const random = seededRandom(2418);
+    const list = [];
+    const colors = ['#24343a', '#31383a', '#3c3735', '#233039', '#34313a'];
+    const signs = ['서울안전망', '청계기술', '을지보급', '북악관제', '도시기록'];
+    for (let i = 0; i < 46; i++) {
+      const side = random() < .5 ? -1 : 1;
+      const z = 225 - random() * 500;
+      const roadCenter = Math.sin(z * .012) * 12;
+      const x = roadCenter + side * (20 + random() * 210);
+      const w = 8 + random() * 20;
+      const d = 8 + random() * 18;
+      const h = 7 + Math.pow(random(), .65) * 34;
+      if (Math.abs(x - 24) < 18 && Math.abs(z - 145) < 22) continue;
+      list.push({ x, z, w, d, h, color: colors[Math.floor(random() * colors.length)], sign: random() > .82 ? signs[Math.floor(random() * signs.length)] : '', solid: Math.abs(x - roadCenter) > 17 });
+    }
+    list.push({ x: -32, z: 151, w: 20, d: 18, h: 11, color: '#26343a', sign: '북악 01', solid: true });
+    list.push({ x: 52, z: 147, w: 16, d: 20, h: 16, color: '#2d3538', sign: '관제지원', solid: true });
+    return list;
+  }
+
+  #makeProps() {
+    const random = seededRandom(8817);
+    const list = [];
+    for (let i = 0; i < 46; i++) {
+      const z = 240 - random() * 520;
+      const roadCenter = Math.sin(z * .012) * 12;
+      const side = random() < .5 ? -1 : 1;
+      const x = roadCenter + side * (13 + random() * 8);
+      list.push({ kind: 'light', x, z, h: 5.8, w: .2, color: '#4fe2ff' });
+    }
+    for (let i = 0; i < 58; i++) {
+      const z = 270 - random() * 560;
+      const roadCenter = Math.sin(z * .012) * 12;
+      const side = random() < .5 ? -1 : 1;
+      const x = roadCenter + side * (25 + random() * 250);
+      list.push({ kind: 'tree', x, z, h: 2.5 + random() * 4.5, w: 1, color: random() > .5 ? '#293a2f' : '#343829' });
+    }
+    return list;
+  }
+}
+
+
+
+const nowTime = () => new Intl.DateTimeFormat('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+const $ = selector => document.querySelector(selector);
+const panel = $('#holo-status');
+const canvas = $('#world');
+const intro = $('#intro');
+const objectiveHud = $('#objective-hud');
+const debugHud = $('#debug-hud');
+const settings = $('#settings-panel');
+
+const safeStorage = {
+  get(key, fallback = null) { try { const value = window.localStorage.getItem(key); return value ?? fallback; } catch { return fallback; } },
+  set(key, value) { try { window.localStorage.setItem(key, String(value)); } catch {} }
+};
+
+const initialState = {
+  location: { district: '한강 북부 방재로', subtitle: 'K-URBAN 도시 안전망 연결됨', coordinate: { x: 0, z: 245 } },
+  player: { hp: 100, shield: 76, energy: 64, speed: 0 },
+  resources: { credits: 7450, data: 320, kits: 3 },
+  objectives: [
+    { id: 'control', title: '북악 관제탑 접속', detail: '관제 비콘까지 이동', progress: 0, total: 1, distance: 108, status: 'active', x: 24, z: 145 },
+    { id: 'sensor', title: '도시 센서망 복구', detail: '중계기 3개 동기화', progress: 1, total: 3, distance: 212, status: 'pending', x: -92, z: 42 },
+    { id: 'archive', title: '도시기록원 조사', detail: '특수 접근 권한 필요', progress: 0, total: 1, distance: 420, status: 'pending', x: 135, z: -135 }
+  ],
+  alerts: [
+    { time: nowTime(), category: 'info', message: '보행 모드가 활성화되었습니다.' },
+    { time: nowTime(), category: 'quest', message: '북악 관제탑 좌표를 수신했습니다.' }
+  ],
+  telemetry: { fps: 60, frameP95: 16.7 }
+};
+
+const store = new HoloStore(initialState);
+panel.bind(store);
+
+let uiScale = Number(safeStorage.get('k-holo-ui-scale', 1));
+let reducedMotion = safeStorage.get('k-holo-reduced-motion', 'false') === 'true';
+let showTelemetry = safeStorage.get('k-holo-telemetry', 'true') !== 'false';
+applyPreferences();
+
+const world = new KoreanOpenWorldDemo({
+  canvas,
+  onState: worldState => {
+    const state = store.getState();
+    const objectives = state.objectives.map(item => {
+      if (!worldState.objective) return item;
+      if (item.id === worldState.objective.id) return { ...item, status: 'active', distance: worldState.objective.distance };
+      return item.status === 'complete' ? item : { ...item, status: 'pending' };
+    });
+    store.patch({
+      location: {
+        district: worldState.district,
+        subtitle: worldState.running ? '고속 보행 // 생체 안정' : '보행 동기화 // 도시망 정상',
+        coordinate: { x: worldState.position.x, z: worldState.position.z }
+      },
+      player: { ...state.player, speed: worldState.speed, energy: Math.min(100, Math.max(18, state.player.energy - (worldState.running ? .02 : -.004))) },
+      objectives,
+      telemetry: { fps: worldState.fps, frameP95: worldState.frameP95 }
+    }, { source: 'world-frame' });
+    renderHUD(worldState);
+  },
+  onEvent: event => triggerEvent(event, { autoOpen: event.category === 'danger' }),
+  onObjectiveComplete: objective => completeObjective(objective)
+}).mount();
+
+function renderHUD(worldState) {
+  const objective = worldState.objective;
+  objectiveHud.querySelector('.hud-district').textContent = worldState.district;
+  objectiveHud.querySelector('.hud-objective').textContent = objective ? objective.title : '주요 임무 완료';
+  objectiveHud.querySelector('.hud-distance').textContent = objective ? `${Math.round(objective.distance)}m` : '완료';
+  objectiveHud.dataset.complete = objective ? 'false' : 'true';
+  debugHud.querySelector('.debug-speed').textContent = `${worldState.speed.toFixed(1)} m/s`;
+  debugHud.querySelector('.debug-fps').textContent = `${worldState.fps} FPS`;
+  debugHud.querySelector('.debug-pos').textContent = `${Math.round(worldState.position.x)}, ${Math.round(worldState.position.z)}`;
+  debugHud.hidden = !showTelemetry;
+  if (worldState.speed > .4) intro.classList.add('quiet');
+}
+
+function addAlert(category, message) {
+  const state = store.getState();
+  const alerts = [{ time: nowTime(), category, message }, ...(state.alerts || [])].slice(0, 12);
+  store.patch({ alerts }, { source: 'event' });
+}
+
+function triggerEvent({ category = 'info', title = '도시망 알림', message = '', icon: iconName }, { autoOpen = false } = {}) {
+  panel.setCategory(category);
+  panel.notify({ category, title, message, icon: iconName || category });
+  addAlert(category, message);
+  if (autoOpen) panel.show({ category, mode: 'standard' });
+  flashWorld(category);
+}
+
+function completeObjective(objective) {
+  const state = store.getState();
+  const nextMap = { control: 'relay', relay: 'archive', archive: null };
+  const nextId = nextMap[objective.id];
+  const objectives = state.objectives.map(item => {
+    if (item.id === objective.id) return { ...item, status: 'complete', progress: item.total, distance: 0 };
+    if (item.id === nextId) return { ...item, status: 'active' };
+    return item;
+  });
+  store.patch({ objectives, resources: { ...state.resources, data: state.resources.data + 40, credits: state.resources.credits + 250 } }, { source: 'objective-complete' });
+  panel.show({ category: 'quest', mode: 'standard' });
+  panel.notify({ category: 'quest', title: '임무 단계 완료', message: `${objective.title} 완료 // 도시 데이터 +40`, icon: 'check', duration: 5200 });
+  addAlert('quest', `${objective.title} 완료. 다음 접근 권한이 갱신되었습니다.`);
+  flashWorld('quest');
+}
+
+function flashWorld(category) {
+  document.body.dataset.flash = category;
+  window.clearTimeout(flashWorld.timer);
+  flashWorld.timer = window.setTimeout(() => delete document.body.dataset.flash, 460);
+}
+
+function applyPreferences() {
+  panel.style.setProperty('--holo-scale', uiScale);
+  document.documentElement.dataset.reducedMotion = reducedMotion ? 'true' : 'false';
+  $('#scale-output').textContent = `${Math.round(uiScale * 100)}%`;
+  $('#ui-scale').value = uiScale;
+  $('#reduced-motion').checked = reducedMotion;
+  $('#telemetry-toggle').checked = showTelemetry;
+  debugHud.hidden = !showTelemetry;
+}
+
+function toggleSettings(force) {
+  const open = typeof force === 'boolean' ? force : !settings.classList.contains('open');
+  settings.classList.toggle('open', open);
+  settings.setAttribute('aria-hidden', String(!open));
+  $('#settings-toggle').setAttribute('aria-expanded', String(open));
+}
+
+function keyHandler(event) {
+  if (event.repeat && !['KeyH'].includes(event.code)) return;
+  if (event.code === 'KeyH') {
+    panel.toggle({ category: 'info', mode: 'standard' });
+    intro.classList.add('quiet');
+  }
+  if (event.code === 'Tab') {
+    event.preventDefault();
+    panel.setMode(panel.dataset.mode === 'expanded' ? 'standard' : 'expanded');
+    panel.show();
+  }
+  if (event.code === 'KeyQ') triggerEvent({ category: 'quest', title: '새 임무 수신', message: '청계 중계기 동기화 좌표가 갱신되었습니다.', icon: 'quest' });
+  if (event.code === 'KeyR') triggerEvent({ category: 'danger', title: '위험 신호 감지', message: '성곽 통제구역에서 무인 감시체가 접근 중입니다.', icon: 'alert' }, { autoOpen: true });
+  if (event.code === 'KeyE') triggerEvent({ category: 'event', title: '특수 기상 이벤트', message: '한강 상공 자기 폭풍이 관측되었습니다.', icon: 'event' });
+  if (event.code === 'KeyF') triggerEvent({ category: 'info', title: '도시 안전망', message: '주변 경로와 공공 설비 상태가 정상입니다.', icon: 'shield' });
+  if (event.code === 'Escape') {
+    panel.hide('escape');
+    toggleSettings(false);
+  }
+  if (event.code === 'Backquote') toggleSettings();
+}
+
+window.addEventListener('keydown', keyHandler);
+document.addEventListener('visibilitychange', () => document.hidden ? world.suspend() : world.resume());
+window.addEventListener('beforeunload', () => world.destroy(), { once: true });
+
+$('#settings-toggle').innerHTML = icon('menu', 18, '설정');
+$('#settings-toggle').addEventListener('click', () => toggleSettings());
+$('#settings-close').innerHTML = icon('close', 18, '설정 닫기');
+$('#settings-close').addEventListener('click', () => toggleSettings(false));
+$('#panel-button').addEventListener('click', () => panel.toggle({ mode: 'standard' }));
+$('#event-info').addEventListener('click', () => triggerEvent({ category: 'info', title: '도시 안전망', message: '주변 경로와 공공 설비 상태가 정상입니다.', icon: 'shield' }));
+$('#event-quest').addEventListener('click', () => triggerEvent({ category: 'quest', title: '새 임무 수신', message: '청계 중계기 동기화 좌표가 갱신되었습니다.', icon: 'quest' }));
+$('#event-danger').addEventListener('click', () => triggerEvent({ category: 'danger', title: '위험 신호 감지', message: '성곽 통제구역에서 무인 감시체가 접근 중입니다.', icon: 'alert' }, { autoOpen: true }));
+$('#event-special').addEventListener('click', () => triggerEvent({ category: 'event', title: '특수 이벤트', message: '한강 상공 자기 폭풍이 관측되었습니다.', icon: 'event' }));
+$('#reset-demo').addEventListener('click', () => {
+  world.reset();
+  store.set(structuredClone(initialState), { source: 'reset' });
+  panel.hide('reset');
+  toggleSettings(false);
+});
+$('#ui-scale').addEventListener('input', event => {
+  uiScale = Number(event.target.value);
+  safeStorage.set('k-holo-ui-scale', uiScale);
+  applyPreferences();
+});
+$('#reduced-motion').addEventListener('change', event => {
+  reducedMotion = event.target.checked;
+  safeStorage.set('k-holo-reduced-motion', reducedMotion);
+  applyPreferences();
+});
+$('#telemetry-toggle').addEventListener('change', event => {
+  showTelemetry = event.target.checked;
+  safeStorage.set('k-holo-telemetry', showTelemetry);
+  applyPreferences();
+});
+
+window.__FORGE__ = {
+  prepareVerification(scenario = 'default') {
+    toggleSettings(false);
+    world.reset();
+    store.set(structuredClone(initialState), { source: 'verification' });
+    panel.hide('verification');
+    if (scenario === 'panel-open') panel.show({ category: 'info', mode: 'expanded' });
+    if (scenario === 'event-stack') {
+      triggerEvent({ category: 'quest', title: '검증 임무', message: '임무 알림 표시 검증' });
+      triggerEvent({ category: 'danger', title: '검증 위험', message: '위험 알림 표시 검증' });
+      triggerEvent({ category: 'event', title: '검증 특수', message: '특수 이벤트 표시 검증' });
+    }
+    return { scenario, ready: true, viewport: [innerWidth, innerHeight] };
+  },
+  verifyWorkflow(scenario = 'reference-case') {
+    const before = panel.getSnapshot();
+    panel.show({ category: 'quest', mode: 'expanded' });
+    panel.notify({ category: 'quest', title: '검증', message: '워크플로 알림' });
+    const after = panel.getSnapshot();
+    const state = store.getState();
+    return {
+      scenario,
+      pass: !before.open && after.open && after.mode === 'expanded' && after.notifications >= 1 && state.objectives.length >= 3,
+      checks: {
+        startsClosed: !before.open,
+        opensExpanded: after.open && after.mode === 'expanded',
+        notificationQueued: after.notifications >= 1,
+        canonicalObjectives: state.objectives.length >= 3
+      }
+    };
+  },
+  verifyDomain(scenario = 'reference-case') {
+    const bounds = KoreanOpenWorldDemo.WORLD_BOUNDS;
+    const state = world.getState();
+    const inside = state.position.x >= bounds.minX && state.position.x <= bounds.maxX && state.position.z >= bounds.minZ && state.position.z <= bounds.maxZ;
+    const distance = state.objective?.distance ?? 0;
+    return {
+      scenario,
+      claimLevel: 'visual-concept',
+      pass: inside && Number.isFinite(distance) && KoreanOpenWorldDemo.WALK_SPEED === 4.2,
+      checks: { playerInsideBounds: inside, finiteObjectiveDistance: Number.isFinite(distance), recordedWalkSpeed: KoreanOpenWorldDemo.WALK_SPEED },
+      limitations: ['Canvas 2.5D 시각 데모이며 실제 3D 엔진 물리 검증이 아닙니다.']
+    };
+  },
+  getSnapshot() { return { panel: panel.getSnapshot(), world: world.getState(), state: structuredClone(store.getState()) }; },
+  teleportNearObjective() { world.teleportNearObjective(); return world.getState(); },
+  resetDemo() { world.reset(); store.set(structuredClone(initialState)); panel.hide('api-reset'); return true; }
+};
+
+window.setTimeout(() => panel.notify({ category: 'quest', title: '탐색 임무 시작', message: '북악 관제탑까지 도보로 이동하십시오.', icon: 'quest', duration: 5600 }), 850);
+  </script>
+</body>
+</html>

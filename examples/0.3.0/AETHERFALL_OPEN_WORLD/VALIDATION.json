@@ -1,0 +1,51 @@
+{
+  "implemented": true,
+  "audit_status": "pass",
+  "static_checks": {
+    "status": "pass",
+    "tool": "check_html.mjs",
+    "files": 1,
+    "syntax_failures": [],
+    "glsl_js_leakage": []
+  },
+  "browser": {
+    "executed": true,
+    "intended_route": true,
+    "console_errors": [],
+    "page_errors": [],
+    "request_failures": []
+  },
+  "visual_review": {
+    "status": "creator-reviewed / provisional",
+    "hardening_rounds": 3,
+    "unresolved_defects": []
+  },
+  "performance": {
+    "status": "measurement-limited",
+    "adaptive_resolution": true,
+    "internal_scale_range": [
+      0.48,
+      0.8
+    ],
+    "ray_steps_range": [
+      74,
+      116
+    ],
+    "hidden_view_suspension": true,
+    "software_xvfb_observation": "2 FPS at 489x306 using Mesa software rendering; not representative of a discrete GPU."
+  },
+  "target_sizes_reviewed": [
+    "1440x900 browser execution",
+    "<=800px responsive recomposition source review"
+  ],
+  "limitations": [
+    "Target-GPU frame rate could not be measured in the software-only validation environment.",
+    "Audio begins only after an explicit user gesture, as required by browser autoplay policy.",
+    "Visual review is creator-reviewed rather than independent."
+  ],
+  "artifact": {
+    "implementation_bytes": 87813,
+    "workbench_evidence_bytes": 1219599,
+    "evidence_to_implementation_ratio": 13.889
+  }
+}

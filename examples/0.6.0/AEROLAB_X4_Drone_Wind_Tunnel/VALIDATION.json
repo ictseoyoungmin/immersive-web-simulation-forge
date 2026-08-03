@@ -1,0 +1,211 @@
+{
+  "implemented": true,
+  "status": "pass-with-performance-warning",
+  "static_checks": {
+    "status": "pass",
+    "command": "node scripts/static_verify.mjs",
+    "module_count": 31,
+    "required_files": 20,
+    "physics_hz": 120,
+    "external_dependencies": 0,
+    "shared_field_consumers": 8,
+    "skill_html_check": "pass",
+    "skill_fidelity_audit": "pass"
+  },
+  "physics": {
+    "status": "pass",
+    "command": "node tests/physics_verify.mjs",
+    "rotor_thrust_scaling": 4,
+    "reaction_torque_scaling": 4,
+    "calm_hover_final_position": [
+      -1.0619828501802212e-08,
+      2.15117643495845,
+      0
+    ],
+    "calm_hover_max_tilt_deg": 2.5240393067758594e-05,
+    "payload_mass_and_inertia": "pass",
+    "wind_vector_geometry": "pass",
+    "deterministic_turbulence": true,
+    "max_wind": {
+      "speed_mps": 30,
+      "turbulence": 1,
+      "duration_seconds": 8,
+      "stable": true,
+      "max_vehicle_speed_mps": 3.0188607601712434,
+      "max_tilt_deg": 71.38505201290141,
+      "final_position": [
+        1.3854457757614282,
+        1.563683166110528,
+        -0.06139357071860265
+      ]
+    }
+  },
+  "browser": {
+    "executed": true,
+    "status": "pass",
+    "command": "node scripts/browser_verify.mjs",
+    "intended_route": false,
+    "launch_route": "inline-cdp-fallback",
+    "ready_surface": true,
+    "console_errors": 0,
+    "page_errors": 0,
+    "request_failures": 0,
+    "parameter_clamping": true,
+    "maximum_wind_stability": true,
+    "target_size_checks": [
+      {
+        "width": 1366,
+        "height": 768,
+        "pass": true,
+        "layout": {
+          "viewport": [
+            1366,
+            768
+          ],
+          "app": [
+            1366,
+            768
+          ],
+          "simulationViewport": [
+            688,
+            630
+          ],
+          "leftRail": [
+            304,
+            630
+          ],
+          "rightRail": [
+            330,
+            630
+          ],
+          "horizontalOverflow": false,
+          "fatal": false
+        }
+      },
+      {
+        "width": 1920,
+        "height": 1080,
+        "pass": true,
+        "layout": {
+          "viewport": [
+            1920,
+            1080
+          ],
+          "app": [
+            1920,
+            1080
+          ],
+          "simulationViewport": [
+            1242,
+            942
+          ],
+          "leftRail": [
+            304,
+            942
+          ],
+          "rightRail": [
+            330,
+            942
+          ],
+          "horizontalOverflow": false,
+          "fatal": false
+        }
+      },
+      {
+        "width": 720,
+        "height": 900,
+        "pass": true,
+        "layout": {
+          "viewport": [
+            720,
+            900
+          ],
+          "app": [
+            705,
+            1674
+          ],
+          "simulationViewport": [
+            693,
+            520
+          ],
+          "leftRail": [
+            693,
+            390
+          ],
+          "rightRail": [
+            693,
+            640
+          ],
+          "horizontalOverflow": false,
+          "fatal": false
+        }
+      }
+    ]
+  },
+  "visual_review": {
+    "status": "pass",
+    "hardening_rounds": 3,
+    "unresolved_defects": [],
+    "review_status": "creator-reviewed / provisional",
+    "representative_capture": ".forge/evidence/browser_verify.png",
+    "packaged_preview": "preview.webp"
+  },
+  "performance": {
+    "measured": true,
+    "target_fps": 60,
+    "warning_threshold_fps": 45,
+    "average_fps": 11.998449672615013,
+    "adaptive_sample_quality": "low",
+    "adaptive_sample_particles": 350,
+    "summary": "Average 12.0 FPS under ANGLE/llvmpipe software rendering; the verifier correctly emitted a <45 FPS warning. This measurement is not representative of a discrete GPU.",
+    "renderer": "ANGLE (Mesa, llvmpipe (LLVM 19.1.7 256 bits), OpenGL 4.5)",
+    "vendor": "Google Inc. (Mesa)",
+    "software_renderer": true,
+    "warnings": [
+      "Frame rate warning: average 12.0 FPS < 45 FPS",
+      "Performance measurement used a software renderer and is not representative of a discrete GPU.",
+      "FPS below 45: 15.7",
+      "FPS below 45: 12.4",
+      "FPS below 45: 10.0",
+      "FPS below 45: 10.3",
+      "FPS below 45: 10.9",
+      "FPS below 45: 12.0",
+      "FPS below 45: 11.6",
+      "FPS below 45: 12.7"
+    ]
+  },
+  "fidelity": {
+    "capture_preset": "ultra",
+    "capture_particles": 2600,
+    "css_size": [
+      760,
+      760
+    ],
+    "internal_size": [
+      762,
+      762
+    ],
+    "effective_pixel_ratio": 1.0026315789473683,
+    "adaptive_locked": true,
+    "reconstruction": "none",
+    "ui_native_resolution": true,
+    "icon_review": "pass",
+    "pointer_direction_review": "pass"
+  },
+  "target_sizes_reviewed": [
+    "1366x768",
+    "1920x1080",
+    "720x900 compact"
+  ],
+  "limitations": [
+    "The aerodynamic model is lumped and interactive rather than Navier–Stokes CFD or flight-certification software.",
+    "Ambient occlusion is a screen-space depth approximation.",
+    "WebGL2 is required; no WebGL1 renderer is included.",
+    "Managed Chromium blocked localhost navigation during validation, so the same module graph was executed through the verifier's inline Blob-module fallback.",
+    "The recorded FPS sample used llvmpipe software rendering and should not be used to estimate discrete-GPU performance."
+  ],
+  "artifact": {
+    "implementation_bytes": 228568,
+    "workbench_evidence_bytes": 878760
+  }
+}

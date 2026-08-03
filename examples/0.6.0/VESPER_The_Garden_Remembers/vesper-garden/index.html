@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080913">
+  <meta name="description" content="당신이 깨운 꽃들이 바람과 음악이 되는 15분의 정원 의식">
+  <title>VESPER — The Garden Remembers</title>
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body data-screen="title">
+  <main id="app" aria-label="VESPER 게임">
+    <canvas id="garden-canvas" aria-label="생물발광 정원 게임 화면"></canvas>
+    <div class="scene-finish" aria-hidden="true"></div>
+
+    <header id="hud" class="hud" aria-hidden="true">
+      <div class="hud-brand">
+        <span class="hud-brand__name">VESPER</span>
+        <span class="hud-brand__movement" id="movement-label">I · 첫 번째 숨</span>
+      </div>
+
+      <div class="ritual-clock" aria-label="남은 밤">
+        <span class="ritual-clock__label">NIGHT REMAINS</span>
+        <time id="timer" class="ritual-clock__time" datetime="PT15M">15:00</time>
+      </div>
+
+      <div class="hud-actions">
+        <button id="mute-button" class="icon-button" type="button" aria-label="소리 끄기" aria-pressed="false">
+          <svg class="icon icon-sound" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9.5v5h3.2l4.3 3.5V6L8.2 9.5H5Z"/><path class="sound-wave" d="M16 8.2c1 .9 1.5 2.2 1.5 3.8S17 14.9 16 15.8M18.6 5.8c1.7 1.6 2.6 3.6 2.6 6.2s-.9 4.6-2.6 6.2"/></svg>
+        </button>
+        <button id="pause-button" class="icon-button" type="button" aria-label="일시정지">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6.5v11M16 6.5v11"/></svg>
+        </button>
+      </div>
+
+      <div class="objective" aria-live="polite">
+        <span class="objective__eyebrow" id="objective-eyebrow">THE FIRST BELL</span>
+        <p id="objective-text">가까운 빛을 향해 날아가세요</p>
+      </div>
+
+      <div class="flower-rail" id="flower-rail" aria-label="깨어난 꽃 0 / 6">
+        <span class="flower-mark is-target" data-flower="0"><i></i></span>
+        <span class="flower-mark" data-flower="1"><i></i></span>
+        <span class="flower-mark" data-flower="2"><i></i></span>
+        <span class="flower-mark" data-flower="3"><i></i></span>
+        <span class="flower-mark" data-flower="4"><i></i></span>
+        <span class="flower-mark" data-flower="5"><i></i></span>
+      </div>
+
+      <div class="focus-instrument" id="focus-instrument">
+        <div class="focus-instrument__copy"><span>FOCUS</span><small>SPACE · 우클릭</small></div>
+        <div class="focus-track"><span id="focus-fill"></span></div>
+      </div>
+
+      <div id="orbit-readout" class="orbit-readout" aria-hidden="true">
+        <div class="orbit-readout__ring"><span id="orbit-fill"></span></div>
+        <div><strong id="orbit-title">귀 기울이는 중</strong><small id="orbit-hint">빛의 결을 따라 원을 그리세요</small></div>
+      </div>
+
+      <div id="hint-card" class="hint-card" aria-live="polite">
+        <span class="hint-card__key">WASD</span>
+        <span>또는 마우스를 누른 채 날아가세요</span>
+      </div>
+
+      <div id="chapter-card" class="chapter-card" aria-live="polite">
+        <span id="chapter-kicker">MOVEMENT II</span>
+        <strong id="chapter-title">겹쳐지는 바람</strong>
+      </div>
+    </header>
+
+    <section id="title-screen" class="veil title-screen" aria-labelledby="game-title">
+      <div class="title-copy">
+        <p class="kicker">A FIFTEEN-MINUTE RITUAL</p>
+        <h1 id="game-title"><span>VESPER</span><em>The Garden Remembers</em></h1>
+        <p class="title-thesis">당신이 깨운 모든 꽃은 사라지지 않습니다.<br>바람이 되고, 음악이 되고, 마지막 길이 됩니다.</p>
+        <div class="title-actions">
+          <button id="start-button" class="primary-button" type="button"><span>새로운 밤 시작</span><i aria-hidden="true"></i></button>
+          <button id="resume-button" class="quiet-button" type="button" hidden>기억된 정원으로 돌아가기</button>
+        </div>
+        <button id="title-settings-button" class="text-button" type="button">접근성 및 설정</button>
+      </div>
+      <div class="title-foot">
+        <span>MOVE · WASD / HOLD POINTER</span>
+        <span>FOCUS · SPACE / RIGHT HOLD</span>
+        <span>PAUSE · ESC</span>
+      </div>
+    </section>
+
+    <section id="prologue" class="veil prologue" aria-live="polite" hidden>
+      <div class="prologue-copy">
+        <p id="prologue-line">밤은 열다섯 분 동안만 정원을 기억합니다.</p>
+        <button id="prologue-skip" class="text-button" type="button">바로 날아가기</button>
+      </div>
+    </section>
+
+    <section id="pause-screen" class="veil modal-screen" role="dialog" aria-modal="true" aria-labelledby="pause-title" hidden>
+      <div class="modal-panel">
+        <p class="kicker">THE GARDEN IS LISTENING</p>
+        <h2 id="pause-title">밤이 멈추었습니다</h2>
+        <div class="modal-actions">
+          <button id="continue-button" class="primary-button" type="button"><span>계속 날아가기</span><i aria-hidden="true"></i></button>
+          <button id="restart-movement-button" class="quiet-button" type="button">마지막 꽃에서 다시 시작</button>
+          <button id="pause-settings-button" class="quiet-button" type="button">설정</button>
+          <button id="new-garden-button" class="text-button danger" type="button">새로운 정원</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="settings-screen" class="veil modal-screen" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+      <div class="modal-panel settings-panel">
+        <p class="kicker">COMFORT & CLARITY</p>
+        <h2 id="settings-title">정원의 감각</h2>
+        <div class="setting-list">
+          <label class="setting-row"><span><strong>음악과 소리</strong><small>꽃의 상태를 들려줍니다</small></span><input id="setting-audio" type="checkbox" checked><i></i></label>
+          <label class="setting-row"><span><strong>움직임 줄이기</strong><small>흔들림과 입자 이동을 낮춥니다</small></span><input id="setting-motion" type="checkbox"><i></i></label>
+          <label class="setting-row"><span><strong>높은 대비</strong><small>가시와 목표의 경계를 강화합니다</small></span><input id="setting-contrast" type="checkbox"><i></i></label>
+          <label class="setting-row setting-quality"><span><strong>시각 품질</strong><small>게임 규칙에는 영향을 주지 않습니다</small></span><select id="setting-quality"><option value="auto">자동</option><option value="high">높음</option><option value="low">절전</option></select></label>
+        </div>
+        <button id="settings-close-button" class="primary-button" type="button"><span>적용하고 돌아가기</span><i aria-hidden="true"></i></button>
+      </div>
+    </section>
+
+    <section id="night-screen" class="veil modal-screen" role="dialog" aria-modal="true" aria-labelledby="night-title" hidden>
+      <div class="modal-panel">
+        <p class="kicker">THE FIFTEENTH MINUTE</p>
+        <h2 id="night-title">밤이 닫혔습니다</h2>
+        <p>정원은 아직 당신을 밀어내지 않습니다.<br>시간 밖의 잔광에서 노래를 완성할 수 있습니다.</p>
+        <div class="modal-actions">
+          <button id="afterglow-button" class="primary-button" type="button"><span>잔광 속에서 계속하기</span><i aria-hidden="true"></i></button>
+          <button id="night-new-button" class="quiet-button" type="button">새로운 밤 시작</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="ending-screen" class="veil ending-screen" aria-labelledby="ending-title" hidden>
+      <div class="ending-copy">
+        <p class="kicker">THE GARDEN REMEMBERS</p>
+        <h2 id="ending-title">당신의 새벽</h2>
+        <p id="ending-signature" class="ending-signature">AUREL · MORA · VELA</p>
+        <dl class="ending-stats">
+          <div><dt>깨어난 목소리</dt><dd id="ending-voices">6 / 6</dd></div>
+          <div><dt>정원이 기억한 시간</dt><dd id="ending-time">12:42</dd></div>
+          <div><dt>다시 피어난 횟수</dt><dd id="ending-frays">0</dd></div>
+        </dl>
+        <p class="ending-note">같은 꽃도 다른 순서로 깨우면<br>다른 바람과 다른 화음으로 남습니다.</p>
+        <div class="title-actions">
+          <button id="listen-button" class="primary-button" type="button"><span>정원의 노래 다시 듣기</span><i aria-hidden="true"></i></button>
+          <button id="ending-new-button" class="quiet-button" type="button">새로운 정원</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="touch-controls" class="touch-controls" aria-hidden="true">
+      <div id="touch-stick" class="touch-stick"><span></span></div>
+      <button id="touch-focus" class="touch-focus" type="button"><span>FOCUS</span></button>
+    </div>
+
+    <div id="live-region" class="sr-only" aria-live="assertive"></div>
+  </main>
+
+  <script defer src="src/config.js"></script>
+  <script defer src="src/audio.js"></script>
+  <script defer src="src/game.js"></script>
+  <script defer src="src/renderer.js"></script>
+  <script defer src="src/main.js"></script>
+</body>
+</html>

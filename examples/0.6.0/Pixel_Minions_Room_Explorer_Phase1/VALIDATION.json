@@ -1,0 +1,101 @@
+{
+  "implemented": true,
+  "build": {
+    "delivery": "single self-contained HTML",
+    "three_revision": "179 embedded",
+    "network_dependency": false,
+    "html_bytes": 760757
+  },
+  "static_checks": {
+    "status": "pass",
+    "javascript_syntax": "pass for embedded renderer and application scripts",
+    "html_javascript_glsl_boundary": "pass",
+    "forge_audit": "pass",
+    "external_runtime_urls": 0
+  },
+  "browser": {
+    "executed": true,
+    "execution_method": "Chromium 144 under Xvfb using the exact inline HTML through page.set_content because managed policy blocks file:// and localhost navigation",
+    "renderer": "ANGLE / SwiftShader software WebGL",
+    "ready_marker": true,
+    "fatal_overlay": false,
+    "console_errors": 0,
+    "page_errors": 0,
+    "network_requests": 0,
+    "failed_requests": 0,
+    "canvas": "1600x900 CSS / 1600x900 internal",
+    "draw_calls": "92–94 depending on camera/frustum state",
+    "final_smoke_1366x768": {
+      "ready": true,
+      "fatal_overlay": false,
+      "console_errors": 0,
+      "page_errors": 0,
+      "network_requests": 0,
+      "measured_software_fps": 60
+    }
+  },
+  "gameplay": {
+    "status": "pass",
+    "wasd_distance_moved_m": 0.533,
+    "jump": "pass",
+    "landing": "pass",
+    "parameter_store_dust_update": "760 -> 400 without initialization error",
+    "pointer_lock_and_drag_handlers": "initialized; standard-sign shared look function"
+  },
+  "target_sizes": [
+    {
+      "viewport": "1366x768",
+      "internal": "1366x768",
+      "effective_ratio": 1.0,
+      "measured_software_fps": 55,
+      "quality": "100%",
+      "status": "pass"
+    },
+    {
+      "viewport": "1920x1080",
+      "internal": "1920x1080",
+      "effective_ratio": 1.0,
+      "measured_software_fps": 41,
+      "quality": "100%",
+      "status": "pass"
+    }
+  ],
+  "performance": {
+    "physics_step_hz": 120,
+    "max_catchup_steps": 12,
+    "adaptive_resolution_range": [
+      0.68,
+      1.0
+    ],
+    "shadow_map": "PCFSoftShadowMap",
+    "instanced_categories": [
+      "coins",
+      "pencils",
+      "paperclips",
+      "books"
+    ],
+    "measurement_note": "SwiftShader validates correctness but is not evidence of discrete-GPU FPS. The runtime performance guard lowers scene resolution with hysteresis below the target frame rate."
+  },
+  "hardening_fixes": [
+    "Removed all CDN and ES-module loading paths and embedded the complete renderer.",
+    "Moved resolutionScale initialization ahead of parameter-store callbacks to remove the temporal-dead-zone failure.",
+    "Closed the dust vertex shader main function; browser shader compilation now reports zero errors.",
+    "Added explicit runtime readiness and deterministic destroy cleanup markers."
+  ],
+  "visual_review": {
+    "status": "creator-reviewed / browser-captured",
+    "hardening_rounds": 3,
+    "captures": [
+      "offline_start.png",
+      "offline_running.png",
+      "offline_gameplay.png",
+      "target_1366x768.png",
+      "target_1920x1080.png"
+    ],
+    "unresolved_defects": []
+  },
+  "limitations": [
+    "Managed Chromium policy prevented direct file:// navigation, so the exact HTML source was executed with page.set_content; the delivered build uses only classic inline scripts and has no local-file module/CORS dependency.",
+    "Measured FPS is from software WebGL and must not be interpreted as a target desktop GPU benchmark."
+  ]
+}

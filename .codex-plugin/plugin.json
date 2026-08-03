@@ -1,0 +1,43 @@
+{
+  "name": "immersive-web-simulation-forge",
+  "version": "0.6.0",
+  "description": "Design, implement, validate, harden, and package interactive browser worlds, simulation labs, design studios, data instruments, and operations panels.",
+  "author": {
+    "name": "ictseoyoungmin",
+    "url": "https://github.com/ictseoyoungmin"
+  },
+  "homepage": "https://github.com/ictseoyoungmin/immersive-web-simulation-forge",
+  "repository": "https://github.com/ictseoyoungmin/immersive-web-simulation-forge",
+  "license": "MIT",
+  "keywords": [
+    "webgl",
+    "three.js",
+    "simulation",
+    "interactive-web",
+    "browser-worlds",
+    "physics",
+    "visualization"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Immersive Web Simulation Forge",
+    "shortDescription": "Build and validate interactive browser products",
+    "longDescription": "A skill package for browser worlds, simulation labs, design studios, data instruments, and other interactive graphical products. It combines product workflow guidance, domain-claim checks, reusable runtime modules, and browser verification tools.",
+    "developerName": "ictseoyoungmin",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Instructions",
+      "Interactive",
+      "Validation"
+    ],
+    "websiteURL": "https://github.com/ictseoyoungmin/immersive-web-simulation-forge",
+    "defaultPrompt": [
+      "Use Immersive Web Simulation Forge for this browser product.",
+      "Plan and validate this interactive simulation.",
+      "Audit this WebGL project for fidelity and runtime risks."
+    ],
+    "brandColor": "#087D78",
+    "composerIcon": "./immersive-web-simulation-forge/assets/icon.svg",
+    "logo": "./immersive-web-simulation-forge/assets/icon.svg"
+  }
+}

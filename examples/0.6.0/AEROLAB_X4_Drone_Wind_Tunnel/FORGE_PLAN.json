@@ -1,0 +1,285 @@
+{
+  "version": 2,
+  "schema": "immersive-web-simulation-forge/0.4",
+  "profile": "full-window-world",
+  "ambition": "showcase",
+  "delivery_mode": "lean",
+  "quality_target": 8.8,
+  "project": {
+    "name": "AEROLAB X4 — Drone Physics Engine & Wind Tunnel",
+    "profile": "full-window-world",
+    "ambition": "showcase",
+    "representation": [
+      "WebGL2",
+      "Canvas2D",
+      "DOM"
+    ],
+    "target_sizes": [
+      "1366x768",
+      "1920x1080",
+      "2560x1440"
+    ]
+  },
+  "user_request": {
+    "summary": "Build a high-fidelity interactive 3D quadcopter physics engine and wind-tunnel simulator with a 120 Hz force-derived rigid-body loop, controllable laminar/turbulent 3D wind, aerodynamic telemetry, payload picking, scientific authoring UI, history, adaptive rendering, and browser stability/performance verification.",
+    "target_sizes": [
+      "responsive desktop full window",
+      "1366x768",
+      "1920x1080",
+      "2560x1440"
+    ],
+    "goals": [
+      "Implement individual rotor thrust, reaction torque, motor response, and gyroscopic precession.",
+      "Expose speed, yaw, pitch, turbulence, and air-density controls over one canonical 3D wind field.",
+      "Drive drone motion only from integrated forces and torques at a fixed 120 Hz step.",
+      "Render a detailed quadcopter, wind-tunnel enclosure, dynamic ground, pressure-coded flow particles, bloom, and ambient-occlusion depth cues.",
+      "Provide PID/manual/reaction flight modes, payload hardpoint picking, undo/redo, snapshots, and real-time plots.",
+      "Verify JavaScript structure, rotor-law invariants, calm hover, 30 m/s turbulent stability, and browser FPS warnings."
+    ],
+    "requested_constraints": [
+      "Use modular ES modules under kits/.",
+      "Provide index.html and bootstrap.mjs using kits/runtime/frame-loop.mjs and kits/runtime/lifecycle.mjs.",
+      "Include kits/canvas/field-renderer.mjs, kits/three/post-chain.mjs, kits/three/lod-bands.mjs, kits/three/picking-gizmo.mjs, authoring stores, measurement series, and icon system.",
+      "Include scripts/browser_verify.mjs with a warning below 45 FPS and a maximum-wind stability case.",
+      "Use a clean scientific-grade HUD and accuracy-first causal rendering."
+    ]
+  },
+  "reversible_assumptions": [
+    "Quad-X geometry with four identical rotors.",
+    "World axes use +Y up, +X tunnel flow, and +Z lateral.",
+    "Semi-implicit Euler translation and normalized quaternion angular integration are sufficient for the interactive time scale.",
+    "Payloads attach to four predefined underside hardpoints.",
+    "A lumped aerodynamic model is appropriate for interactive engineering exploration and is explicitly not certified CFD."
+  ],
+  "derived_constraints": [
+    {
+      "name": "WebGL2 rendering floor",
+      "reason": "The requested depth texture post-chain, true occlusion, material lighting, and spatial inspection require a GPU raster pipeline.",
+      "benefit": "Provides true 3D depth, depth-aware AO, emissive stress bloom, and high-throughput tunnel rendering in one browser surface.",
+      "visual_cost": "Browsers without WebGL2 receive an explicit initialization error instead of a reduced-fidelity fallback.",
+      "rejected_alternative": "Canvas-only pseudo-3D would not provide credible occlusion, camera inspection, or post-processing depth."
+    },
+    {
+      "name": "Fixed-step catch-up cap",
+      "reason": "Unlimited physics catch-up after tab stalls can create a spiral of death and make the scientific interface unresponsive.",
+      "benefit": "Caps one display frame at twelve 120 Hz steps, equivalent to 100 ms of deterministic catch-up.",
+      "visual_cost": "Elapsed wall time beyond the cap is discarded after long stalls rather than replayed in slow motion.",
+      "rejected_alternative": "Unlimited catch-up preserves wall-clock time but can freeze rendering for seconds."
+    },
+    {
+      "name": "Dependency-free raw WebGL2 scene layer",
+      "reason": "A self-contained package avoids CDN/runtime installation failure while still satisfying the requested kits/three module boundaries.",
+      "benefit": "The project runs from a static local server with no package install and retains direct control over buffers, depth textures, and cleanup.",
+      "visual_cost": "The model uses authored procedural geometry rather than imported photogrammetry or a large glTF asset.",
+      "rejected_alternative": "Bundling a large external engine and asset pipeline would increase failure surface and package weight without improving the physics source of truth."
+    }
+  ],
+  "concepts": {
+    "considered": [
+      "Open industrial test cell with the drone centered against a long recirculating tunnel and dense scientific rails.",
+      "Dark aerospace clean-room with a compact pressure chamber and holographic sectional diagnostics.",
+      "Outdoor atmospheric test range with terrain wakes and a portable instrumentation truck."
+    ],
+    "selected": "Open industrial test cell with a long recirculating tunnel and dense scientific rails.",
+    "spikes_built": 1,
+    "selection_rationale": "The long tunnel makes wind direction, parallax, inlet machinery, wall boundary cues, and particle advection legible while preserving a central inspectable vehicle and a professional engineering UI."
+  },
+  "representation": {
+    "stack": "Raw WebGL2 + Canvas 2D + scoped DOM/CSS hybrid",
+    "required_capabilities": [
+      "true-depth",
+      "occlusion",
+      "spatial-inspection",
+      "material-lighting",
+      "dense plots",
+      "native micro-interface"
+    ],
+    "ceiling_rationale": "A runnable spike proved that the WebGL2 scene pass provides true depth, occlusion, spatial inspection and material lighting, while Canvas 2D is restricted to native-resolution field and telemetry overlays; DOM preserves precise scientific controls.",
+    "renderer_capital": [
+      "kits/three/gl-utils.mjs procedural meshes",
+      "kits/three/post-chain.mjs depth-aware composite",
+      "kits/canvas/field-renderer.mjs shared-field particles",
+      "kits/canvas/telemetry-renderer.mjs native-resolution plots"
+    ],
+    "capability_equivalent_proven": true
+  },
+  "system": {
+    "source_of_truth": "WindField.sample(position,time) plus DronePhysics fixed-step rigid-body state",
+    "consumers": [
+      "rotor and aerodynamic force solver",
+      "quadcopter transform interpolation",
+      "pressure/speed-colored flow particles",
+      "tunnel luminaires and floor sweep",
+      "rotor stress emissive bloom",
+      "local flow probe and metric cards",
+      "attitude, power, and thrust telemetry plots",
+      "maximum-wind browser stability verifier"
+    ],
+    "update_rates": {
+      "rigid_body_and_controller": "120 Hz fixed step",
+      "measurement_feed": "30 Hz",
+      "render_interpolation": "display refresh",
+      "HUD_DOM_updates": "30 Hz telemetry events",
+      "LOD_evaluation": "0.5 second windows"
+    }
+  },
+  "visual": {
+    "depth_roles": [
+      "Immediate layer: native HUD, reticle, flow probe, force-vector overlays, and near tunnel beams.",
+      "Active layer: physically transformed quadcopter, rotors, payload hardpoints, and stress halo.",
+      "Context layer: receding enclosure ribs, inlet fan, ceiling luminaires, dynamic ground grid, and far airflow."
+    ],
+    "material_families": [
+      "Graphite/carbon airframe with tight specular response and restrained cyan edge emission.",
+      "Brushed structural metal with brighter grazing highlights and high metal response.",
+      "Translucent tunnel glass with depth-sorted low-opacity panels.",
+      "Pressure-coded airflow marks with cool-to-warm velocity mapping and screen blending.",
+      "Amber/red rotor and payload stress emission feeding the bloom chain."
+    ],
+    "transformations": [
+      {
+        "name": "Laminar to turbulent flow",
+        "grammar": "field-deformation",
+        "channels": [
+          "particle trajectories",
+          "velocity color",
+          "pressure probe",
+          "aerodynamic force",
+          "vehicle attitude",
+          "telemetry variance"
+        ]
+      },
+      {
+        "name": "Payload attachment",
+        "grammar": "mass-and-silhouette reconfiguration",
+        "channels": [
+          "hardpoint geometry",
+          "vehicle silhouette",
+          "total mass",
+          "inertia tensor",
+          "hover RPM",
+          "power draw",
+          "angular response"
+        ]
+      }
+    ],
+    "inspection_reveals": [
+      "Close camera orbit reveals individual motor housings, rotor discs, payload hardpoints, and force-vector decomposition.",
+      "The telemetry rail reveals per-rotor thrust asymmetry, attitude history, and power demand against local wind speed."
+    ]
+  },
+  "fidelity": {
+    "clarity_intent": "Sharp scientific instrument panel around an atmospheric but geometrically resolved test cell.",
+    "intentional_softness": false,
+    "softness_rationale": "",
+    "default_effective_pixel_ratio": 0.94,
+    "presentation_effective_pixel_ratio": 1.0,
+    "adaptive_min_ratio": 0.72,
+    "adaptive_max_ratio": 1.0,
+    "reconstruction": {
+      "enabled": false,
+      "method": "none",
+      "reviewed_at_target_size": true
+    },
+    "capture_mode": {
+      "locks_quality": true,
+      "preset": "high/ultra presentation",
+      "records_internal_size": true,
+      "separates_visual_from_performance_capture": true
+    },
+    "native_output_space": [
+      "DOM UI",
+      "text",
+      "SVG icons",
+      "Canvas telemetry",
+      "Canvas flow overlay"
+    ],
+    "frequency_partition": {
+      "scene_space": [
+        "tunnel geometry",
+        "drone materials",
+        "depth AO",
+        "emissive bloom"
+      ],
+      "native_output_space": [
+        "labels",
+        "icons",
+        "reticle",
+        "plots",
+        "flow particles",
+        "status diagnostics"
+      ]
+    }
+  },
+  "interface": {
+    "visible_icon_count": 18,
+    "icon_system": "Authored inline SVG symbol set in kits/ui/icon-system.mjs",
+    "icon_grid": 24,
+    "optical_sizes": [
+      14,
+      16,
+      18,
+      24
+    ],
+    "unicode_placeholder_count": 0,
+    "stroke_consistency": true,
+    "native_resolution": true,
+    "composition": "Left authoring rail, central tunnel viewport, right telemetry rail, bottom solver/status strip.",
+    "compact_recomposition": "Below 980 px telemetry becomes a multi-column lower section; below 720 px all regions stack with contained scrolling."
+  },
+  "input": {
+    "pointer_look": true,
+    "horizontal_default": "standard",
+    "vertical_default": "standard",
+    "direction_reviewed": true,
+    "drag_pointerlock_parity": true,
+    "invert_x_configurable": false,
+    "invert_y_configurable": false,
+    "camera": "Left-drag orbit, wheel zoom, double-click focus.",
+    "picking": "Click a highlighted underside hardpoint to attach or remove payload mass.",
+    "keyboard": "Space pause, R reset, Z undo, Shift+Z redo, 1/2/3 flight modes."
+  },
+  "review": {
+    "hardening_rounds": 3,
+    "internal_score": 8.9,
+    "unresolved_defects": [],
+    "review_status": "creator-reviewed / provisional"
+  },
+  "performance_budget": {
+    "target_fps": 60,
+    "warning_fps": 45,
+    "physics_hz": 120,
+    "max_particles": 2600,
+    "adaptive_particle_bands": [
+      350,
+      700,
+      1200,
+      2600
+    ],
+    "max_dpr": 2,
+    "physics_catchup_steps": 12
+  },
+  "validation": {
+    "static": "node scripts/static_verify.mjs",
+    "physics": "node tests/physics_verify.mjs",
+    "browser": "node scripts/browser_verify.mjs",
+    "max_wind_case": "30 m/s, turbulence intensity 1.0, hover mode, 8 seconds"
+  },
+  "package": {
+    "runtime_roots": [
+      "index.html",
+      "bootstrap.mjs",
+      "styles.css",
+      "kits",
+      "references",
+      "scripts",
+      "tests",
+      "README.md",
+      "package.json",
+      "run-local.sh",
+      "run-local.bat"
+    ],
+    "include_preview": true,
+    "preview_path": "preview.webp"
+  }
+}

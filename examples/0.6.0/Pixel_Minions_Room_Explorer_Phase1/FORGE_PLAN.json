@@ -1,0 +1,217 @@
+{
+  "version": 2,
+  "schema": "immersive-web-simulation-forge/0.4",
+  "profile": "full-window-world",
+  "ambition": "showcase",
+  "delivery_mode": "lean-single-file",
+  "quality_target": 8.7,
+  "project": {
+    "name": "Pixel Minions: Room Explorer — Phase 1",
+    "representation": [
+      "WebGL / Three.js",
+      "DOM HUD",
+      "procedural low-poly geometry"
+    ],
+    "target_sizes": [
+      "1366x768",
+      "1920x1080",
+      "2560x1440"
+    ]
+  },
+  "user_request": {
+    "summary": "Build Phase 1 of a tiny-hero third-person 3D open-world room explorer with oversized furniture terrain, fixed-step parkour physics, pointer-lock camera, instanced clutter, adaptive rendering, warm indoor atmosphere, and a live parameter HUD in one HTML file.",
+    "target_sizes": [
+      "responsive desktop full-window",
+      "1366x768",
+      "1920x1080",
+      "2560x1440"
+    ],
+    "goals": [
+      "Create a 20m x 20m x 8m room perceived from a 0.1m-tall character scale.",
+      "Make the Giant Desk and Bookshelf Mountain traversable through reachable parkour steps and platforms.",
+      "Implement third-person momentum locomotion, jump, gravity, collision, and raycast ground/zone detection at 120Hz.",
+      "Use InstancedMesh for pencils, coins, paperclips, and bookshelf books.",
+      "Provide warm window lighting, soft shadows, dust motes, HUD telemetry, collectibles, and parameter authoring controls.",
+      "Maintain an adaptive near-native rendering ceiling with frustum/distance culling and visibility suspension."
+    ],
+    "requested_constraints": [
+      "Single executable HTML deliverable.",
+      "Three.js/WebGL low-poly stylized aesthetic.",
+      "PointerLock API with standard mouse direction and drag fallback.",
+      "Fixed 120Hz internal physics with normal requestAnimationFrame rendering.",
+      "Real-time controls for jump force, move speed, camera sensitivity, and dust density."
+    ]
+  },
+  "reversible_assumptions": [
+    "Desktop keyboard and mouse are the primary Phase 1 input surface.",
+    "The player collision body is an upright capsule approximation represented by an AABB plus downward raycast.",
+    "Furniture collision is axis-aligned except for non-collidable decorative meshes.",
+    "The room uses a deliberately compressed parkour route so a 0.1m hero can reach desk and shelf elevations without unrealistic global jump scaling."
+  ],
+  "derived_constraints": [
+    {
+      "name": "Embedded Three.js runtime",
+      "reason": "The deliverable must execute as one HTML file even when local-file CDN/module access is blocked.",
+      "benefit": "The authored HTML opens directly from disk with zero network requests, no local server, and no package installation.",
+      "rejected_alternative": "Pinned CDN mirrors were rejected after a real offline launch failure; a custom partial 3D engine would reduce lighting, shadow, instancing, culling, and raycast quality.",
+      "visual_cost": "The HTML is approximately 760 KB because the renderer is bundled inline."
+    },
+    {
+      "name": "No general rigid-body engine",
+      "reason": "Phase 1 traversal needs deterministic character/platform collision rather than arbitrary object dynamics.",
+      "benefit": "Small fixed-step state, predictable 120Hz behavior, and low CPU overhead.",
+      "rejected_alternative": "Bundling a second physics dependency would violate the lean single-file objective and add unnecessary simulation cost.",
+      "visual_cost": "Furniture and scatter props are static; pushing and stacking are deferred."
+    }
+  ],
+  "concepts": {
+    "considered": [
+      "Warm afternoon bedroom expedition with sunlit dust and toy-like materials",
+      "Night-time desk city with emissive electronics",
+      "Abstract diorama room with floating furniture islands"
+    ],
+    "selected": "Warm afternoon bedroom expedition with furniture-as-skyscrapers",
+    "spikes_built": 1,
+    "selection_rationale": "It best communicates tiny scale through familiar materials, long shadows, visible dust, floor-level parallax, and bright navigational landmarks."
+  },
+  "representation": {
+    "stack": "Embedded Three.js r179 WebGLRenderer + procedural geometry + DOM authoring HUD",
+    "required_capabilities": [
+      "true occlusion",
+      "soft shadows",
+      "raycasting",
+      "InstancedMesh",
+      "frustum culling",
+      "third-person camera collision"
+    ],
+    "ceiling_rationale": "The world depends on real scale, depth, surface contact, inspectable geometry, and vertical traversal; a 2D representation cannot satisfy the capability problem.",
+    "renderer_capital": [
+      "Embedded Three.js scene graph",
+      "shadow mapping",
+      "instancing",
+      "raycaster",
+      "fog",
+      "buffer particles"
+    ]
+  },
+  "system": {
+    "source_of_truth": "Deterministic PlayerState and parameter store advanced at a fixed 1/120 second step.",
+    "consumers": [
+      "hero transform",
+      "camera spring arm",
+      "ground raycast",
+      "zone HUD",
+      "collectibles",
+      "dust intensity",
+      "LOD bands",
+      "performance telemetry"
+    ],
+    "update_rates": {
+      "physics": "120 Hz fixed",
+      "render": "requestAnimationFrame with interpolation",
+      "HUD": "10 Hz",
+      "LOD_and_frustum": "6-12 Hz",
+      "adaptive_resolution": "EMA with multi-second hysteresis"
+    }
+  },
+  "visual": {
+    "depth_roles": [
+      "near: hero, floor fibers, coins, desk-leg steps and contact shadows",
+      "middle: traversable desk, chair, bookshelf book staircase and active collectibles",
+      "far: room enclosure, window, ceiling, posters and warm atmospheric shafts"
+    ],
+    "material_families": [
+      "rough painted wood",
+      "soft matte walls and carpet",
+      "glossy ceramic/plastic",
+      "metallic coins and paperclips",
+      "emissive electronics"
+    ],
+    "transformations": [
+      "collectible collapse and pulse",
+      "zone discovery beacon and HUD state change"
+    ],
+    "inspection_reveals": [
+      "desk drawers, keyboard keys, mug interior and lamp assembly",
+      "bookshelf titles, tier structure, hidden climbing route and elevated room overview"
+    ]
+  },
+  "fidelity": {
+    "clarity_intent": "sharp stylized low-poly forms with warm atmospheric depth",
+    "intentional_softness": false,
+    "softness_rationale": "",
+    "default_effective_pixel_ratio": 0.9,
+    "presentation_effective_pixel_ratio": 1.0,
+    "adaptive_min_ratio": 0.68,
+    "adaptive_max_ratio": 1.0,
+    "reconstruction": {
+      "enabled": false,
+      "method": "none",
+      "reviewed_at_target_size": false
+    },
+    "capture_mode": {
+      "locks_quality": true,
+      "preset": "presentation",
+      "records_internal_size": true,
+      "separates_visual_from_performance_capture": true
+    },
+    "native_output_space": [
+      "HUD",
+      "text",
+      "reticle",
+      "parameter controls"
+    ],
+    "frequency_partition": {
+      "scene_space": [
+        "geometry",
+        "shadows",
+        "dust",
+        "instanced props"
+      ],
+      "native_output_space": [
+        "telemetry",
+        "labels",
+        "icons",
+        "control affordances"
+      ]
+    }
+  },
+  "interface": {
+    "visible_icon_count": 7,
+    "icon_system": "authored inline SVG 24-grid",
+    "icon_grid": 24,
+    "optical_sizes": [
+      16,
+      18,
+      24
+    ],
+    "unicode_placeholder_count": 0,
+    "stroke_consistency": true,
+    "native_resolution": true
+  },
+  "input": {
+    "pointer_look": true,
+    "horizontal_default": "standard",
+    "vertical_default": "standard",
+    "direction_reviewed": true,
+    "drag_pointerlock_parity": true,
+    "invert_x_configurable": false,
+    "invert_y_configurable": true
+  },
+  "review": {
+    "hardening_rounds": 3,
+    "internal_score": 8.7,
+    "unresolved_defects": [],
+    "review_status": "creator-reviewed / provisional"
+  },
+  "package": {
+    "runtime_roots": [
+      "Pixel_Minions_Room_Explorer_Phase1.html",
+      "README.md",
+      "FORGE_PLAN.json",
+      "VALIDATION.json"
+    ],
+    "include_preview": true,
+    "preview_path": "preview.webp"
+  }
+}
