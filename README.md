@@ -1,13 +1,12 @@
 <div align="center">
-  <img src="immersive-web-simulation-forge/assets/icon.svg" width="96" height="96" alt="Immersive Web Simulation Forge icon">
+  <img src="skills/immersive-web-simulation-forge/assets/icon.svg" width="96" height="96" alt="Immersive Web Simulation Forge icon">
   <h1>Immersive Web Simulation Forge</h1>
   <p>브라우저 기반 월드, 시뮬레이션, 데이터 도구, 인터랙티브 제품을 설계·구현·검증하기 위한 Codex 스킬 패키지</p>
 </div>
 
 <p align="center">
   <a href="docs/">Examples showcase</a> ·
-  <a href="immersive-web-simulation-forge/SKILL.md">Skill instructions</a> ·
-  <a href="immersive-web-simulation-forge/skill.yaml">Runtime metadata</a>
+  <a href="skills/immersive-web-simulation-forge/SKILL.md">Skill instructions</a>
 </p>
 
 ## 개요
@@ -22,7 +21,81 @@ Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 
 - 데이터 instrument와 operations panel
 - ambient system과 dashboard panel
 
-이 저장소의 `examples/`는 스킬로 제작된 결과물을 보여주는 전시·검증 자료입니다. 스킬 본체는 [`immersive-web-simulation-forge/`](immersive-web-simulation-forge/)에 있습니다.
+이 저장소의 `examples/`는 스킬로 제작된 결과물을 보여주는 전시·검증 자료입니다. 스킬 본체는 [`skills/immersive-web-simulation-forge/`](skills/immersive-web-simulation-forge/)에 있습니다.
+
+## 프리뷰
+
+<table>
+  <tr>
+    <td width="33%" align="center">
+      <a href="examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/">
+        <img src="examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/preview.webp" width="100%" alt="AEROLAB X4 preview">
+        <br>
+        <sub><b>AEROLAB X4</b><br>Drone wind tunnel</sub>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="examples/0.6.0/VESPER_The_Garden_Remembers/vesper-garden/">
+        <img src="examples/0.6.0/VESPER_The_Garden_Remembers/vesper-garden/preview.webp" width="100%" alt="VESPER preview">
+        <br>
+        <sub><b>VESPER</b><br>The garden remembers</sub>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="examples/0.6.0/Pixel_Minions_Room_Explorer_Phase1/">
+        <img src="examples/0.6.0/Pixel_Minions_Room_Explorer_Phase1/preview.webp" width="100%" alt="Pixel Minions preview">
+        <br>
+        <sub><b>Pixel Minions</b><br>Room explorer</sub>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" align="center">
+      <a href="examples/0.6.0/k-holo-status-openworld-revision/k-holo-status-openworld/">
+        <img src="examples/0.6.0/k-holo-status-openworld-revision/k-holo-status-openworld/preview.webp" width="100%" alt="K-Holo Status revision preview">
+        <br>
+        <sub><b>K-Holo Status</b><br>Revision surface</sub>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="examples/0.6.0/k-holo-status-openworld/k-holo-status-openworld/">
+        <img src="examples/0.6.0/k-holo-status-openworld/k-holo-status-openworld/preview.webp" width="100%" alt="K-Holo Status preview">
+        <br>
+        <sub><b>K-Holo Status</b><br>Open world</sub>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="examples/0.4.0/aetherwild/">
+        <img src="examples/0.4.0/aetherwild/preview.webp" width="100%" alt="AETHERWILD preview">
+        <br>
+        <sub><b>AETHERWILD</b><br>The living meridian</sub>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" align="center">
+      <a href="examples/0.4.0/aetherra/">
+        <img src="examples/0.4.0/aetherra/preview.webp" width="100%" alt="AETHERRA preview">
+        <br>
+        <sub><b>AETHERRA</b><br>The breathing expanse</sub>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="examples/0.3.0/aetheris-open-world/">
+        <img src="examples/0.3.0/aetheris-open-world/preview.webp" width="100%" alt="AETHERIS preview">
+        <br>
+        <sub><b>AETHERIS</b><br>The living sky</sub>
+      </a>
+    </td>
+    <td width="33%" align="center">
+      <a href="examples/0.3.0/AETHERFALL_OPEN_WORLD/">
+        <img src="examples/0.3.0/AETHERFALL_OPEN_WORLD/preview.webp" width="100%" alt="AETHERFALL preview">
+        <br>
+        <sub><b>AETHERFALL</b><br>The open sky</sub>
+      </a>
+    </td>
+  </tr>
+</table>
 
 ## 핵심 구성
 
@@ -49,20 +122,20 @@ Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 
 
 `references/`에는 profile 선택, 물리 검증, parametric design, perceptual fidelity, 측정 기준 등의 상세 지침이 있습니다.
 
-## Requierments
+## Requirements
 
 Python 3.10 이상과 Node.js 20 이상이 필요합니다.
 
 스킬 패키지 상태를 확인합니다.
 
 ```bash
-python3 immersive-web-simulation-forge/scripts/forge.py doctor
+python3 skills/immersive-web-simulation-forge/scripts/forge.py doctor
 ```
 
-브라우저 실행 검증에는 Playwright가 필요합니다.
+브라우저 실행 검증에는 Playwright가 필요합니다. (optional)
 
 ```bash
-node immersive-web-simulation-forge/scripts/browser_verify.mjs my-project \
+node skills/immersive-web-simulation-forge/scripts/browser_verify.mjs my-project \
   --workflow-test \
   --domain-test
 ```
@@ -78,7 +151,7 @@ npx skills add ictseoyoungmin/immersive-web-simulation-forge --agent codex
 
 다른 에이전트를 대상으로 설치할 때는 `--agent` 값을 해당 에이전트 이름으로 바꿉니다.
 
-이 저장소에는 Codex용 `.codex-plugin/plugin.json`과 Claude Code용 `.claude-plugin/plugin.json`이 포함되어 있습니다. 두 매니페스트는 `skills/immersive-web-simulation-forge/`를 플러그인 진입점으로 노출하며, 실제 지침과 리소스는 canonical `immersive-web-simulation-forge/` 폴더에서 사용합니다.
+이 저장소에는 Codex용 `.codex-plugin/plugin.json`과 Claude Code용 `.claude-plugin/plugin.json`이 포함되어 있습니다. 스킬 지침과 리소스는 `skills/immersive-web-simulation-forge/` 단일 폴더에 들어 있습니다.
 
 ## 제작 기록
 
@@ -97,18 +170,17 @@ npx skills add ictseoyoungmin/immersive-web-simulation-forge --agent codex
 ├── .claude-plugin/                   # Claude Code plugin manifest
 ├── docs/                              # GitHub Pages 예제 전시 페이지
 ├── examples/                          # 버전별 브라우저 예제와 검증 자료
-├── skills/                            # Plugin-discoverable skill entry points
-│   └── immersive-web-simulation-forge/
-└── immersive-web-simulation-forge/    # 배포 대상 스킬 패키지
-    ├── SKILL.md                       # 스킬 지침
-    ├── agents/openai.yaml             # Codex 메타데이터
-    ├── skill.yaml                     # 런타임 메타데이터
-    ├── assets/                        # 아이콘 등 배포 자산
-    ├── kits/                          # 재사용 구현 모듈
-    ├── references/                    # 선택적으로 읽는 전문 지침
-    ├── scripts/                       # audit, verify, package 도구
-    ├── templates/                     # 계획·검증 템플릿
-    └── tests/                         # Forge 자체 테스트
+└── skills/                            # Plugin-discoverable skill packages
+    └── immersive-web-simulation-forge/
+        ├── SKILL.md                   # 스킬 지침
+        ├── agents/openai.yaml         # Codex 메타데이터
+        ├── skill.yaml                 # 런타임 메타데이터
+        ├── assets/                    # 아이콘 등 배포 자산
+        ├── kits/                      # 재사용 구현 모듈
+        ├── references/                # 선택적으로 읽는 전문 지침
+        ├── scripts/                   # audit, verify, package 도구
+        ├── templates/                 # 계획·검증 템플릿
+        └── tests/                     # Forge 자체 테스트
 ```
 
 ## 범위와 제한

@@ -37,7 +37,7 @@
       "Audit this WebGL project for fidelity and runtime risks."
     ],
     "brandColor": "#087D78",
-    "composerIcon": "./immersive-web-simulation-forge/assets/icon.svg",
-    "logo": "./immersive-web-simulation-forge/assets/icon.svg"
+    "composerIcon": "./skills/immersive-web-simulation-forge/assets/icon.svg",
+    "logo": "./skills/immersive-web-simulation-forge/assets/icon.svg"
   }
 }
