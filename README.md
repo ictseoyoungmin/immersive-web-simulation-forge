@@ -5,7 +5,7 @@
 </div>
 
 <p align="center">
-  <a href="docs/">Examples showcase</a> ·
+  <a href="https://ictseoyoungmin.github.io/immersive-web-simulation-forge/docs/">Interactive Demo</a> ·
   <a href="skills/immersive-web-simulation-forge/SKILL.md">Skill instructions</a>
 </p>
 
