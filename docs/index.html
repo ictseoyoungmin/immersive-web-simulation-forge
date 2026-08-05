@@ -54,23 +54,24 @@
           </div>
         </div>
 
-        <div class="hero-instrument" aria-label="Featured artifact: AEROLAB X4">
+        <div class="hero-instrument" id="hero-reel" aria-label="Featured examples reel">
           <div class="instrument-bar">
             <span><i class="tiny-dot"></i> FEATURED EXAMPLE / 06</span>
-            <span>FIELD 01 — AEROLAB X4</span>
+            <span id="reel-label">FIELD 01 — ARMORY BENCH</span>
           </div>
-          <div class="instrument-visual">
-            <video autoplay muted loop playsinline preload="metadata" poster="../examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/preview.webp" aria-label="AEROLAB X4 drone inside a wind tunnel">
-              <source src="../examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/AEROLAB-X4.mp4" type="video/mp4">
-            </video>
+          <div class="instrument-visual" id="reel-visual">
+            <video id="reel-video" muted playsinline preload="metadata"></video>
             <div class="visual-vignette"></div>
-            <div class="crosshair crosshair-a"></div>
             <div class="crosshair crosshair-b"></div>
-            <div class="hero-overlay overlay-top"><span>WIND VECTOR</span><b>8.0 m/s</b><small>000° / TURBULENT</small></div>
-            <div class="hero-overlay overlay-bottom"><span>CANONICAL STATE</span><b>DRONE + FIELD</b><small>FORCE · FLOW · TELEMETRY</small></div>
             <div class="scanline"></div>
+            <div class="reel-controls">
+              <button class="reel-btn reel-prev" type="button" aria-label="Previous example">‹</button>
+              <button class="reel-btn reel-play" type="button" aria-pressed="true" aria-label="Pause video"><span class="reel-play-icon"></span></button>
+              <button class="reel-btn reel-next" type="button" aria-label="Next example">›</button>
+            </div>
+            <div class="reel-dots" id="reel-dots"></div>
           </div>
-          <div class="instrument-footer"><span>INTERACTIVE ENGINEERING APPROXIMATION</span><span>OPEN EXAMPLE ↗</span></div>
+          <div class="instrument-footer"><span id="reel-claim">INTERACTIVE VISUAL CONCEPT</span><span>OPEN EXAMPLE ↗</span></div>
         </div>
       </section>
 
@@ -150,8 +151,8 @@ codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge</
 
         <div class="archive-toolbar">
           <div class="filter-group" role="group" aria-label="Filter archive by generation">
-            <button class="filter is-active" data-filter="all">ALL <span>09</span></button>
-            <button class="filter" data-filter="0.6">0.6 <span>04</span></button>
+            <button class="filter is-active" data-filter="all">ALL <span>10</span></button>
+            <button class="filter" data-filter="0.6">0.6 <span>05</span></button>
             <button class="filter" data-filter="0.4">0.4 <span>02</span></button>
             <button class="filter" data-filter="0.3">0.3 <span>03</span></button>
           </div>

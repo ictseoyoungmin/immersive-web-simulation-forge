@@ -98,7 +98,7 @@ button { color: inherit; font: inherit; }
 .brand-mark { display: grid; width: 38px; height: 38px; place-items: center; }
 .brand-mark img { width: 34px; height: 34px; }
 .brand-copy { display: grid; gap: 1px; }
-.eyebrow, .kicker, .system-state, .instrument-bar, .instrument-footer, .signal-strip, .archive-count, .filter, .product-badge, .command-head span, .copy-command, .ledger-label, .ledger-foot, .footer, .hero-readout span, .hero-overlay span, .hero-overlay small { font-family: var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.eyebrow, .kicker, .system-state, .instrument-bar, .instrument-footer, .signal-strip, .archive-count, .filter, .product-badge, .command-head span, .copy-command, .ledger-label, .ledger-foot, .footer, .hero-readout span { font-family: var(--mono); letter-spacing: .12em; text-transform: uppercase; }
 .eyebrow { color: var(--cyan); font-size: 9px; }
 .brand-name { font-size: 14px; font-weight: 700; letter-spacing: .12em; }
 .nav { display: flex; gap: 32px; margin-left: auto; color: var(--muted); font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
@@ -145,8 +145,7 @@ h1 em, h2 em, .closing h2 em { color: var(--cyan); font-family: var(--serif); fo
 .instrument-bar, .instrument-footer { display: flex; justify-content: space-between; gap: 20px; padding: 7px 8px 13px; color: var(--muted); font-size: 9px; }
 .instrument-bar span:first-child { color: var(--cyan); }
 .instrument-visual { position: relative; aspect-ratio: 1.38; overflow: hidden; background: var(--bg-deep); }
-.instrument-visual img, .instrument-visual video { width: 100%; height: 100%; display: block; object-fit: cover; filter: var(--hero-image-filter); transition: transform 1.2s cubic-bezier(.2, .7, .2, 1), filter .5s ease; }
-.hero-instrument:hover .instrument-visual img, .hero-instrument:hover .instrument-visual video { transform: scale(1.035); filter: var(--card-image-hover-filter); }
+.instrument-visual img, .instrument-visual video { width: 100%; height: 100%; display: block; object-fit: cover; filter: var(--hero-image-filter); }
 .visual-vignette { position: absolute; inset: 0; background: var(--vignette); }
 .scanline { position: absolute; top: 0; bottom: 0; width: 1px; opacity: .35; background: var(--cyan); box-shadow: 0 0 22px 2px var(--cyan); animation: scan 6s ease-in-out infinite; }
 @keyframes scan { 0%, 100% { left: 9%; opacity: 0; } 12%, 70% { opacity: .45; } 88% { left: 91%; opacity: 0; } }
@@ -154,15 +153,15 @@ h1 em, h2 em, .closing h2 em { color: var(--cyan); font-family: var(--serif); fo
 .crosshair::before, .crosshair::after { position: absolute; content: ""; background: rgba(185, 255, 241, .5); }
 .crosshair::before { top: 9px; left: -6px; width: 30px; height: 1px; }
 .crosshair::after { top: -6px; left: 9px; width: 1px; height: 30px; }
-.crosshair-a { top: 22%; left: 22%; }
 .crosshair-b { right: 17%; bottom: 26%; opacity: .55; transform: scale(.65); }
-.hero-overlay { position: absolute; display: grid; gap: 3px; padding: 9px 12px; border-left: 1px solid var(--cyan); background: var(--overlay-bg); backdrop-filter: blur(8px); }
-.hero-overlay span { color: var(--cyan); font-size: 8px; }
-.hero-overlay b { font-family: var(--mono); font-size: 15px; font-weight: 400; }
-.hero-overlay small { color: var(--muted); font-size: 8px; }
-.overlay-top { top: 18px; right: 18px; }
-.overlay-bottom { bottom: 18px; left: 18px; }
 .instrument-footer { padding: 13px 8px 3px; color: var(--faint); }
+.reel-controls { position: absolute; z-index: 2; left: 12px; bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.reel-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid rgba(233, 243, 239, .25); color: var(--muted); background: rgba(4, 13, 15, .55); backdrop-filter: blur(6px); font-family: var(--mono); font-size: 13px; line-height: 1; cursor: pointer; transition: color .2s ease, border-color .2s ease, background .2s ease; }
+.reel-btn:hover { color: var(--cyan); border-color: var(--cyan); }
+.reel-play-icon { display: block; font-size: 9px; letter-spacing: -1px; }
+.reel-dots { position: absolute; z-index: 2; right: 12px; bottom: 12px; display: flex; gap: 6px; }
+.reel-dot { width: 6px; height: 6px; padding: 0; border: 1px solid rgba(233, 243, 239, .4); border-radius: 50%; background: transparent; cursor: pointer; transition: background .2s ease, border-color .2s ease; }
+.reel-dot.is-active { border-color: var(--cyan); background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
 
 .signal-strip { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 0; color: var(--faint); font-size: 9px; }
 .signal-strip b { margin-right: auto; color: var(--muted); font-weight: 400; }
@@ -218,6 +217,7 @@ h1 em, h2 em, .closing h2 em { color: var(--cyan); font-family: var(--serif); fo
 .card-warning { position: absolute; z-index: 1; top: 10px; right: 11px; display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px solid var(--warning-line); color: var(--amber); background: var(--warning-bg); font-family: var(--mono); font-size: 8px; letter-spacing: .07em; text-transform: uppercase; }
 .card-warning i { display: block; width: 0; height: 0; border-right: 4px solid transparent; border-bottom: 7px solid var(--amber); border-left: 4px solid transparent; }
 .card-art-index { position: absolute; z-index: 1; right: 14px; bottom: 12px; color: rgba(233, 243, 239, .72); font-family: var(--mono); font-size: 10px; }
+.card-model { position: absolute; z-index: 1; left: 14px; bottom: 12px; padding: 3px 6px; color: #eafffb; background: rgba(4, 13, 15, .78); font-family: var(--mono); font-size: 8px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
 .card-body { display: flex; flex-direction: column; min-height: 181px; padding: 18px; }
 .card-meta { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px; color: var(--faint); font-family: var(--mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
 .card-meta span:last-child { color: var(--amber); }

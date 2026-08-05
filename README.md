@@ -23,10 +23,69 @@ Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 
 
 이 저장소의 `examples/`는 스킬로 제작된 결과물을 보여주는 전시·검증 자료입니다. 스킬 본체는 [`skills/immersive-web-simulation-forge/`](skills/immersive-web-simulation-forge/)에 있습니다.
 
-## 프리뷰
+## 사용법
+
+설치 후에는 대화창에서 `/immersive-web-simulation-forge`를 호출하고, 만들고 싶은 제품을 프롬프트로 설명하거나 이어지는 대화로 작업을 지시하면 됩니다. 에이전트가 스킬 지침에 따라 계획을 세우고 결과물을 구현합니다. 예시는 아래 [단일 프롬프트 예제](#제작-기록)를 참고하세요.
+
+### 요구사항
+
+Python 3.10 이상과 Node.js 20 이상이 필요합니다.
+
+스킬 패키지 상태를 확인합니다.
+
+```bash
+python3 skills/immersive-web-simulation-forge/scripts/forge.py doctor
+```
+
+브라우저 실행 검증에는 Playwright가 필요합니다. (optional)
+
+```bash
+node skills/immersive-web-simulation-forge/scripts/browser_verify.mjs my-project \
+  --workflow-test \
+  --domain-test
+```
+
+### 설치
+
+이 저장소를 독립 스킬로 설치하려면 다음 명령을 사용할 수 있습니다.
+
+다른 에이전트를 대상으로 설치할 때는 `--agent` 값을 해당 에이전트 이름으로 바꿉니다.
+
+```bash
+npx skills add ictseoyoungmin/immersive-web-simulation-forge --agent claude-code
+npx skills add ictseoyoungmin/immersive-web-simulation-forge --agent codex
+```
+
+Claude Code에서 플러그인 marketplace로 설치할 수도 있습니다.
+
+```text
+/plugin marketplace add ictseoyoungmin/immersive-web-simulation-forge
+/plugin install immersive-web-simulation-forge@immersive-web-simulation-forge
+/reload-plugins
+```
+
+Codex CLI에서는 같은 marketplace를 다음처럼 추가하고 설치합니다.
+
+```bash
+codex plugin marketplace add ictseoyoungmin/immersive-web-simulation-forge
+codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge
+```
+
+이 저장소에는 Codex용 `.codex-plugin/plugin.json`, Codex marketplace용 `.agents/plugins/marketplace.json`, Claude Code용 `.claude-plugin/plugin.json`과 `.claude-plugin/marketplace.json`이 포함되어 있습니다. 스킬 지침과 리소스는 `skills/immersive-web-simulation-forge/` 단일 폴더에 들어 있습니다.
+
+## 예제
+
+스킬을 설치한 뒤, 에이전트에게 만들고 싶은 제품을 프롬프트로 설명하면 아래와 같은 결과물이 나옵니다.
 
 <table>
   <tr>
+    <td width="33%" align="center">
+      <a href="examples/0.6.0/armory-bench/">
+        <img src="examples/0.6.0/armory-bench/assets/armory-bench-preview.png" width="100%" alt="ARMORY BENCH preview">
+        <br>
+        <sub><b>ARMORY BENCH</b><br>Modular weapon customization</sub>
+      </a>
+    </td>
     <td width="33%" align="center">
       <a href="examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/">
         <img src="examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/preview.webp" width="100%" alt="AEROLAB X4 preview">
@@ -41,6 +100,8 @@ Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 
         <sub><b>VESPER</b><br>The garden remembers</sub>
       </a>
     </td>
+  </tr>
+  <tr>
     <td width="33%" align="center">
       <a href="examples/0.6.0/Pixel_Minions_Room_Explorer_Phase1/">
         <img src="examples/0.6.0/Pixel_Minions_Room_Explorer_Phase1/2026-08-03-153501.png" width="100%" alt="Pixel Minions preview">
@@ -48,8 +109,6 @@ Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 
         <sub><b>Pixel Minions</b><br>Room explorer</sub>
       </a>
     </td>
-  </tr>
-  <tr>
     <td width="33%" align="center">
       <a href="examples/0.6.0/k-holo-status-openworld-revision/k-holo-status-openworld/">
         <img src="examples/0.6.0/k-holo-status-openworld-revision/k-holo-status-openworld/preview.webp" width="100%" alt="K-Holo Status revision preview">
@@ -64,6 +123,8 @@ Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 
         <sub><b>K-Holo Status</b><br>Open world</sub>
       </a>
     </td>
+  </tr>
+  <tr>
     <td width="33%" align="center">
       <a href="examples/0.4.0/aetherwild/">
         <img src="examples/0.4.0/aetherwild/preview.webp" width="100%" alt="AETHERWILD preview">
@@ -71,8 +132,6 @@ Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 
         <sub><b>AETHERWILD</b><br>The living meridian</sub>
       </a>
     </td>
-  </tr>
-  <tr>
     <td width="33%" align="center">
       <a href="examples/0.4.0/aetherra/">
         <img src="examples/0.4.0/aetherra/preview.webp" width="100%" alt="AETHERRA preview">
@@ -87,6 +146,8 @@ Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 
         <sub><b>AETHERIS</b><br>The living sky</sub>
       </a>
     </td>
+  </tr>
+  <tr>
     <td width="33%" align="center">
       <a href="examples/0.3.0/AETHERFALL_OPEN_WORLD/">
         <img src="examples/0.3.0/AETHERFALL_OPEN_WORLD/preview.webp" width="100%" alt="AETHERFALL preview">
@@ -94,6 +155,8 @@ Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 
         <sub><b>AETHERFALL</b><br>The open sky</sub>
       </a>
     </td>
+    <td width="33%"></td>
+    <td width="33%"></td>
   </tr>
 </table>
 
@@ -122,61 +185,14 @@ Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 
 
 `references/`에는 profile 선택, 물리 검증, parametric design, perceptual fidelity, 측정 기준 등의 상세 지침이 있습니다.
 
-## Requirements
-
-Python 3.10 이상과 Node.js 20 이상이 필요합니다.
-
-스킬 패키지 상태를 확인합니다.
-
-```bash
-python3 skills/immersive-web-simulation-forge/scripts/forge.py doctor
-```
-
-브라우저 실행 검증에는 Playwright가 필요합니다. (optional)
-
-```bash
-node skills/immersive-web-simulation-forge/scripts/browser_verify.mjs my-project \
-  --workflow-test \
-  --domain-test
-```
-
-## 설치
-
-이 저장소를 독립 스킬로 설치하려면 다음 명령을 사용할 수 있습니다.
-
-다른 에이전트를 대상으로 설치할 때는 `--agent` 값을 해당 에이전트 이름으로 바꿉니다.
-
-```bash
-npx skills add ictseoyoungmin/immersive-web-simulation-forge --agent claude-code
-npx skills add ictseoyoungmin/immersive-web-simulation-forge --agent codex
-```
-
-Claude Code에서 플러그인 marketplace로 설치할 수도 있습니다.
-
-```text
-/plugin marketplace add ictseoyoungmin/immersive-web-simulation-forge
-/plugin install immersive-web-simulation-forge@immersive-web-simulation-forge
-/reload-plugins
-```
-
-Codex CLI에서는 같은 marketplace를 다음처럼 추가하고 설치합니다.
-
-```bash
-codex plugin marketplace add ictseoyoungmin/immersive-web-simulation-forge
-codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge
-```
-
-
-이 저장소에는 Codex용 `.codex-plugin/plugin.json`, Codex marketplace용 `.agents/plugins/marketplace.json`, Claude Code용 `.claude-plugin/plugin.json`과 `.claude-plugin/marketplace.json`이 포함되어 있습니다. 스킬 지침과 리소스는 `skills/immersive-web-simulation-forge/` 단일 폴더에 들어 있습니다.
-
 ## 제작 기록
 
-이 스킬은 Codex `skill-creator`를 사용해 만들었습니다. 저장소의 예제는 `gpt-5.6-sol-high`를 사용해 단일 프롬프트로 작성된 결과물입니다. [`k-holo-status-openworld-revision`](examples/0.6.0/k-holo-status-openworld-revision/k-holo-status-openworld/README.md)은 첫 결과물에서 한번 수정된 결과입니다.
+이 스킬은 Codex `skill-creator`를 사용해 만들었습니다. 저장소의 예제는 대부분 `gpt-5.6-sol-high`를 사용해 단일 프롬프트로 작성된 결과물이며, [`armory-bench`](examples/0.6.0/armory-bench/)는 Claude Opus 5로 작성했습니다. [`k-holo-status-openworld-revision`](examples/0.6.0/k-holo-status-openworld-revision/k-holo-status-openworld/README.md)은 첫 결과물에서 한번 수정된 결과입니다.
 
 단일 프롬프트 예제:
 
 - [`examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/PROMPT.md`](examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/PROMPT.md)
-
+- [`examples/0.6.0/armory-bench/PROMPT.md`](examples/0.6.0/armory-bench/PROMPT.md)
 
 ## 저장소 구조
 
