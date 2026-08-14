@@ -35,3 +35,31 @@ Do not treat engine adoption as an upgrade by itself. A compact raw-WebGL implem
 Select raw WebGL only when the implementation owns the needed capital: scene/camera transforms, depth and culling, materials, lighting/contact, render targets/post, picking, disposal, diagnostics, and resize/context-loss handling.
 
 When most of that capital already exists, extend and harden it before rewriting merely for convenience.
+
+## v0.7 — authoring and provider boundaries
+
+Select the **authoring strategy** independently from renderer and compute boundary: `authored`, `procedural`, `reconstructed`, `generative`, `retrieved`, or `hybrid`.
+
+Before choosing a vendor or model, write the capability requirement. Examples:
+
+- image-generation capability;
+- segmentation capability;
+- reference-driven 3D reconstruction;
+- procedural geometry/code generation;
+- DCC scripting;
+- asset retrieval;
+- real-time browser renderer.
+
+Blender, Hunyuan, GPT Image, img2threejs, or other systems may satisfy those capabilities, but no v0.7 core schema or audit should require a specific provider.
+
+### Authority boundary
+
+Ask explicitly:
+
+1. What must remain canonical and editable?
+2. Which generated or reconstructed outputs are only proposals?
+3. What needs deterministic placement, scale, collision, or support reconciliation?
+4. What requires component hierarchy, pivots, sockets, or articulation?
+5. What fallback remains if an external provider is unavailable or low quality?
+
+When `hybrid` is selected, route asset classes by salience, repetition, interaction importance, editability, reference fidelity, authoring cost, and runtime cost. Read `asset-authoring.md`.

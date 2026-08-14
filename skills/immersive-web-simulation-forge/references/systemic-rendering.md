@@ -60,3 +60,28 @@ Events should perturb the existing system:
 4. recovery leaves a persistent state or scar.
 
 This creates a world response instead of a canned effect.
+
+## v0.7 — semantic world systemics
+
+**High world complexity comes from shared spatial semantics, not independent object placement.** A semantic region field should be an authoritative spatial input that multiple consumers interpret: terrain morphology, materials, ecology, route affordance, sound, fog, event response, interaction, and LOD can all change from the same state.
+
+### Global and regional consumers
+
+Separate world-wide consumers from regional realization:
+
+- global consumers preserve bounds, terrain continuity, horizon identity, macro routes, climate/state fields, and world events;
+- regional consumers add density, functional layouts, hero objects, local interactions, and inspection detail without rewriting global structure.
+
+### Authoring fidelity bands
+
+Extend near/mid/far beyond visibility:
+
+- `near`: explicit geometry, full material response, collision/contact, interaction, unique detail when justified;
+- `mid`: asset families, instancing, simplified collision/material, reduced update rate;
+- `far`: silhouette/macro geometry, low-frequency material, impostor/proxy, atmosphere, no irrelevant interaction.
+
+Representation, update rate, density, shadow policy, and interaction policy may all change by band. Use `kits/three/lod-bands.mjs` as a starting point.
+
+### Generated content is a proposal consumer
+
+Generative image/3D systems may consume canonical state and propose appearance or composition. They do not become an authoritative consumer by default. Reconcile proposed content back through explicit geometry, placement, domain, and runtime contracts before committing it to canonical state.

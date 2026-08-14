@@ -2,6 +2,14 @@
 
 A scene can have strong composition and sophisticated systems yet still look low-resolution. Treat clarity as a separate engineering and art-direction axis.
 
+## Contents
+
+- The four resolutions and fidelity contract
+- Capture versus performance adaptation
+- Reconstruction and clarity
+- Procedural-world and target-size review
+- Geometric, material, temporal, and multi-view fidelity
+
 ## The four resolutions
 
 Track these independently:
@@ -108,3 +116,44 @@ Inspect at 100% browser zoom and target CSS size. Review:
 A thumbnail can hide softness. A high-resolution PNG can also hide the fact that the scene was internally low-resolution.
 
 For performance evidence, read `measurement-integrity.md`. Fidelity capture and wall-clock performance measurement are separate runs; neither application-reported FPS nor a software-renderer screenshot proves target-device performance.
+
+## v0.7 — geometric, material, and temporal fidelity
+
+Pixel density is only one fidelity axis for 3D products. Track these additional axes when consequential.
+
+### Geometric fidelity
+
+Review:
+
+- silhouette stability from more than one view;
+- proportion and scale relationships;
+- attachment/pivot correctness;
+- terrain/support contact and penetration;
+- surface continuity and shading-normal stability;
+- component separability when editability is promised.
+
+### Material fidelity
+
+Review:
+
+- material identity under the intended lighting range;
+- texture/procedural scale relative to object dimensions;
+- region/material boundary correctness;
+- roughness/specular response and contact readability;
+- whether post-processing is masking weak base materials.
+
+### Temporal fidelity
+
+Review while the product moves:
+
+- camera motion and pointer-look stability;
+- LOD/representation transition popping;
+- animation and state-transition continuity;
+- temporal reconstruction/shimmering;
+- collision/contact stability under interaction.
+
+### Multi-view target-size review
+
+A hero screenshot cannot certify a 3D asset or world. Choose views that prove the critical subject: hero/default, alternate, side/rear where needed, close-up contact/material, transformed interaction state, failure/recovery state, and stress state. Capture only consequential views, but record which subject each view proves.
+
+Keep visual evidence separate from domain validation and performance measurement. A stable silhouette does not prove physics, and a fast frame trace does not prove geometry quality.

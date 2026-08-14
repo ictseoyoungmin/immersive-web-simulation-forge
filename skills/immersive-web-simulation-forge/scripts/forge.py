@@ -19,7 +19,7 @@ PLAN_LOCATIONS = (Path('.forge/FORGE_PLAN.json'), Path('FORGE_PLAN.json'))
 VALIDATION_LOCATIONS = (Path('.forge/VALIDATION.json'), Path('VALIDATION.json'))
 KNOWN_FORGE_TOOLS = {
     'score_guard.py', 'visual_diff.py', 'audit_project.py', 'build_inline.py',
-    'browser_verify.py', 'static_check.py', 'make_validation_report.py', 'fidelity_audit.mjs'
+    'browser_verify.py', 'static_check.py', 'make_validation_report.py', 'fidelity_audit.mjs', 'asset_fidelity_audit.mjs'
 }
 EXCLUDED_PARTS = {'.git', '.forge', 'evidence', 'coverage', 'node_modules', '__pycache__', '.pytest_cache', '.playwright'}
 COMMON_RUNTIME_FILES = {
@@ -44,6 +44,11 @@ PROFILE_MODES = {
 DOMAIN_PROFILES = {'simulation-lab', 'design-studio', 'data-instrument', 'operations-panel'}
 CLAIM_LEVELS = {'visual-concept', 'educational', 'decision-support', 'engineering'}
 WORKLOADS = {'interactive', 'batch', 'streaming', 'long-running'}
+AUTHORING_STRATEGIES = {'authored', 'procedural', 'reconstructed', 'generative', 'retrieved', 'hybrid'}
+ASSET_STYLE_MODES = {'realistic','reference-driven','stylized','low-poly','abstract','technical','mixed'}
+ASSET_SCOPE_MODES = {'single-subject','multi-object','world-scale','non-object'}
+PLAN_VERSION = 6
+VALIDATION_VERSION = 6
 
 
 def read_first(root: Path, locations: Iterable[Path]) -> tuple[dict[str, Any], Path | None]:
@@ -153,7 +158,7 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
     ambition = str(plan.get('ambition', '')).strip()
     experience_mode = str(plan.get('experience_mode', '')).strip()
     delivery = str(plan.get('delivery_mode', 'lean')).strip()
-    checks.append(check('plan schema', version >= 4, f'version {version}; v0.6 requires plan version 4'))
+    checks.append(check('plan schema', version >= PLAN_VERSION, f'version {version}; v0.7 requires plan version {PLAN_VERSION}; run `forge.py migrate <project>` for v4/v5 plans'))
     checks.append(check('profile', profile in PROFILES, profile or 'missing'))
     checks.append(check('ambition', ambition in {'prototype','production','showcase','flagship'}, ambition or 'missing'))
     checks.append(check('experience mode', experience_mode in EXPERIENCE_MODES, experience_mode or 'missing'))
@@ -256,6 +261,39 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
         ok = equivalent and 'spike' in rationale
         checks.append(check('representation ceiling fit', ok, 'equivalent proven by spike' if ok else f'{stack} selected for {sorted(required_caps & spatial_caps)} without proven equivalent'))
 
+    authoring_strategy = plan.get('authoring_strategy', {}) if isinstance(plan, dict) else {}
+    authoring_mode = str(authoring_strategy.get('mode', '')).strip().lower()
+    checks.append(check('authoring strategy', authoring_mode in AUTHORING_STRATEGIES, authoring_mode or 'missing'))
+    authority_policy = str(authoring_strategy.get('authority_policy', '')).strip().lower()
+    checks.append(check('authoring authority boundary', bool(authority_policy), authority_policy or 'missing'))
+    asset_classes = authoring_strategy.get('asset_classes', []) if isinstance(authoring_strategy, dict) else []
+    bad_asset_routes = []
+    for item in asset_classes if isinstance(asset_classes, list) else []:
+        if not isinstance(item, dict):
+            bad_asset_routes.append(item); continue
+        strategy = str(item.get('strategy', '')).strip().lower()
+        if not nonempty(item.get('class')) or strategy not in (AUTHORING_STRATEGIES - {'hybrid'}) or not nonempty(item.get('reason')):
+            bad_asset_routes.append(item)
+    if authoring_mode == 'hybrid':
+        checks.append(check('hybrid asset routing', bool(asset_classes) and not bad_asset_routes, f'routes={len(asset_classes)}; invalid={len(bad_asset_routes)}'))
+    elif bad_asset_routes:
+        checks.append(check('asset routing shape', False, f'{len(bad_asset_routes)} invalid asset route(s)'))
+
+    generative_strategies = {'generative', 'reconstructed'}
+    uses_generative_pipeline = authoring_mode in generative_strategies or any(
+        isinstance(item, dict) and str(item.get('strategy', '')).strip().lower() in generative_strategies
+        for item in asset_classes if isinstance(asset_classes, list)
+    )
+    if authoring_mode == 'hybrid':
+        uses_generative_pipeline = uses_generative_pipeline or any(
+            isinstance(item, dict) and str(item.get('strategy', '')).strip().lower() in generative_strategies
+            for item in asset_classes
+        )
+    if uses_generative_pipeline:
+        provider_caps = authoring_strategy.get('provider_capabilities', []) if isinstance(authoring_strategy, dict) else []
+        proposal_ok = 'proposal' in authority_policy and bool(provider_caps) and nonempty(authoring_strategy.get('fallback_policy'))
+        checks.append(check('generative proposal boundary', proposal_ok, f'proposal-policy={"yes" if "proposal" in authority_policy else "no"}; capabilities={len(provider_caps)}; fallback={"yes" if nonempty(authoring_strategy.get("fallback_policy")) else "no"}'))
+
     domain = plan.get('domain', {}) if isinstance(plan, dict) else {}
     claim_level = str(domain.get('claim_level', '')).strip()
     domain_validation_contract = domain.get('validation', {}) if isinstance(domain, dict) else {}
@@ -325,6 +363,114 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
     consequential_consumers = [item for item in consumers if isinstance(item, dict) and nonempty(item.get('name')) and nonempty(item.get('consequence'))]
     min_consumers = 3 if ambition in {'showcase', 'flagship'} else 2
     checks.append(check('consequential canonical-state consumers', len(consequential_consumers) >= min_consumers, f'{len(consequential_consumers)} consequential consumer(s), need {min_consumers}'))
+
+    spatial = plan.get('spatial', {}) if isinstance(plan, dict) else {}
+    spatial_applicable = bool(spatial.get('applicable', False)) if isinstance(spatial, dict) else False
+    if profile != 'full-window-world' and spatial_applicable:
+        checks.append(check('optional spatial contract', True, 'enabled explicitly for a non-world spatial product', severity='warning'))
+    if profile == 'full-window-world' and ambition in {'showcase', 'flagship'}:
+        checks.append(check('world spatial contract enabled', spatial_applicable, 'enabled' if spatial_applicable else 'full-window-world showcase/flagship requires spatial.applicable=true'))
+    if spatial_applicable:
+        specification = str(spatial.get('specification', '')).strip()
+        coordinate = str(spatial.get('coordinate_system', '')).strip()
+        world_spec = spatial.get('world_spec', {}) if isinstance(spatial, dict) else {}
+        regions = world_spec.get('regions', []) if isinstance(world_spec, dict) else []
+        relations = world_spec.get('relations', []) if isinstance(world_spec, dict) else []
+        semantic_fields = spatial.get('semantic_fields', []) if isinstance(spatial, dict) else []
+        terrain = spatial.get('terrain', {}) if isinstance(spatial, dict) else {}
+        traversal = spatial.get('traversal', {}) if isinstance(spatial, dict) else {}
+        refinement = spatial.get('regional_refinement', {}) if isinstance(spatial, dict) else {}
+        placement = spatial.get('placement', {}) if isinstance(spatial, dict) else {}
+        scale_bands = spatial.get('scale_bands', {}) if isinstance(spatial, dict) else {}
+        checks.append(check('spatial specification', specification == 'WorldSpec' or profile != 'full-window-world', specification or 'missing'))
+        domain_coordinate = str(plan.get('domain', {}).get('units', {}).get('coordinate_system', '')).strip() if isinstance(plan.get('domain', {}), dict) else ''
+        coordinate_ok = bool(coordinate) and (not domain_coordinate or coordinate.lower() == domain_coordinate.lower())
+        checks.append(check('spatial coordinate authority', coordinate_ok, f'spatial={coordinate or "missing"}; domain={domain_coordinate or "not-recorded"}'))
+        if profile == 'full-window-world' and ambition in {'showcase', 'flagship'}:
+            region_ids = [item.get('id') for item in regions if isinstance(item, dict) and nonempty(item.get('id'))]
+            relation_ok = bool(relations) and all(isinstance(item, dict) and nonempty(item.get('from')) and nonempty(item.get('to')) and nonempty(item.get('relation')) for item in relations)
+            checks.append(check('WorldSpec regions', len(region_ids) >= 2 and len(set(region_ids)) == len(region_ids), f'regions={len(region_ids)}; unique={len(set(region_ids))}'))
+            checks.append(check('WorldSpec relations', relation_ok, f'relations={len(relations)}'))
+            checks.append(check('semantic spatial fields', bool(semantic_fields), f'{len(semantic_fields)} field(s)'))
+            terrain_ok = nonempty(terrain.get('authority')) and bool(terrain.get('region_conditioned')) and bool(terrain.get('boundary_blending'))
+            checks.append(check('terrain authority', terrain_ok, f'authority={terrain.get("authority") or "missing"}; regional={bool(terrain.get("region_conditioned"))}; blend={bool(terrain.get("boundary_blending"))}'))
+            traversal_ok = nonempty(traversal.get('authority')) and bool(traversal.get('primary_routes')) and bool(traversal.get('recovery_routes'))
+            checks.append(check('traversal continuity contract', traversal_ok, f'authority={traversal.get("authority") or "missing"}; routes={len(traversal.get("primary_routes", []))}; recovery={len(traversal.get("recovery_routes", []))}'))
+            refinement_ok = nonempty(refinement.get('strategy')) and nonempty(refinement.get('representative_region'))
+            checks.append(check('regional refinement contract', refinement_ok, f'strategy={refinement.get("strategy") or "missing"}; representative={refinement.get("representative_region") or "missing"}'))
+            placement_ok = nonempty(placement.get('authority')) and nonempty(placement.get('support_policy')) and nonempty(placement.get('collision_policy')) and nonempty(placement.get('navigation_clearance_policy'))
+            checks.append(check('spatial placement authority', placement_ok, f'authority={placement.get("authority") or "missing"}; support={"yes" if nonempty(placement.get("support_policy")) else "no"}; collision={"yes" if nonempty(placement.get("collision_policy")) else "no"}'))
+            band_ok = isinstance(scale_bands, dict) and all(isinstance(scale_bands.get(name), dict) and bool(scale_bands.get(name)) for name in ('near','mid','far'))
+            checks.append(check('authoring fidelity bands', band_ok, 'near/mid/far defined' if band_ok else 'near/mid/far representation policies incomplete'))
+
+    construction_evidence = plan.get('construction_evidence', {}) if isinstance(plan, dict) else {}
+    critical_subjects = construction_evidence.get('critical_subjects', []) if isinstance(construction_evidence, dict) else []
+    required_views = construction_evidence.get('required_views', []) if isinstance(construction_evidence, dict) else []
+    reference_objects = construction_evidence.get('reference_critical_objects', []) if isinstance(construction_evidence, dict) else []
+    if spatial_applicable and ambition == 'flagship':
+        checks.append(check('multi-angle evidence plan', bool(critical_subjects) and len(required_views) >= 2, f'subjects={len(critical_subjects)}; views={len(required_views)}'))
+        vertical = construction_evidence.get('vertical_slice', {}) if isinstance(construction_evidence, dict) else {}
+        vertical_ok = bool(vertical.get('global_skeleton')) and nonempty(vertical.get('representative_region')) and nonempty(vertical.get('hero_asset')) and bool(vertical.get('placement_contact_path')) and bool(vertical.get('runtime_interaction'))
+        checks.append(check('world vertical slice contract', vertical_ok, f'global={bool(vertical.get("global_skeleton"))}; region={vertical.get("representative_region") or "missing"}; hero={vertical.get("hero_asset") or "missing"}; contact={bool(vertical.get("placement_contact_path"))}; interaction={bool(vertical.get("runtime_interaction"))}'))
+    bad_reference_objects = []
+    for item in reference_objects if isinstance(reference_objects, list) else []:
+        if not isinstance(item, dict) or not nonempty(item.get('id')) or not nonempty(item.get('object_spec')) or not bool(item.get('critical_views')):
+            bad_reference_objects.append(item)
+        elif implemented and item.get('structure_reviewed') is not True:
+            bad_reference_objects.append(item)
+    if reference_objects:
+        checks.append(check('reference-critical object contract', not bad_reference_objects, f'objects={len(reference_objects)}; invalid={len(bad_reference_objects)}'))
+
+    asset_fidelity = plan.get('asset_fidelity', {}) if isinstance(plan, dict) else {}
+    flagship_asset_gate = ambition == 'flagship' and spatial_applicable
+    if flagship_asset_gate:
+        asset_applicable = bool(asset_fidelity.get('applicable', False))
+        style_mode = str(asset_fidelity.get('style_mode', '')).strip().lower()
+        scope_mode = str(asset_fidelity.get('scope_mode', '')).strip().lower()
+        checks.append(check('flagship asset fidelity enabled', asset_applicable, 'enabled' if asset_applicable else 'flagship spatial work requires asset_fidelity.applicable=true'))
+        checks.append(check('asset style contract', style_mode in ASSET_STYLE_MODES and nonempty(asset_fidelity.get('visual_target')), f'style={style_mode or "missing"}; target={"yes" if nonempty(asset_fidelity.get("visual_target")) else "missing"}'))
+        checks.append(check('asset scope contract', scope_mode in ASSET_SCOPE_MODES, scope_mode or 'missing'))
+        if profile == 'full-window-world':
+            checks.append(check('world-scale asset scope', scope_mode == 'world-scale', f'full-window-world flagship requires world-scale; got {scope_mode or "missing"}'))
+        non_object_allowed = scope_mode == 'non-object' and profile not in {'full-window-world','game-arena'} and style_mode in {'abstract','technical'} and nonempty(asset_fidelity.get('non_object_identity_rationale'))
+        object_based = scope_mode != 'non-object'
+        if scope_mode == 'non-object':
+            checks.append(check('non-object asset rationale', non_object_allowed, str(asset_fidelity.get('non_object_identity_rationale', '')).strip() or 'missing/invalid non-object exemption'))
+        if object_based:
+            identity_classes = asset_fidelity.get('identity_critical_classes', []) if isinstance(asset_fidelity, dict) else []
+            hero_assets = asset_fidelity.get('hero_assets', []) if isinstance(asset_fidelity, dict) else []
+            representative_families = asset_fidelity.get('representative_families', []) if isinstance(asset_fidelity, dict) else []
+            checks.append(check('identity-critical asset coverage', bool(identity_classes) and bool(hero_assets), f'classes={len(identity_classes)}; heroes={len(hero_assets)}'))
+            if scope_mode == 'world-scale':
+                checks.append(check('representative asset families', bool(representative_families), f'families={len(representative_families)}'))
+            band_budgets = asset_fidelity.get('band_budgets', {}) if isinstance(asset_fidelity, dict) else {}
+            required_bands = ('near','mid','far') if scope_mode == 'world-scale' else ('near',)
+            required_band_fields = ('representation','geometry','materials','contact','shadows','variation')
+            bad_bands = []
+            for band in required_bands:
+                budget = band_budgets.get(band, {}) if isinstance(band_budgets, dict) else {}
+                if not isinstance(budget, dict) or any(not nonempty(budget.get(field)) for field in required_band_fields):
+                    bad_bands.append(band)
+            checks.append(check('asset authoring band budgets', not bad_bands, 'complete' if not bad_bands else f'incomplete bands={bad_bands}'))
+            primitive = asset_fidelity.get('primitive_policy', {}) if isinstance(asset_fidelity, dict) else {}
+            intentional_primitive = bool(primitive.get('intentional_primitive_style'))
+            primitive_style_ok = not intentional_primitive or style_mode in {'low-poly','abstract'}
+            max_placeholder = finite_number(primitive.get('near_placeholder_ratio_max'))
+            ratio_policy_ok = max_placeholder is not None and 0 <= max_placeholder <= (1.0 if intentional_primitive and primitive_style_ok else 0.20)
+            checks.append(check('primitive placeholder policy', primitive_style_ok and ratio_policy_ok and nonempty(primitive.get('replacement_trigger')), f'intentional={intentional_primitive}; style={style_mode}; max={max_placeholder}; replacement={"yes" if nonempty(primitive.get("replacement_trigger")) else "missing"}'))
+            material_contract = asset_fidelity.get('material_contract', {}) if isinstance(asset_fidelity, dict) else {}
+            material_ok = bool(material_contract.get('families')) and nonempty(material_contract.get('roughness_response'))
+            if style_mode in {'realistic','reference-driven','mixed'}:
+                material_ok = material_ok and nonempty(material_contract.get('normal_or_surface_detail')) and (nonempty(material_contract.get('weathering_or_variation')) or nonempty(material_contract.get('wetness_or_environment_response')))
+            checks.append(check('asset material contract', material_ok, f'families={len(material_contract.get("families", []))}; roughness={"yes" if nonempty(material_contract.get("roughness_response")) else "missing"}'))
+            evidence_req = asset_fidelity.get('evidence_requirements', {}) if isinstance(asset_fidelity, dict) else {}
+            hero_views = evidence_req.get('hero_views', []) if isinstance(evidence_req, dict) else []
+            evidence_contract_ok = len(hero_views) >= 3 and bool(evidence_req.get('target_size_review')) and bool(evidence_req.get('runtime_asset_report'))
+            if scope_mode == 'world-scale':
+                evidence_contract_ok = evidence_contract_ok and bool(evidence_req.get('family_views'))
+            checks.append(check('asset evidence contract', evidence_contract_ok, f'hero views={len(hero_views)}; family views={len(evidence_req.get("family_views", []))}; target-size={bool(evidence_req.get("target_size_review"))}; runtime-report={bool(evidence_req.get("runtime_asset_report"))}'))
+            if style_mode in {'realistic','reference-driven'}:
+                checks.append(check('reference-sensitive object coverage', bool(reference_objects), f'reference-critical objects={len(reference_objects)}; realistic/reference-driven flagship cannot mark all object fidelity not-applicable'))
 
     visual_raw = plan.get('visual', {})
     visual = visual_raw if isinstance(visual_raw, dict) else {}
@@ -444,10 +590,15 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
 
     if validation_path:
         browser = validation.get('browser', {})
-        checks.append(check('validation schema', int(validation.get('version', 0) or 0) >= 4, f"version {validation.get('version', 0)}"))
+        checks.append(check('validation schema', int(validation.get('version', 0) or 0) >= VALIDATION_VERSION, f"version {validation.get('version', 0)}; v0.7 requires {VALIDATION_VERSION}"))
         workflow_review = validation.get('workflow_review', {}) if isinstance(validation, dict) else {}
         domain_validation = validation.get('domain_validation', {}) if isinstance(validation, dict) else {}
         runtime_validation = validation.get('runtime_engineering', {}) if isinstance(validation, dict) else {}
+        construction_validation = validation.get('construction_validation', {}) if isinstance(validation, dict) else {}
+        asset_fidelity_validation = validation.get('asset_fidelity_validation', {}) if isinstance(validation, dict) else {}
+        spatial_validation = validation.get('spatial_validation', {}) if isinstance(validation, dict) else {}
+        evidence_review = validation.get('evidence_review', {}) if isinstance(validation, dict) else {}
+        visual_validation = validation.get('visual_review', {}) if isinstance(validation, dict) else {}
         validation_fidelity = validation.get('fidelity', {}) if isinstance(validation, dict) else {}
         validation_input = validation.get('input', {}) if isinstance(validation, dict) else {}
         performance = validation.get('performance', {}) if isinstance(validation, dict) else {}
@@ -485,6 +636,48 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
             if profile == 'design-studio':
                 checks.append(check('runtime history/persistence validation', str(runtime_validation.get('history_persistence', '')).lower() == 'pass', str(runtime_validation.get('history_persistence', 'not-run'))))
                 checks.append(check('selection/transform runtime review', str(validation_input.get('selection_transform_review', '')).lower() == 'pass', str(validation_input.get('selection_transform_review', 'not-run'))))
+            if spatial_applicable:
+                spatial_status = str(spatial_validation.get('status', '')).lower()
+                spatial_defects = spatial_validation.get('unresolved_defects', []) if isinstance(spatial_validation, dict) else []
+                spatial_checks = ('region_continuity','placement','contact','collision','navigation_clearance','lod_assignment')
+                spatial_ok = spatial_status == 'pass' and all(str(spatial_validation.get(key, '')).lower() in {'pass','not-applicable'} for key in spatial_checks) and not spatial_defects
+                checks.append(check('runtime spatial validation', spatial_ok, f'status={spatial_status or "missing"}; defects={len(spatial_defects)}'))
+            if uses_generative_pipeline or reference_objects:
+                construction_status = str(construction_validation.get('status', '')).lower()
+                construction_defects = construction_validation.get('unresolved_defects', []) if isinstance(construction_validation, dict) else []
+                proposal_ok = not uses_generative_pipeline or str(construction_validation.get('proposal_boundary', '')).lower() == 'pass'
+                reference_ok = not reference_objects or str(construction_validation.get('reference_critical_objects', '')).lower() == 'pass'
+                checks.append(check('runtime construction validation', construction_status == 'pass' and proposal_ok and reference_ok and not construction_defects, f'status={construction_status or "missing"}; proposal={construction_validation.get("proposal_boundary")}; reference={construction_validation.get("reference_critical_objects")}; defects={len(construction_defects)}'))
+            if flagship_asset_gate:
+                asset_status = str(asset_fidelity_validation.get('status', '')).lower()
+                asset_defects = asset_fidelity_validation.get('unresolved_defects', []) if isinstance(asset_fidelity_validation, dict) else []
+                scope_mode = str(asset_fidelity.get('scope_mode', '')).strip().lower() if isinstance(asset_fidelity, dict) else ''
+                if scope_mode == 'non-object':
+                    asset_checks = ('multi_view_coverage','target_size_review','runtime_asset_report')
+                else:
+                    asset_checks = ('identity_critical_coverage','hero_asset_evidence','near_band_quality','material_validation','contact_validation','placeholder_audit','multi_view_coverage','target_size_review','runtime_asset_report')
+                runtime_asset_ok = asset_status == 'pass' and all(str(asset_fidelity_validation.get(key, '')).lower() == 'pass' for key in asset_checks) and not asset_defects
+                if scope_mode == 'world-scale':
+                    runtime_asset_ok = runtime_asset_ok and str(asset_fidelity_validation.get('representative_family_evidence', '')).lower() == 'pass'
+                max_placeholder = finite_number(asset_fidelity.get('primitive_policy', {}).get('near_placeholder_ratio_max')) if isinstance(asset_fidelity, dict) else None
+                measured_ratio = finite_number(asset_fidelity_validation.get('near_placeholder_ratio'))
+                intentional = bool(asset_fidelity.get('primitive_policy', {}).get('intentional_primitive_style')) if isinstance(asset_fidelity, dict) else False
+                if scope_mode != 'non-object' and not intentional:
+                    runtime_asset_ok = runtime_asset_ok and measured_ratio is not None and max_placeholder is not None and measured_ratio <= max_placeholder + 1e-9
+                checks.append(check('runtime asset fidelity validation', runtime_asset_ok, f'status={asset_status or "missing"}; ratio={measured_ratio}; max={max_placeholder}; defects={len(asset_defects)}'))
+                audit_path = root / '.forge' / 'asset-fidelity-audit.json'
+                audit_report = {}
+                if audit_path.exists():
+                    try: audit_report = json.loads(audit_path.read_text(encoding='utf-8'))
+                    except Exception: audit_report = {}
+                audit_report_ok = bool(audit_report) and str(audit_report.get('status', '')).lower() == 'pass' and bool(audit_report.get('flagship', False))
+                checks.append(check('runtime asset fidelity audit evidence', audit_report_ok, (f'{audit_path}; flagship={audit_report.get("flagship")}' if audit_report else 'missing .forge/asset-fidelity-audit.json')))
+            evidence_status = str(evidence_review.get('status', '')).lower()
+            evidence_ok = evidence_status == 'pass' and bool(evidence_review.get('blockers_have_evidence')) and bool(evidence_review.get('regression_reviewed')) and not evidence_review.get('unresolved_defects', [])
+            checks.append(check('evidence-driven regression review', evidence_ok, f'status={evidence_status or "missing"}; blockers-evidenced={bool(evidence_review.get("blockers_have_evidence"))}; regression={bool(evidence_review.get("regression_reviewed"))}'))
+            visual_defects = visual_validation.get('unresolved_defects', []) if isinstance(visual_validation, dict) else []
+            visual_ok = len(visual_validation.get('evidence_views', [])) >= (2 if spatial_applicable else 1) and bool(visual_validation.get('regression_reviewed')) and not visual_defects
+            checks.append(check('visual evidence set', visual_ok, f'views={len(visual_validation.get("evidence_views", []))}; regression={bool(visual_validation.get("regression_reviewed"))}; defects={len(visual_defects)}'))
             if heavy_compute:
                 cancel_ok = str(runtime_validation.get('cancellation_recovery', '')).lower() == 'pass' and str(runtime_validation.get('stale_result_rejection', '')).lower() == 'pass'
                 checks.append(check('runtime compute cancellation/recovery', cancel_ok, f"cancel={runtime_validation.get('cancellation_recovery')}; stale={runtime_validation.get('stale_result_rejection')}"))
@@ -519,7 +712,10 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
                     )
                     checks.append(check('compute job latency evidence', job_ok, f"scenarios={len(job_latency.get('scenarios', []))}; median={job_latency.get('median_ms')}; p95={job_latency.get('p95_ms')}; cancel={job_latency.get('cancellation_ms')}"))
             if measured and bool(performance.get('software_renderer', False)):
-                checks.append(check('representative performance renderer', False, 'software renderer measurements are measurement-limited, not target performance', severity='warning'))
+                # Flagship is a certification claim: software-renderer-only measurement cannot certify
+                # target performance, so it blocks flagship completion instead of merely warning.
+                renderer_severity = 'error' if ambition == 'flagship' else 'warning'
+                checks.append(check('representative performance renderer', False, 'software renderer measurements are measurement-limited, not target performance; flagship requires representative-GPU evidence or an explicit lower ambition', severity=renderer_severity))
 
     if for_package:
         included = collect_runtime_files(root, plan)
@@ -581,7 +777,7 @@ def compact_validation(root: Path, audit: dict[str, Any]) -> dict[str, Any]:
     visual = validation.get('visual_review', {}) if isinstance(validation, dict) else {}
     performance = validation.get('performance', {}) if isinstance(validation, dict) else {}
     return {
-        'version': 4,
+        'version': VALIDATION_VERSION,
         'implemented': bool(validation.get('implemented', audit['status'] == 'pass')) if isinstance(validation, dict) else audit['status'] == 'pass',
         'audit_status': audit['status'],
         'static_checks': validation.get('static_checks', {'status':'not-recorded'}) if isinstance(validation, dict) else {'status':'not-recorded'},
@@ -594,12 +790,21 @@ def compact_validation(root: Path, audit: dict[str, Any]) -> dict[str, Any]:
         },
         'visual_review': {
             'status': visual.get('status', 'creator-reviewed / provisional'),
+            'evidence_views': visual.get('evidence_views', []),
+            'critical_subjects': visual.get('critical_subjects', []),
+            'locked_passes': visual.get('locked_passes', []),
+            'defect_queue': visual.get('defect_queue', []),
             'hardening_rounds': visual.get('hardening_rounds', 0),
+            'regression_reviewed': bool(visual.get('regression_reviewed', False)),
             'unresolved_defects': visual.get('unresolved_defects', [])
         },
         'workflow_review': validation.get('workflow_review', {}) if isinstance(validation, dict) else {},
         'domain_validation': validation.get('domain_validation', {}) if isinstance(validation, dict) else {},
         'runtime_engineering': validation.get('runtime_engineering', {}) if isinstance(validation, dict) else {},
+        'construction_validation': validation.get('construction_validation', {}) if isinstance(validation, dict) else {},
+        'asset_fidelity_validation': validation.get('asset_fidelity_validation', {}) if isinstance(validation, dict) else {},
+        'spatial_validation': validation.get('spatial_validation', {}) if isinstance(validation, dict) else {},
+        'evidence_review': validation.get('evidence_review', {}) if isinstance(validation, dict) else {},
         'performance': performance,
         'fidelity': validation.get('fidelity', {}) if isinstance(validation, dict) else {},
         'input': validation.get('input', {}) if isinstance(validation, dict) else {},
@@ -658,6 +863,49 @@ def package_project(root: Path, out: Path) -> dict[str, Any]:
     return {'status':'pass', 'zip':str(out), 'files':len(files) + 1 + int(bool(preview)), 'bytes':out.stat().st_size, 'audit':audit}
 
 
+
+def merge_defaults(defaults: Any, value: Any) -> Any:
+    if isinstance(defaults, dict) and isinstance(value, dict):
+        merged = {key: merge_defaults(default, value.get(key)) if key in value else default for key, default in defaults.items()}
+        for key, item in value.items():
+            if key not in merged: merged[key] = item
+        return merged
+    return value if value is not None else defaults
+
+
+def migrate_project(root: Path) -> dict[str, Any]:
+    plan, plan_path = read_first(root, PLAN_LOCATIONS)
+    if not plan_path:
+        raise SystemExit('FORGE_PLAN.json is required for migration')
+    current = int(plan.get('version', 0) or 0)
+    if current >= PLAN_VERSION:
+        return {'status':'pass','project':str(root),'from':current,'to':current,'changed':False}
+    if current not in {4, 5}:
+        raise SystemExit(f'unsupported plan migration: version {current}; v0.7 migrates v4 or v5 only')
+    template = json.loads((SKILL_ROOT / 'templates/FORGE_PLAN.json').read_text(encoding='utf-8'))
+    migrated = merge_defaults(template, plan)
+    migrated['version'] = PLAN_VERSION
+    profile = str(migrated.get('profile', '')).strip()
+    if profile == 'full-window-world':
+        migrated['spatial']['applicable'] = True
+        migrated['spatial']['specification'] = 'WorldSpec'
+    if str(migrated.get('ambition', '')).strip() == 'flagship' and bool(migrated.get('spatial', {}).get('applicable', False)):
+        migrated['asset_fidelity']['applicable'] = True
+        if profile == 'full-window-world': migrated['asset_fidelity']['scope_mode'] = 'world-scale'
+    backup = plan_path.with_name(plan_path.name + f'.v{current}.bak')
+    if not backup.exists(): shutil.copy2(plan_path, backup)
+    write_json(plan_path, migrated)
+    validation, validation_path = read_first(root, VALIDATION_LOCATIONS)
+    if validation_path and int(validation.get('version', 0) or 0) < VALIDATION_VERSION:
+        vtemplate = json.loads((SKILL_ROOT / 'templates/VALIDATION.json').read_text(encoding='utf-8'))
+        vmigrated = merge_defaults(vtemplate, validation)
+        vmigrated['version'] = VALIDATION_VERSION
+        vcurrent = int(validation.get('version', 0) or 0)
+        vbackup = validation_path.with_name(validation_path.name + f'.v{vcurrent}.bak')
+        if not vbackup.exists(): shutil.copy2(validation_path, vbackup)
+        write_json(validation_path, vmigrated)
+    return {'status':'pass','project':str(root),'from':current,'to':PLAN_VERSION,'changed':True,'backup':str(backup)}
+
 def init_project(root: Path, profile: str, ambition: str) -> dict[str, Any]:
     root.mkdir(parents=True, exist_ok=True)
     forge = root / '.forge'
@@ -667,6 +915,12 @@ def init_project(root: Path, profile: str, ambition: str) -> dict[str, Any]:
     plan['ambition'] = ambition
     plan['experience_mode'] = PROFILE_MODES[profile]
     plan['experience']['workflow']['kind'] = PROFILE_MODES[profile]
+    if profile == 'full-window-world':
+        plan['spatial']['applicable'] = True
+        plan['spatial']['specification'] = 'WorldSpec'
+    if ambition == 'flagship' and bool(plan.get('spatial', {}).get('applicable', False)):
+        plan['asset_fidelity']['applicable'] = True
+        if profile == 'full-window-world': plan['asset_fidelity']['scope_mode'] = 'world-scale'
     if profile == 'design-studio':
         plan['authoring']['applicable'] = True
     if profile in {'data-instrument', 'operations-panel'}:
@@ -684,7 +938,7 @@ def init_project(root: Path, profile: str, ambition: str) -> dict[str, Any]:
 def doctor() -> dict[str, Any]:
     required = [
         'SKILL.md','skill.yaml','templates/FORGE_PLAN.json','templates/VALIDATION.json',
-        'scripts/forge.py','scripts/check_html.mjs','scripts/browser_verify.mjs','scripts/fidelity_audit.mjs',
+        'scripts/forge.py','scripts/check_html.mjs','scripts/browser_verify.mjs','scripts/fidelity_audit.mjs','scripts/spatial_audit.mjs',
         'kits/runtime/lifecycle.mjs','kits/runtime/frame-loop.mjs','kits/runtime/resolution-policy.mjs',
         'kits/systems/shared-field.mjs','kits/systems/world-director.mjs',
         'kits/three/panel-renderer.mjs','kits/three/shared-field-texture.mjs',
@@ -693,10 +947,14 @@ def doctor() -> dict[str, Any]:
         'kits/compute/task-runner.mjs','kits/authoring/history-store.mjs',
         'kits/authoring/parameter-store.mjs','kits/three/picking-gizmo.mjs',
         'kits/analysis/measurement-series.mjs','kits/io/project-codec.mjs',
+        'kits/world/semantic-region-field.mjs','kits/world/region-graph.mjs','kits/world/region-heightfield.mjs','kits/world/scatter-policy.mjs',
+        'kits/spatial/surface-anchor.mjs','kits/spatial/placement-solver.mjs','kits/spatial/contact-validator.mjs','kits/authoring/asset-router.mjs','kits/authoring/asset-fidelity-policy.mjs',
+        'scripts/asset_fidelity_audit.mjs','references/asset-fidelity-gates.md',
         'references/perceptual-fidelity.md','references/interface-fidelity.md',
         'references/experience-concentration.md','references/measurement-integrity.md',
         'references/physics-simulation.md','references/parametric-design.md',
-        'references/editor-interaction.md','references/compute-data-pipeline.md'
+        'references/editor-interaction.md','references/compute-data-pipeline.md',
+        'references/world-authoring.md','references/asset-authoring.md','references/spatial-reconciliation.md','references/evidence-driven-hardening.md'
     ]
     missing = [name for name in required if not (SKILL_ROOT / name).exists()]
     py_error = None
@@ -713,24 +971,42 @@ def doctor() -> dict[str, Any]:
     suite = unittest.defaultTestLoader.discover(str(SKILL_ROOT / 'tests'), pattern='test_*.py')
     runner = unittest.TextTestRunner(stream=open(os.devnull,'w'), verbosity=0)
     result = runner.run(suite)
+
+    # playwright is listed as an optional dependency, but browser_verify.mjs hard-blocks
+    # (exit 2) without it, and it is required infrastructure for any flagship browser/evidence
+    # verification. doctor previously never checked this, so `doctor` could report pass while
+    # flagship browser verification was actually unrunnable. Surface it as a warning rather than
+    # a hard failure, since non-browser-verification workflows genuinely do not need it.
+    playwright_probe = subprocess.run(['node', '-e', "require.resolve('playwright')"], capture_output=True, text=True, cwd=str(SKILL_ROOT))
+    playwright_available = playwright_probe.returncode == 0
+    warnings = [] if playwright_available else [
+        'playwright is not resolvable from the skill root; scripts/browser_verify.mjs (including --evidence-suite) '
+        'and any flagship browser-verification requirement will be blocked until it is installed (`npx playwright install`).'
+    ]
+
     status = 'pass' if not missing and not py_error and all(item['ok'] for item in node_checks) and result.wasSuccessful() else 'fail'
     return {
         'status':status,
         'missing':missing,
         'python_error':py_error,
         'node_checks':node_checks,
-        'tests':{'run':result.testsRun,'failures':len(result.failures),'errors':len(result.errors)}
+        'tests':{'run':result.testsRun,'failures':len(result.failures),'errors':len(result.errors)},
+        'playwright_available':playwright_available,
+        'warnings':warnings
     }
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description='Immersive Web Simulation Forge v0.6')
+    parser = argparse.ArgumentParser(description='Immersive Web Simulation Forge v0.7')
     sub = parser.add_subparsers(dest='command', required=True)
 
     init_p = sub.add_parser('init')
     init_p.add_argument('project')
     init_p.add_argument('--profile', default='simulation-lab', choices=sorted(PROFILES))
     init_p.add_argument('--ambition', default='production', choices=['prototype','production','showcase','flagship'])
+
+    migrate_p = sub.add_parser('migrate')
+    migrate_p.add_argument('project')
 
     audit_p = sub.add_parser('audit')
     audit_p.add_argument('project')
@@ -746,6 +1022,8 @@ def main() -> int:
 
     if args.command == 'init':
         report = init_project(Path(args.project).resolve(), args.profile, args.ambition)
+    elif args.command == 'migrate':
+        report = migrate_project(Path(args.project).resolve())
     elif args.command == 'audit':
         report = audit_project(Path(args.project).resolve(), args.for_package)
         if args.out: write_json(Path(args.out), report)

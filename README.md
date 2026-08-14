@@ -1,17 +1,18 @@
 <div align="center">
   <img src="skills/immersive-web-simulation-forge/assets/icon.svg" width="96" height="96" alt="Immersive Web Simulation Forge icon">
   <h1>Immersive Web Simulation Forge</h1>
-  <p>브라우저 기반 월드, 시뮬레이션, 데이터 도구, 인터랙티브 제품을 설계·구현·검증하기 위한 Codex 스킬 패키지</p>
+  <p>브라우저 기반 spatial product, 오픈월드, 시뮬레이션, 디자인 도구를 설계·구현·검증·하드닝하는 expert engineering 스킬 패키지</p>
 </div>
 
 <p align="center">
   <a href="https://ictseoyoungmin.github.io/immersive-web-simulation-forge/docs/">Interactive Demo</a> ·
-  <a href="skills/immersive-web-simulation-forge/SKILL.md">Skill instructions</a>
+  <a href="skills/immersive-web-simulation-forge/SKILL.md">Skill instructions</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
 </p>
 
 ## 개요
 
-Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 때 필요한 설계 기준, 재사용 모듈, 검증 도구를 묶은 스킬입니다.
+Immersive Web Simulation Forge v0.7은 인터랙티브 브라우저 제품의 제품 설계, 도메인 검증, 런타임 엔지니어링, spatial authoring, hybrid asset orchestration, evidence-driven visual QA를 하나의 품질 체계로 묶고, **spatial flagship의 오브젝트/에셋 품질을 실제 audit gate로 강제**하는 스킬입니다.
 
 다음과 같은 제품 유형을 대상으로 합니다.
 
@@ -22,6 +23,34 @@ Immersive Web Simulation Forge는 인터랙티브 브라우저 제품을 만들 
 - ambient system과 dashboard panel
 
 이 저장소의 `examples/`는 스킬로 제작된 결과물을 보여주는 전시·검증 자료입니다. 스킬 본체는 [`skills/immersive-web-simulation-forge/`](skills/immersive-web-simulation-forge/)에 있습니다.
+
+## v0.7 — Structured Spatial Authoring & Asset Fidelity Gates
+
+v0.7은 WorldSpec·Asset Router·spatial reconciliation을 도입하고, “계획상 hybrid인데 런타임은 primitive blockout”인 결과를 flagship으로 통과시키지 않도록 스키마와 audit를 강화합니다.
+
+- **`asset_fidelity` v6 contract** — `style_mode`, `scope_mode`, visual target, identity-critical classes, hero assets, representative families, Near/Mid/Far authoring budget
+- **Primitive placeholder gate** — 현실/레퍼런스 지향 flagship에서 Near placeholder ratio 기본 상한 15%, identity-critical primitive-only 금지
+- **Reference-sensitive default** — realistic/reference-driven spatial flagship은 `reference_critical_objects=not-applicable`로 전부 우회할 수 없음
+- **Runtime asset evidence** — `window.__FORGE__.reportAssetEvidence()`로 실제 화면에 올라간 object/family/material/contact/placeholder 상태를 보고
+- **Asset fidelity audit** — `asset_fidelity_audit.mjs`가 hero/family coverage, near placeholder, material region, contact, shadow, multi-view, target-size evidence를 검사
+- **Package blocker** — spatial flagship은 `.forge/asset-fidelity-audit.json`과 `asset_fidelity_validation`이 둘 다 PASS여야 완료
+- **Intentional low-poly escape hatch** — `low-poly`/`abstract`는 primitive vocabulary를 의도적으로 사용할 수 있지만 silhouette·material grouping·contact·multi-view evidence는 여전히 요구
+
+세 개의 기존 ledger(Product Outcome / Domain Validity / Runtime Engineering)는 그대로 유지합니다. Asset Quality를 별도 ledger로 추가하지 않고, **Product Outcome을 증명하는 강제 evidence gate**로 다룹니다.
+
+### Spatial authoring foundation
+
+- `WorldSpec`, semantic regions, global→regional world construction
+- authored/procedural/reconstructed/generative/retrieved/hybrid Asset Router
+- `ObjectSpec`, pass locking, deterministic placement/contact reconciliation
+- multi-angle evidence와 Capture→Inspect→Repair→Regression loop
+
+기존 공개 v0.6(v4) 및 호환 가능한 사전 후보(v5) 프로젝트는 다음으로 v6 스키마로 migration할 수 있습니다. migration은 필드만 보존·추가하며 flagship asset evidence를 자동으로 꾸며내지 않습니다.
+
+```bash
+python3 skills/immersive-web-simulation-forge/scripts/forge.py migrate my-project
+```
+
 
 ## 사용법
 
@@ -43,6 +72,23 @@ python3 skills/immersive-web-simulation-forge/scripts/forge.py doctor
 node skills/immersive-web-simulation-forge/scripts/browser_verify.mjs my-project \
   --workflow-test \
   --domain-test
+```
+
+3D/world 프로젝트는 deterministic spatial evidence도 검사할 수 있습니다.
+
+```bash
+node skills/immersive-web-simulation-forge/scripts/spatial_audit.mjs my-project \
+  --out my-project/.forge/spatial.json
+
+node skills/immersive-web-simulation-forge/scripts/browser_verify.mjs my-project \
+  --evidence-suite \
+  --evidence-views hero,alternate,interaction \
+  --screenshot-dir my-project/.forge/evidence \
+  --out my-project/.forge/evidence.json
+
+node skills/immersive-web-simulation-forge/scripts/asset_fidelity_audit.mjs \
+  my-project/.forge/evidence.json --flagship \
+  --out my-project/.forge/asset-fidelity-audit.json
 ```
 
 ### 설치
@@ -189,14 +235,16 @@ codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge
 
 - `runtime/` — 고정 스텝 프레임 루프, lifecycle, 해상도 정책
 - `compute/` — Worker 또는 메인 스레드 작업 실행, 진행률, 취소
-- `authoring/` — 파라미터 정의, undo/redo, 상태 변경
+- `authoring/` — 파라미터 정의, undo/redo, 상태 변경, hybrid asset routing
 - `io/` — 버전이 있는 프로젝트 직렬화, migration, round trip
-- `systems/` — 공유 필드와 이벤트 디렉터
-- `three/`, `canvas/`, `webgl/` — 공간 렌더링, 필드, resolve와 후처리 기반
+- `systems/` — 공유 필드와 semantic-region-aware 이벤트 디렉터
+- `world/` — semantic region field, RegionGraph, region-aware height field, scatter policy
+- `spatial/` — surface anchor, placement solver, contact/collision validation
+- `three/`, `canvas/`, `webgl/` — 공간 렌더링, representation-aware LOD, field, resolve와 후처리 기반
 - `analysis/` — 측정 시리즈, 요약, plot과 CSV 출력
 - `input/`, `ui/` — pointer look과 SVG 아이콘 시스템
 
-`references/`에는 profile 선택, 물리 검증, parametric design, perceptual fidelity, 측정 기준 등의 상세 지침이 있습니다.
+`references/`에는 profile 선택, 물리 검증, parametric design, world/asset authoring, spatial reconciliation, perceptual fidelity, evidence-driven hardening, 측정 기준 등의 상세 지침이 있습니다.
 
 ## 제작 기록
 
@@ -222,8 +270,8 @@ codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge
         ├── agents/openai.yaml         # Codex 메타데이터
         ├── skill.yaml                 # 런타임 메타데이터
         ├── assets/                    # 아이콘 등 배포 자산
-        ├── kits/                      # 재사용 구현 모듈
-        ├── references/                # 선택적으로 읽는 전문 지침
+        ├── kits/                      # 재사용 구현 모듈 (world/spatial/authoring 포함)
+        ├── references/                # product/domain/world/asset/spatial 전문 지침
         ├── scripts/                   # audit, verify, package 도구
         ├── templates/                 # 계획·검증 템플릿
         └── tests/                     # Forge 자체 테스트
@@ -235,6 +283,15 @@ codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge
 - 공학적 또는 의사결정 지원 수준의 주장은 외부 기준, 알려진 사례, 허용오차와 검토 기록이 필요합니다.
 - 브라우저 성능 결과는 GPU, 브라우저, 해상도와 실행 환경에 따라 달라질 수 있습니다.
 - `examples/`는 스킬 패키지 자체에 필수인 런타임 파일이 아니라 전시·검증 자료입니다.
+
+
+### v0.7 non-goals
+
+- 자체 text-to-3D foundation model을 포함하지 않습니다.
+- Blender 또는 특정 생성 모델을 필수 dependency로 만들지 않습니다.
+- 모든 asset을 자동 생성하거나 모든 profile에 WorldSpec을 요구하지 않습니다.
+- `one prompt → production world`를 보장하지 않습니다.
+- 고품질 asset을 자동 생성하는 foundation model을 내장하지 않습니다. 대신 필요한 경우 retrieved/reconstructed/generative/authored route를 선택하고 런타임 결과를 검증합니다.
 
 ## 라이선스
 

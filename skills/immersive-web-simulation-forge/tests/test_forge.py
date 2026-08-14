@@ -18,7 +18,7 @@ spec.loader.exec_module(forge)
 
 
 def valid_plan(stack='three.js'):
-    return {
+    plan = {
         'version': 4,
         'profile': 'full-window-world',
         'ambition': 'flagship',
@@ -203,12 +203,87 @@ def valid_plan(stack='three.js'):
         },
         'package': {'runtime_roots': ['index.html', 'src', 'assets'], 'include_preview': False, 'preview_path': ''}
     }
+    plan['version'] = 6
+    plan['authoring_strategy'] = {
+        'mode': 'authored', 'authority_policy': 'generated-content-is-proposal',
+        'provider_capabilities': [], 'providers': [], 'asset_classes': [],
+        'reuse_policy': 'unique hero + reusable terrain families',
+        'generation_budget': 'generation only when it improves local diversity',
+        'fallback_policy': 'procedural/authored fallback'
+    }
+    plan['spatial'] = {
+        'applicable': True, 'specification': 'WorldSpec',
+        'coordinate_system': 'right-handed Y-up',
+        'world_spec': {
+            'scale': {'unit': 'm', 'authored_extent': [-200,-200,200,200], 'explorable_extent': [-190,-190,190,190]},
+            'regions': [
+                {'id':'spawn-meadow','role':'entry'}, {'id':'relay-valley','role':'pursuit'}, {'id':'crown-ridge','role':'resolution'}
+            ],
+            'relations': [
+                {'from':'spawn-meadow','to':'relay-valley','relation':'connects'},
+                {'from':'relay-valley','to':'crown-ridge','relation':'reachable'}
+            ],
+            'landmarks': [{'id':'split-crown','region':'crown-ridge'}],
+            'asset_families': ['relay-stones','wind-grass','ridge-rocks'],
+            'material_families': ['wet-grass','weathered-stone','relay-glass'],
+            'interaction_zones': ['relay-approach','crown-chamber']
+        },
+        'semantic_fields': [{'name':'wind-region-field','channels':['routeAffinity','wetness','grassResponse']}],
+        'terrain': {'authority':'height-field','region_conditioned':True,'boundary_blending':True,'operators':['ridge','basin'],'water_or_non_heightfield_exceptions':[]},
+        'traversal': {'authority':'region graph + collision','primary_routes':['spawn→relay','relay→crown'],'required_clearances':['relay approach 2m'],'recovery_routes':['return to last awakened relay']},
+        'regional_refinement': {'strategy':'global→regional','representative_region':'relay-valley','terrain_conditioned':True},
+        'placement': {'authority':'terrain ray + support/collision checks','camera_grounded':True,'support_policy':'bottom probes','collision_policy':'reject protected overlap','navigation_clearance_policy':'preserve 2m routes'},
+        'scale_bands': {
+            'near': {'representation':'explicit','interaction':'full'},
+            'mid': {'representation':'instanced-family','interaction':'limited'},
+            'far': {'representation':'silhouette-proxy','interaction':'none'}
+        }
+    }
+    plan['asset_fidelity'] = {
+        'applicable': True, 'style_mode': 'stylized', 'scope_mode': 'world-scale',
+        'visual_target': 'Premium authored island world with readable hero silhouettes and materially distinct near assets.',
+        'identity_critical_classes': ['split-crown', 'wind-relay'],
+        'hero_assets': ['split-crown'],
+        'representative_families': ['relay-stones', 'ridge-rocks'],
+        'non_object_identity_rationale': '',
+        'band_budgets': {
+            'near': {'representation':'explicit authored meshes','geometry':'hero silhouette + component form','materials':'multi-region authored materials','contact':'support probes + collision','shadows':'cast+receive','variation':'unique hero + family variants'},
+            'mid': {'representation':'instanced authored families','geometry':'simplified family meshes','materials':'shared family materials','contact':'shared proxies','shadows':'selective cast+receive','variation':'seeded family variants'},
+            'far': {'representation':'silhouette proxies','geometry':'macro silhouette','materials':'macro material family','contact':'not-applicable proxy policy','shadows':'receive or baked proxy','variation':'skyline rhythm variants'}
+        },
+        'primitive_policy': {
+            'intentional_primitive_style': False, 'near_placeholder_ratio_max': 0.15, 'exceptions': [],
+            'replacement_trigger': 'replace primitive-only identity-critical and repeated near placeholders before flagship completion'
+        },
+        'material_contract': {
+            'families': ['rough stone','relay glass','wet grass'],
+            'weathering_or_variation': 'seeded moss and edge variation',
+            'roughness_response': 'stone rough, glass smooth, wetness lowers roughness',
+            'normal_or_surface_detail': 'stone normal breakup and grass normals',
+            'wetness_or_environment_response': 'rain darkens stone and increases relay reflections'
+        },
+        'evidence_requirements': {
+            'hero_views':['hero','three-quarter','side-or-rear','close-material','contact'],
+            'family_views':['representative-near','representative-mid'],
+            'target_size_review':True, 'runtime_asset_report':True
+        }
+    }
+    plan['construction_evidence'] = {
+        'critical_subjects': ['split crown','relay contact','valley route'],
+        'required_views': ['hero','alternate','interaction'],
+        'reference_critical_objects': [],
+        'pass_plan': ['structure','spatial','interaction','appearance','performance','delivery'],
+        'provenance': [],
+        'vertical_slice': {'global_skeleton':True,'representative_region':'relay-valley','hero_asset':'split crown','placement_contact_path':True,'runtime_interaction':True}
+    }
+    return plan
+
 
 
 def valid_validation(profile='full-window-world', claim_level='visual-concept'):
     domain_applicable = profile in forge.DOMAIN_PROFILES
     return {
-        'version': 4,
+        'version': 6,
         'implemented': True,
         'browser': {'executed': True, 'intended_route': True},
         'workflow_review': {
@@ -232,7 +307,17 @@ def valid_validation(profile='full-window-world', claim_level='visual-concept'):
             'cancellation_recovery': 'pass', 'stale_result_rejection': 'pass',
             'unresolved_defects': []
         },
-        'visual_review': {'status': 'creator-reviewed / provisional', 'hardening_rounds': 2, 'unresolved_defects': []},
+        'construction_validation': {'status':'pass','authoring_strategy':'pass','proposal_boundary':'not-applicable','provider_provenance':'not-applicable','reference_critical_objects':'not-applicable','pass_locking':'pass','unresolved_defects':[]},
+        'asset_fidelity_validation': {
+            'status':'pass','style_mode':'stylized','identity_critical_coverage':'pass','hero_asset_evidence':'pass',
+            'representative_family_evidence':'pass','near_band_quality':'pass','material_validation':'pass',
+            'contact_validation':'pass','placeholder_audit':'pass','multi_view_coverage':'pass','target_size_review':'pass',
+            'runtime_asset_report':'pass','near_placeholder_ratio':0.05,'identity_critical_count':2,'hero_asset_count':1,
+            'representative_family_count':2,'evidence_views':['hero','three-quarter','contact'],'unresolved_defects':[]
+        },
+        'spatial_validation': {'status':'pass' if profile == 'full-window-world' else 'not-applicable','region_continuity':'pass' if profile == 'full-window-world' else 'not-applicable','placement':'pass' if profile == 'full-window-world' else 'not-applicable','contact':'pass' if profile == 'full-window-world' else 'not-applicable','collision':'pass' if profile == 'full-window-world' else 'not-applicable','navigation_clearance':'pass' if profile == 'full-window-world' else 'not-applicable','lod_assignment':'pass' if profile == 'full-window-world' else 'not-applicable','unresolved_defects':[]},
+        'evidence_review': {'status':'pass','scenario_matrix':['default','transformed'],'before_after_pairs':['hero-before→hero-after'],'blockers_have_evidence':True,'regression_reviewed':True,'unresolved_defects':[]},
+        'visual_review': {'status': 'creator-reviewed / provisional', 'evidence_views':['hero','alternate'] if profile == 'full-window-world' else ['hero'], 'critical_subjects':['hero system'], 'locked_passes':['structure','interaction','appearance'], 'defect_queue':[], 'hardening_rounds': 2, 'regression_reviewed':True, 'unresolved_defects': []},
         'performance': {
             'measured': True, 'measurement_block': '',
             'source': 'external-requestAnimationFrame-wall-clock', 'warmup_ms': 1500,
@@ -258,6 +343,7 @@ def valid_validation(profile='full-window-world', claim_level='visual-concept'):
 def valid_simulation_plan():
     plan = deepcopy(valid_plan())
     plan['profile'] = 'simulation-lab'
+    plan['spatial'] = deepcopy(json.loads((SKILL_ROOT / 'templates/FORGE_PLAN.json').read_text()))['spatial']
     plan['experience_mode'] = 'instrument'
     plan['user_request']['summary'] = 'A browser laboratory for a damped spring-mass system'
     plan['experience']['core_promise'] = 'Configure a spring, see its motion and energy, and compare reproducible runs.'
@@ -337,6 +423,7 @@ def valid_simulation_plan():
 def valid_design_plan():
     plan = deepcopy(valid_plan())
     plan['profile'] = 'design-studio'
+    plan['spatial'] = deepcopy(json.loads((SKILL_ROOT / 'templates/FORGE_PLAN.json').read_text()))['spatial']
     plan['experience_mode'] = 'authoring'
     plan['user_request']['summary'] = 'A high-end parametric helicopter concept design studio'
     plan['experience']['core_promise'] = 'Shape, compare, validate, and export a coherent helicopter concept.'
@@ -409,6 +496,13 @@ def make_project(root: Path, plan=None, html=None, validation=None):
     (root / 'README.md').write_text('# Demo\n', encoding='utf-8')
     (root / '.forge/FORGE_PLAN.json').write_text(json.dumps(plan or valid_plan()), encoding='utf-8')
     (root / '.forge/VALIDATION.json').write_text(json.dumps(validation or valid_validation()), encoding='utf-8')
+    effective_plan = plan or valid_plan()
+    if effective_plan.get('ambition') == 'flagship' and effective_plan.get('spatial', {}).get('applicable'):
+        (root / '.forge/asset-fidelity-audit.json').write_text(json.dumps({
+            'status':'pass','flagship':True,'contract':'asset-fidelity/v1',
+            'metrics':{'near_placeholder_ratio':0.05,'identity_critical_count':2,'hero_asset_count':1,'family_count':2},
+            'findings':[]
+        }), encoding='utf-8')
 
 
 class ForgeTests(unittest.TestCase):
@@ -428,7 +522,7 @@ class ForgeTests(unittest.TestCase):
                 root = Path(td) / profile
                 forge.init_project(root, profile, 'production')
                 plan = json.loads((root / '.forge/FORGE_PLAN.json').read_text())
-                self.assertEqual(plan['version'], 4)
+                self.assertEqual(plan['version'], 6)
                 self.assertEqual(plan['experience_mode'], mode)
                 self.assertEqual(plan['experience']['workflow']['kind'], mode)
             self.assertTrue(json.loads((Path(td) / 'design-studio/.forge/FORGE_PLAN.json').read_text())['authoring']['applicable'])

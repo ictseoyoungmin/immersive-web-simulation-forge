@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 const args = process.argv.slice(2);
 const positional = args.find(arg => !arg.startsWith('--'));
 if (!positional) {
-  console.error('Usage: browser_verify.mjs <project-or-entry> [--capture | --measure] [--out file] [--viewport 1200x720] [--screenshot file] [--min-ratio 0.9] [--warmup-ms 1500] [--measure-ms 3000] [--samples 3] [--scenario name] [--pointer-test] [--workflow-test] [--domain-test] [--executable path] [--browser-arg value]');
+  console.error('Usage: browser_verify.mjs <project-or-entry> [--capture | --measure] [--out file] [--viewport 1200x720] [--screenshot file] [--min-ratio 0.9] [--warmup-ms 1500] [--measure-ms 3000] [--samples 3] [--scenario name] [--pointer-test] [--workflow-test] [--domain-test] [--evidence-suite] [--evidence-views hero,alternate] [--screenshot-dir dir] [--executable path] [--browser-arg value]');
   process.exit(2);
 }
 
@@ -35,6 +35,9 @@ const measure = args.includes('--measure');
 const pointerTest = args.includes('--pointer-test');
 const workflowTest = args.includes('--workflow-test');
 const domainTest = args.includes('--domain-test');
+const evidenceSuite = args.includes('--evidence-suite');
+const evidenceViews = String(valueAfter('--evidence-views', 'hero,alternate')).split(',').map(value => value.trim()).filter(Boolean);
+const screenshotDir = valueAfter('--screenshot-dir');
 const screenshot = valueAfter('--screenshot');
 const minRatio = Number(valueAfter('--min-ratio', capture ? '0.9' : '0'));
 const warmupMs = Math.max(0, Number(valueAfter('--warmup-ms', measure ? '1500' : '800')));
@@ -48,6 +51,10 @@ if (capture && measure) {
   console.error('Capture and performance measurement must be separate runs.');
   process.exit(2);
 }
+if (measure && (screenshot || evidenceSuite)) {
+  console.error('Do not combine performance measurement with screenshot/evidence capture.');
+  process.exit(2);
+}
 if (measure && screenshot) {
   console.error('Do not take a screenshot during a performance run.');
   process.exit(2);
@@ -55,6 +62,7 @@ if (measure && screenshot) {
 
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 if (screenshot) fs.mkdirSync(path.dirname(path.resolve(screenshot)), { recursive: true });
+if (screenshotDir) fs.mkdirSync(path.resolve(screenshotDir), { recursive: true });
 
 const contentTypes = {
   '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css',
@@ -99,13 +107,13 @@ await new Promise((resolve, reject) => {
   server.listen(0, '127.0.0.1', resolve);
 });
 
-const query = capture ? '?forgeCapture=1&forgePreset=presentation' : '';
+const query = (capture || evidenceSuite) ? '?forgeCapture=1&forgePreset=presentation' : '';
 const url = `http://127.0.0.1:${server.address().port}/${encodeURI(entry)}${query}`;
 const report = {
-  status: 'pass', executed: true, intended_route: true, mode: capture ? 'capture' : measure ? 'performance' : (workflowTest || domainTest) ? 'product-verification' : 'smoke',
+  status: 'pass', executed: true, intended_route: true, mode: evidenceSuite ? 'evidence-suite' : capture ? 'capture' : measure ? 'performance' : (workflowTest || domainTest) ? 'product-verification' : 'smoke',
   url, viewport, scenario, capture_mode_requested: capture,
   console_errors: [], page_errors: [], request_failures: [], metrics: {}, performance: null,
-  pointer_direction: null, workflow: null, domain: null, limitations: []
+  pointer_direction: null, workflow: null, domain: null, evidence: evidenceSuite ? { views: [], scene: null, spatial: null, asset: null } : null, limitations: []
 };
 
 async function collectMetrics(page) {
@@ -195,6 +203,28 @@ async function runForgeVerificationHook(page, hookName, scenarioName) {
   }, { hookName, scenario: scenarioName });
 }
 
+async function runOptionalReportHook(page, hookName) {
+  return page.evaluate(async name => {
+    const hook = window.__FORGE__?.[name];
+    if (typeof hook !== 'function') return { status: 'not-applicable', reason: `window.__FORGE__.${name} is not available` };
+    try {
+      const result = await hook();
+      return result && typeof result === 'object' ? { status: result.status || 'pass', ...result } : { status: result === false ? 'fail' : 'pass', result };
+    } catch (error) { return { status: 'fail', error: String(error?.stack || error) }; }
+  }, hookName);
+}
+
+async function prepareEvidenceView(page, view, scenarioName) {
+  return page.evaluate(async ({ viewName, scenario }) => {
+    const hook = window.__FORGE__?.prepareEvidenceView;
+    if (typeof hook !== 'function') return { status: 'not-applicable', view: viewName };
+    try {
+      const result = await hook(viewName, scenario);
+      return result && typeof result === 'object' ? { status: result.status || 'pass', view: viewName, ...result } : { status: result === false ? 'fail' : 'pass', view: viewName, result };
+    } catch (error) { return { status: 'fail', view: viewName, error: String(error?.stack || error) }; }
+  }, { viewName: view, scenario: scenarioName });
+}
+
 function signedDegrees(after, before) {
   return ((after - before + 540) % 360) - 180;
 }
@@ -219,13 +249,34 @@ try {
     document.dispatchEvent(new CustomEvent('forge:verification-scenario', {
       detail: { capture: captureMode, scenario: scenarioName }
     }));
-  }, { captureMode: capture, scenarioName: scenario });
+  }, { captureMode: capture || evidenceSuite, scenarioName: scenario });
 
   await page.waitForTimeout(warmupMs);
   report.metrics = await collectMetrics(page);
   const ratios = report.metrics.canvases.map(canvas => Math.min(canvas.ratioX, canvas.ratioY)).filter(value => value > 0);
   report.metrics.minimum_canvas_ratio = ratios.length ? Math.min(...ratios) : null;
   report.metrics.software_renderer = report.metrics.canvases.some(canvas => canvas.software === true);
+
+  if (evidenceSuite) {
+    report.evidence.scene = await runOptionalReportHook(page, 'reportScene');
+    report.evidence.spatial = await runOptionalReportHook(page, 'reportSpatialEvidence');
+    report.evidence.asset = await runOptionalReportHook(page, 'reportAssetEvidence');
+    if (report.evidence.scene.status === 'fail' || report.evidence.spatial.status === 'fail' || report.evidence.asset.status === 'fail') report.status = 'fail';
+    for (const viewName of evidenceViews) {
+      const prepared = await prepareEvidenceView(page, viewName, scenario);
+      await page.waitForTimeout(120);
+      const metrics = await collectMetrics(page);
+      const viewRecord = { view: viewName, prepared, metrics, screenshot: null };
+      if (screenshotDir) {
+        const safe = viewName.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '') || 'view';
+        const shotPath = path.join(path.resolve(screenshotDir), `${safe}.png`);
+        await page.screenshot({ path: shotPath, type: 'png', timeout: 120000 });
+        viewRecord.screenshot = shotPath;
+      }
+      report.evidence.views.push(viewRecord);
+      if (prepared.status === 'fail') report.status = 'fail';
+    }
+  }
 
   if (measure) {
     const wallSamples = [];

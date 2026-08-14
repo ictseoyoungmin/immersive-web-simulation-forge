@@ -1,7 +1,9 @@
 {
-  "version": 4,
+  "version": 6,
   "implemented": false,
-  "static_checks": {"status": "not-run"},
+  "static_checks": {
+    "status": "not-run"
+  },
   "browser": {
     "executed": false,
     "intended_route": false,
@@ -16,7 +18,10 @@
     "comparison_or_validation": "not-run",
     "completion_or_export": "not-run",
     "failure_recovery": "not-run",
-    "claim_audit": {"status": "not-run", "claims": []}
+    "claim_audit": {
+      "status": "not-run",
+      "claims": []
+    }
   },
   "domain_validation": {
     "status": "not-applicable",
@@ -38,9 +43,61 @@
     "stale_result_rejection": "not-applicable",
     "unresolved_defects": []
   },
+  "construction_validation": {
+    "status": "not-applicable",
+    "authoring_strategy": "not-run",
+    "proposal_boundary": "not-applicable",
+    "provider_provenance": "not-applicable",
+    "reference_critical_objects": "not-applicable",
+    "pass_locking": "not-run",
+    "unresolved_defects": []
+  },
+  "asset_fidelity_validation": {
+    "status": "not-applicable",
+    "style_mode": "",
+    "identity_critical_coverage": "not-run",
+    "hero_asset_evidence": "not-run",
+    "representative_family_evidence": "not-run",
+    "near_band_quality": "not-run",
+    "material_validation": "not-run",
+    "contact_validation": "not-run",
+    "placeholder_audit": "not-run",
+    "multi_view_coverage": "not-run",
+    "target_size_review": "not-run",
+    "runtime_asset_report": "not-run",
+    "near_placeholder_ratio": null,
+    "identity_critical_count": 0,
+    "hero_asset_count": 0,
+    "representative_family_count": 0,
+    "evidence_views": [],
+    "unresolved_defects": []
+  },
+  "spatial_validation": {
+    "status": "not-applicable",
+    "region_continuity": "not-run",
+    "placement": "not-run",
+    "contact": "not-run",
+    "collision": "not-run",
+    "navigation_clearance": "not-run",
+    "lod_assignment": "not-run",
+    "unresolved_defects": []
+  },
+  "evidence_review": {
+    "status": "not-run",
+    "scenario_matrix": [],
+    "before_after_pairs": [],
+    "blockers_have_evidence": false,
+    "regression_reviewed": false,
+    "unresolved_defects": []
+  },
   "visual_review": {
     "status": "not-run",
+    "evidence_views": [],
+    "critical_subjects": [],
+    "locked_passes": [],
+    "defect_queue": [],
     "hardening_rounds": 0,
+    "regression_reviewed": false,
     "unresolved_defects": []
   },
   "performance": {
@@ -50,7 +107,10 @@
     "warmup_ms": 0,
     "sample_count": 0,
     "scenarios": [],
-    "frame_time": {"median_ms": null, "p95_ms": null},
+    "frame_time": {
+      "median_ms": null,
+      "p95_ms": null
+    },
     "job_latency": {
       "scenarios": [],
       "median_ms": null,

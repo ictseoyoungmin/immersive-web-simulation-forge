@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 6,
   "profile": "simulation-lab",
   "ambition": "production",
   "experience_mode": "instrument",
@@ -64,10 +64,69 @@
     "renderer_capital": [],
     "runtime_footprint_rationale": ""
   },
+  "authoring_strategy": {
+    "mode": "authored",
+    "authority_policy": "generated-content-is-proposal",
+    "provider_capabilities": [],
+    "providers": [],
+    "asset_classes": [],
+    "reuse_policy": "",
+    "generation_budget": "",
+    "fallback_policy": ""
+  },
   "system": {
     "source_of_truth": "",
     "consumers": [],
     "update_rates": {}
+  },
+  "spatial": {
+    "applicable": false,
+    "specification": "",
+    "coordinate_system": "",
+    "world_spec": {
+      "scale": {
+        "unit": "",
+        "authored_extent": [],
+        "explorable_extent": []
+      },
+      "regions": [],
+      "relations": [],
+      "landmarks": [],
+      "asset_families": [],
+      "material_families": [],
+      "interaction_zones": []
+    },
+    "semantic_fields": [],
+    "terrain": {
+      "authority": "",
+      "region_conditioned": false,
+      "boundary_blending": false,
+      "operators": [],
+      "water_or_non_heightfield_exceptions": []
+    },
+    "traversal": {
+      "authority": "",
+      "primary_routes": [],
+      "required_clearances": [],
+      "recovery_routes": []
+    },
+    "regional_refinement": {
+      "strategy": "",
+      "representative_region": "",
+      "terrain_conditioned": false
+    },
+    "placement": {
+      "authority": "",
+      "camera_grounded": false,
+      "support_policy": "",
+      "collision_policy": "",
+      "navigation_clearance_policy": ""
+    },
+    "scale_bands": {
+      "near": {},
+      "mid": {},
+      "far": {}
+    }
   },
   "domain": {
     "claim_level": "visual-concept",
@@ -151,6 +210,84 @@
     "inspection_reveals": [],
     "ui_density_budget": ""
   },
+  "asset_fidelity": {
+    "applicable": false,
+    "style_mode": "technical",
+    "scope_mode": "multi-object",
+    "visual_target": "",
+    "identity_critical_classes": [],
+    "hero_assets": [],
+    "representative_families": [],
+    "non_object_identity_rationale": "",
+    "band_budgets": {
+      "near": {
+        "representation": "",
+        "geometry": "",
+        "materials": "",
+        "contact": "",
+        "shadows": "",
+        "variation": ""
+      },
+      "mid": {
+        "representation": "",
+        "geometry": "",
+        "materials": "",
+        "contact": "",
+        "shadows": "",
+        "variation": ""
+      },
+      "far": {
+        "representation": "",
+        "geometry": "",
+        "materials": "",
+        "contact": "",
+        "shadows": "",
+        "variation": ""
+      }
+    },
+    "primitive_policy": {
+      "intentional_primitive_style": false,
+      "near_placeholder_ratio_max": 0.15,
+      "exceptions": [],
+      "replacement_trigger": "primitive-only identity-critical or repeated near-field placeholders must be replaced before flagship completion"
+    },
+    "material_contract": {
+      "families": [],
+      "weathering_or_variation": "",
+      "roughness_response": "",
+      "normal_or_surface_detail": "",
+      "wetness_or_environment_response": ""
+    },
+    "evidence_requirements": {
+      "hero_views": [
+        "hero",
+        "three-quarter",
+        "side-or-rear",
+        "close-material",
+        "contact"
+      ],
+      "family_views": [
+        "representative-near",
+        "representative-mid"
+      ],
+      "target_size_review": true,
+      "runtime_asset_report": true
+    }
+  },
+  "construction_evidence": {
+    "critical_subjects": [],
+    "required_views": [],
+    "reference_critical_objects": [],
+    "pass_plan": [],
+    "provenance": [],
+    "vertical_slice": {
+      "global_skeleton": false,
+      "representative_region": "",
+      "hero_asset": "",
+      "placement_contact_path": false,
+      "runtime_interaction": false
+    }
+  },
   "fidelity": {
     "clarity_intent": "",
     "intentional_softness": false,
@@ -170,7 +307,13 @@
       "records_internal_size": true,
       "separates_visual_from_performance_capture": true
     },
-    "native_output_space": ["ui", "text", "icons", "plots", "measurements"],
+    "native_output_space": [
+      "ui",
+      "text",
+      "icons",
+      "plots",
+      "measurements"
+    ],
     "frequency_partition": {
       "scene_space": [],
       "native_output_space": []
@@ -202,9 +345,15 @@
     "measure_ms": 3000,
     "samples": 3,
     "performance_scenarios": [],
-    "frame_time_percentiles": ["p50", "p95"],
+    "frame_time_percentiles": [
+      "p50",
+      "p95"
+    ],
     "job_scenarios": [],
-    "job_latency_percentiles": ["p50", "p95"],
+    "job_latency_percentiles": [
+      "p50",
+      "p95"
+    ],
     "application_telemetry_cross_checked": false
   },
   "review": {
@@ -236,7 +385,11 @@
     "review_status": "creator-reviewed / provisional"
   },
   "package": {
-    "runtime_roots": ["index.html", "src", "assets"],
+    "runtime_roots": [
+      "index.html",
+      "src",
+      "assets"
+    ],
     "include_preview": false,
     "preview_path": ""
   }

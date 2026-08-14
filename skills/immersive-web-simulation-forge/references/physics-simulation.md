@@ -13,6 +13,8 @@ Classify the product before implementation:
 
 Never promote a visually plausible animation into a physical claim. Display the claim level and important limitations near results when misunderstanding is plausible.
 
+Claim level is a certification-burden axis, not a model-fidelity axis. A well-known counterexample is game physics: production games routinely integrate real force/drag/buoyancy relationships, real light attenuation, real population/rate dynamics, yet almost never publish tolerances or benchmark validation for them — that is `educational`, not `engineering`, and it is still genuinely quantitative. Lowering the claim level below `engineering` relaxes which rung of the validation ladder is required (rung 5, expert-reviewed qualitative check, becomes acceptable); it does not relax the "Domain contract" requirements below — authoritative state variables, units, a real solver/integrator, and conserved/monotonic quantities are expected regardless of claim level. If a simulation feels arbitrary or unconvincing, first check whether the claim level was misread as license to replace the governing relationship with a heuristic; that is an implementation defect, not a consequence of choosing `educational` correctly.
+
 ## Domain contract
 
 Record:

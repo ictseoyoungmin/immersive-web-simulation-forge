@@ -1,26 +1,33 @@
 schema: hadara.skill/v0.1
 name: immersive-web-simulation-forge
-version: 0.6.0
+version: 0.7.0
 description: >-
-  Design, implement, validate, harden, and lean-package concentrated browser
-  worlds, physics laboratories, parametric design studios, data instruments,
-  operations panels, and other high-fidelity interactive graphical products.
+  Design, implement, validate, harden, and lean-package browser-native spatial
+  products, open worlds, physics laboratories, parametric design studios, data
+  instruments, operations panels, and other high-fidelity interactive graphical
+  products with hybrid authoring, enforceable flagship asset-fidelity gates, and evidence-driven validation.
 entry:
   skill: SKILL.md
 runtime:
   tools:
     forge:
       command: [python, scripts/forge.py]
-      description: Initialize, audit, package, and verify interactive world, laboratory, authoring, data, and operations projects.
+      description: Initialize, migrate, audit, package, and verify interactive world, laboratory, authoring, data, and operations projects with v0.7 asset-fidelity contracts.
     check-html:
       command: [node, scripts/check_html.mjs]
       description: Syntax-check HTML scripts and detect JavaScript/GLSL boundary mistakes.
     browser-verify:
       command: [node, scripts/browser_verify.mjs]
-      description: Execute capture, smoke, pointer-direction, and external wall-clock performance checks in Chromium.
+      description: Execute capture, evidence-suite, workflow/domain, pointer-direction, and external wall-clock performance checks in Chromium.
     fidelity-audit:
       command: [node, scripts/fidelity_audit.mjs]
       description: Detect low-resolution upscale, false area claims, clamped FPS telemetry, placeholder icons, lifecycle gaps, and input-direction risks.
+    spatial-audit:
+      command: [node, scripts/spatial_audit.mjs]
+      description: Audit spatial evidence for finite transforms, support/contact, collision, LOD assignment, bounds, and camera clipping.
+    asset-fidelity-audit:
+      command: [node, scripts/asset_fidelity_audit.mjs]
+      description: Audit runtime asset evidence for flagship identity coverage, primitive placeholders, near-band quality, material regions, contact, and multi-view evidence.
 dependencies:
   python: '>=3.10'
   node: '>=20'
