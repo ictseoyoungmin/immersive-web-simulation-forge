@@ -121,7 +121,6 @@ codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge
 
 ## 예제
 
-현재 전시 예제는 주로 v0.6 제작 기록입니다. v0.7은 이 예제의 시각 품질을 자동 보장한다고 주장하지 않으며, 새 flagship asset gate는 이후 제작물에서 blockout 탈출 증거를 강제하기 위한 계약입니다.
 
 스킬을 설치한 뒤, 에이전트에게 만들고 싶은 제품을 프롬프트로 설명하면 아래와 같은 결과물이 나옵니다.
 
