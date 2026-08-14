@@ -217,7 +217,6 @@ h1 em, h2 em, .closing h2 em { color: var(--cyan); font-family: var(--serif); fo
 .card-warning { position: absolute; z-index: 1; top: 10px; right: 11px; display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px solid var(--warning-line); color: var(--amber); background: var(--warning-bg); font-family: var(--mono); font-size: 8px; letter-spacing: .07em; text-transform: uppercase; }
 .card-warning i { display: block; width: 0; height: 0; border-right: 4px solid transparent; border-bottom: 7px solid var(--amber); border-left: 4px solid transparent; }
 .card-art-index { position: absolute; z-index: 1; right: 14px; bottom: 12px; color: rgba(233, 243, 239, .72); font-family: var(--mono); font-size: 10px; }
-.card-model { position: absolute; z-index: 1; left: 14px; bottom: 12px; padding: 3px 6px; color: #eafffb; background: rgba(4, 13, 15, .78); font-family: var(--mono); font-size: 8px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
 .card-body { display: flex; flex-direction: column; min-height: 181px; padding: 18px; }
 .card-meta { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px; color: var(--faint); font-family: var(--mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
 .card-meta span:last-child { color: var(--amber); }

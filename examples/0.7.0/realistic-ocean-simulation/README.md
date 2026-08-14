@@ -2,8 +2,6 @@
 
 PELAGIC is a full-window, browser-based ocean visual concept. It opens directly at sea level: long swell, wind sea, capillary response, whitecaps, current drift, spray, cloud front, reflected sun, camera heave, sparse life, and a working lighthouse all consume one deterministic `OceanState/v1`.
 
-Generation record: **Immersive Web Simulation Forge v0.7 · GPT-5.6-SOL · XHIGH · Codex CLI 0.147.0**.
-
 The repository exhibition build is available at [`dist/index.html`](dist/index.html).
 
 ## Run
