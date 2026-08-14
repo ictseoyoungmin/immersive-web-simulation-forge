@@ -1,56 +1,56 @@
 const surfaces = [
   {
-    generation: "0.7", index: "07 / 01", title: "PELAGIC", subtitle: "A living ocean", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT",
+    generation: "0.7", index: "07 / 01", title: "PELAGIC", subtitle: "A living ocean", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT", model: "GPT-5.6-SOL · XHIGH",
     description: "A deterministic directional ocean where swell, current, foam, spray, weather, reflected light, and a working lighthouse share one state.",
     proof: "FORGE + BROWSER RECORDED", image: "../examples/0.7.0/realistic-ocean-simulation/preview.png", href: "../examples/0.7.0/realistic-ocean-simulation/dist/index.html", accent: "cyan"
   },
   {
-    generation: "0.6", index: "06 / 01", title: "ARMORY BENCH", subtitle: "Modular weapon customization bench", profile: "CONFIGURATOR", claim: "VISUAL CONCEPT",
+    generation: "0.6", index: "06 / 01", title: "ARMORY BENCH", subtitle: "Modular weapon customization bench", profile: "CONFIGURATOR", claim: "VISUAL CONCEPT", model: "CLAUDE OPUS 5",
     description: "A MK-VII 〈REVENANT〉 maintenance station where modules attach and detach with live mass properties and fit constraints.",
     proof: "BROWSER RECORDED", image: "../examples/0.6.0/armory-bench/assets/armory-bench-preview.png", href: "../examples/0.6.0/armory-bench/index.html", accent: "amber"
   },
   {
-    generation: "0.6", index: "06 / 02", title: "AEROLAB X4", subtitle: "Drone physics engine / wind tunnel", profile: "SIMULATION LAB", claim: "ENGINEERING APPROX.",
+    generation: "0.6", index: "06 / 02", title: "AEROLAB X4", subtitle: "Drone physics engine / wind tunnel", profile: "SIMULATION LAB", claim: "ENGINEERING APPROX.", model: "GPT-5.6-SOL",
     description: "A fixed-step quadrotor model where wind, force, pressure, telemetry, and payload state use one shared field.",
     proof: "PHYSICS + BROWSER RECORDED", image: "../examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/preview.webp", href: "../examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/index.html", accent: "cyan"
   },
   {
-    generation: "0.6", index: "06 / 03", title: "VESPER", subtitle: "The garden remembers", profile: "GAME ARENA", claim: "VISUAL CONCEPT",
+    generation: "0.6", index: "06 / 03", title: "VESPER", subtitle: "The garden remembers", profile: "GAME ARENA", claim: "VISUAL CONCEPT", model: "GPT-5.6-SOL",
     description: "A one-night garden game where awakened flowers leave wind, music, and a route back to the central heart.",
     proof: "RULES + BROWSER RECORDED", image: "../examples/0.6.0/VESPER_The_Garden_Remembers/vesper-garden/2026-08-03-160814.png", href: "../examples/0.6.0/VESPER_The_Garden_Remembers/vesper-garden/index.html", accent: "violet"
   },
   {
-    generation: "0.6", index: "06 / 04", title: "PIXEL MINIONS", subtitle: "Room explorer / phase 01", profile: "WORLD SLICE", claim: "VISUAL CONCEPT",
+    generation: "0.6", index: "06 / 04", title: "PIXEL MINIONS", subtitle: "Room explorer / phase 01", profile: "WORLD SLICE", claim: "VISUAL CONCEPT", model: "GPT-5.6-SOL",
     description: "A third-person room explorer with a 20 × 20 × 8 m space, 120 Hz physics, checkpoints, collectibles, and live tuning.",
     proof: "GAMEPLAY + BROWSER RECORDED", image: "../examples/0.6.0/Pixel_Minions_Room_Explorer_Phase1/2026-08-03-153501.png", href: "../examples/0.6.0/Pixel_Minions_Room_Explorer_Phase1/Pixel_Minions_Room_Explorer_Phase1.html", accent: "amber"
   },
   {
-    generation: "0.6", index: "06 / 05", title: "K-HOLO STATUS", subtitle: "Open world / revision surface", profile: "AMBIENT SYSTEM", claim: "VISUAL CONCEPT",
+    generation: "0.6", index: "06 / 05", title: "K-HOLO STATUS", subtitle: "Open world / revision surface", profile: "AMBIENT SYSTEM", claim: "VISUAL CONCEPT", model: "GPT-5.6-SOL",
     description: "A status window paired with a WebGL world example from the 0.6 archive.",
     proof: "BROWSER RECORDED", image: "../examples/0.6.0/k-holo-status-openworld-revision/k-holo-status-openworld/preview.webp", href: "../examples/0.6.0/k-holo-status-openworld-revision/k-holo-status-openworld/index.html", accent: "cyan"
   },
   {
-    generation: "0.4", index: "04 / 01", title: "AETHERWILD", subtitle: "The living meridian", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT",
+    generation: "0.4", index: "04 / 01", title: "AETHERWILD", subtitle: "The living meridian", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT", model: "GPT-5.6-SOL",
     description: "A raw WebGL 2 procedural world with movement, resonance scans, transformations, adaptive rendering, and procedural audio.",
     proof: "BROWSER RECORDED", image: "../examples/0.4.0/aetherwild/preview.webp", href: "../examples/0.4.0/aetherwild/index.html", accent: "cyan"
   },
   {
-    generation: "0.4", index: "04 / 02", title: "CHRONOLITH FOUNDRY", subtitle: "Flagship spatial instrument", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT",
+    generation: "0.4", index: "04 / 02", title: "CHRONOLITH FOUNDRY", subtitle: "Flagship spatial instrument", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT", model: "GPT-5.6-SOL",
     description: "A standalone flagship HTML example included in the 0.4 archive.",
     proof: "LEGACY SURFACE", image: null, href: "../examples/0.4.0/Chronolith_Foundry_FLAGSHIP.html", accent: "amber", synthetic: "synthetic-amber"
   },
   {
-    generation: "0.3", index: "03 / 01", title: "AETHERIS", subtitle: "Open world / field systems", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT",
+    generation: "0.3", index: "03 / 01", title: "AETHERIS", subtitle: "Open world / field systems", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT", model: "GPT-5.6-SOL",
     description: "A procedural open-world example using shared-field and world-director modules.",
     proof: "LEGACY VALIDATION", image: "../examples/0.3.0/aetheris-open-world/preview.webp", href: "../examples/0.3.0/aetheris-open-world/index.html", accent: "cyan"
   },
   {
-    generation: "0.3", index: "03 / 02", title: "AETHERFALL", subtitle: "Open world / atmospheric study", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT",
+    generation: "0.3", index: "03 / 02", title: "AETHERFALL", subtitle: "Open world / atmospheric study", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT", model: "GPT-5.6-SOL",
     description: "An open-world example from the 0.3 archive with a captured browser validation record.", warning: "LONGER INITIAL LOAD",
     proof: "LEGACY VALIDATION", image: "../examples/0.3.0/AETHERFALL_OPEN_WORLD/preview.webp", href: "../examples/0.3.0/AETHERFALL_OPEN_WORLD/index.html", accent: "violet"
   },
   {
-    generation: "0.3", index: "03 / 03", title: "NEON DISTRICT RUNNER", subtitle: "Open world / early slice", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT",
+    generation: "0.3", index: "03 / 03", title: "NEON DISTRICT RUNNER", subtitle: "Open world / early slice", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT", model: "GPT-5.6-SOL",
     description: "An early open-world example stored in the 0.3 archive.",
     proof: "LEGACY SURFACE", image: null, href: "../examples/0.3.0/NEON_DISTRICT_RUNNER/index.html", accent: "coral", synthetic: "synthetic-coral"
   }
@@ -71,7 +71,8 @@ function cardArt(surface) {
     : "";
   const syntheticClass = surface.synthetic ? ` synthetic ${surface.synthetic}` : "";
   const warning = surface.warning ? `<span class="card-warning" title="${escapeHtml(surface.warning)}"><i aria-hidden="true"></i>${escapeHtml(surface.warning)}</span>` : "";
-  return `<div class="card-art${syntheticClass}">${media}<span class="card-art-label">${escapeHtml(surface.index)}</span>${warning}<span class="card-art-index">${escapeHtml(surface.profile)}</span></div>`;
+  const model = surface.model ? `<span class="card-model" title="Model">${escapeHtml(surface.model)}</span>` : "";
+  return `<div class="card-art${syntheticClass}">${media}<span class="card-art-label">${escapeHtml(surface.index)}</span>${warning}${model}<span class="card-art-index">${escapeHtml(surface.profile)}</span></div>`;
 }
 
 function render(filter = "all") {
@@ -103,17 +104,12 @@ render();
 
 const reel = [
   {
-    field: "FIELD 01", title: "PELAGIC", aria: "PELAGIC living ocean with rolling swell and a lighthouse island",
-    video: null, poster: "../examples/0.7.0/realistic-ocean-simulation/preview.png",
-    claim: "INTERACTIVE VISUAL CONCEPT"
-  },
-  {
-    field: "FIELD 02", title: "ARMORY BENCH", aria: "ARMORY BENCH weapon customization bench, MK-VII Revenant",
+    field: "FIELD 01", title: "ARMORY BENCH", aria: "ARMORY BENCH weapon customization bench, MK-VII Revenant",
     video: "../examples/0.6.0/armory-bench/assets/armory-bench-demo-opus5.mp4", poster: "../examples/0.6.0/armory-bench/assets/armory-bench-preview.png",
     claim: "INTERACTIVE VISUAL CONCEPT"
   },
   {
-    field: "FIELD 03", title: "AEROLAB X4", aria: "AEROLAB X4 drone inside a wind tunnel",
+    field: "FIELD 02", title: "AEROLAB X4", aria: "AEROLAB X4 drone inside a wind tunnel",
     video: "../examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/AEROLAB-X4.mp4", poster: "../examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/preview.webp",
     claim: "INTERACTIVE ENGINEERING APPROXIMATION"
   }
@@ -144,15 +140,8 @@ function showReel(index) {
   reelVideo.setAttribute("aria-label", item.aria);
   reelVideo.poster = item.poster;
   reelDotEls.forEach((dot, i) => dot.classList.toggle("is-active", i === reelIndex));
-  reelPlayBtn.hidden = !item.video;
-  if (item.video) {
-    reelVideo.src = item.video;
-    reelVideo.play().then(() => setReelPlayState(true)).catch(() => setReelPlayState(false));
-  } else {
-    reelVideo.removeAttribute("src");
-    reelVideo.load();
-    setReelPlayState(false);
-  }
+  reelVideo.src = item.video;
+  reelVideo.play().then(() => setReelPlayState(true)).catch(() => setReelPlayState(false));
 }
 
 reelDotEls.forEach(dot => dot.addEventListener("click", () => showReel(Number(dot.dataset.reelDot))));
