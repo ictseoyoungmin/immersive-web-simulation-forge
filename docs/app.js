@@ -1,5 +1,10 @@
 const surfaces = [
   {
+    generation: "0.7", index: "07 / 01", title: "PELAGIC", subtitle: "A living ocean", profile: "FULL-WINDOW WORLD", claim: "VISUAL CONCEPT", model: "GPT-5.6-SOL · XHIGH",
+    description: "A deterministic directional ocean where swell, current, foam, spray, weather, reflected light, and a working lighthouse share one state.",
+    proof: "FORGE + BROWSER RECORDED", image: "../examples/0.7.0/realistic-ocean-simulation/preview.png", href: "../examples/0.7.0/realistic-ocean-simulation/dist/index.html", accent: "cyan"
+  },
+  {
     generation: "0.6", index: "06 / 01", title: "ARMORY BENCH", subtitle: "Modular weapon customization bench", profile: "CONFIGURATOR", claim: "VISUAL CONCEPT", model: "CLAUDE OPUS 5",
     description: "A MK-VII 〈REVENANT〉 maintenance station where modules attach and detach with live mass properties and fit constraints.",
     proof: "BROWSER RECORDED", image: "../examples/0.6.0/armory-bench/assets/armory-bench-preview.png", href: "../examples/0.6.0/armory-bench/index.html", accent: "amber"
@@ -99,12 +104,17 @@ render();
 
 const reel = [
   {
-    field: "FIELD 01", title: "ARMORY BENCH", aria: "ARMORY BENCH weapon customization bench, MK-VII Revenant",
+    field: "FIELD 01", title: "PELAGIC", aria: "PELAGIC living ocean with rolling swell and a lighthouse island",
+    video: null, poster: "../examples/0.7.0/realistic-ocean-simulation/preview.png",
+    claim: "GPT-5.6-SOL · XHIGH / VISUAL CONCEPT"
+  },
+  {
+    field: "FIELD 02", title: "ARMORY BENCH", aria: "ARMORY BENCH weapon customization bench, MK-VII Revenant",
     video: "../examples/0.6.0/armory-bench/assets/armory-bench-demo-opus5.mp4", poster: "../examples/0.6.0/armory-bench/assets/armory-bench-preview.png",
     claim: "INTERACTIVE VISUAL CONCEPT"
   },
   {
-    field: "FIELD 02", title: "AEROLAB X4", aria: "AEROLAB X4 drone inside a wind tunnel",
+    field: "FIELD 03", title: "AEROLAB X4", aria: "AEROLAB X4 drone inside a wind tunnel",
     video: "../examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/AEROLAB-X4.mp4", poster: "../examples/0.6.0/AEROLAB_X4_Drone_Wind_Tunnel/preview.webp",
     claim: "INTERACTIVE ENGINEERING APPROXIMATION"
   }
@@ -134,9 +144,16 @@ function showReel(index) {
   reelClaim.textContent = item.claim;
   reelVideo.setAttribute("aria-label", item.aria);
   reelVideo.poster = item.poster;
-  reelVideo.src = item.video;
   reelDotEls.forEach((dot, i) => dot.classList.toggle("is-active", i === reelIndex));
-  reelVideo.play().then(() => setReelPlayState(true)).catch(() => setReelPlayState(false));
+  reelPlayBtn.hidden = !item.video;
+  if (item.video) {
+    reelVideo.src = item.video;
+    reelVideo.play().then(() => setReelPlayState(true)).catch(() => setReelPlayState(false));
+  } else {
+    reelVideo.removeAttribute("src");
+    reelVideo.load();
+    setReelPlayState(false);
+  }
 }
 
 reelDotEls.forEach(dot => dot.addEventListener("click", () => showReel(Number(dot.dataset.reelDot))));

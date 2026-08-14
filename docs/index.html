@@ -33,7 +33,7 @@
           <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path></svg>
         </a>
         <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false"><span class="theme-toggle-icon" aria-hidden="true"></span><span data-theme-label>LIGHT</span></button>
-        <div class="system-state"><span class="state-dot"></span><span>EXAMPLE ARCHIVE</span><b>v0.6</b></div>
+        <div class="system-state"><span class="state-dot"></span><span>EXAMPLE ARCHIVE</span><b>v0.7</b></div>
       </div>
     </header>
 
@@ -48,16 +48,16 @@
             <a class="text-link" href="https://github.com/ictseoyoungmin/immersive-web-simulation-forge/blob/main/skills/immersive-web-simulation-forge/SKILL.md" target="_blank" rel="noopener">Read the skill notes <span>↗</span></a>
           </div>
           <div class="hero-readout" aria-label="Archive summary">
-            <div><span>ARTIFACTS</span><strong data-stat="artifacts">09</strong></div>
-            <div><span>GENERATIONS</span><strong>03</strong></div>
+            <div><span>ARTIFACTS</span><strong data-stat="artifacts">11</strong></div>
+            <div><span>GENERATIONS</span><strong>04</strong></div>
             <div><span>RUNTIME LAYERS</span><strong>WEBGL / CANVAS / DOM</strong></div>
           </div>
         </div>
 
         <div class="hero-instrument" id="hero-reel" aria-label="Featured examples reel">
           <div class="instrument-bar">
-            <span><i class="tiny-dot"></i> FEATURED EXAMPLE / 06</span>
-            <span id="reel-label">FIELD 01 — ARMORY BENCH</span>
+            <span><i class="tiny-dot"></i> FEATURED EXAMPLE / 03</span>
+            <span id="reel-label">FIELD 01 — PELAGIC</span>
           </div>
           <div class="instrument-visual" id="reel-visual">
             <video id="reel-video" muted playsinline preload="metadata"></video>
@@ -151,12 +151,13 @@ codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge</
 
         <div class="archive-toolbar">
           <div class="filter-group" role="group" aria-label="Filter archive by generation">
-            <button class="filter is-active" data-filter="all">ALL <span>10</span></button>
+            <button class="filter is-active" data-filter="all">ALL <span>11</span></button>
+            <button class="filter" data-filter="0.7">0.7 <span>01</span></button>
             <button class="filter" data-filter="0.6">0.6 <span>05</span></button>
             <button class="filter" data-filter="0.4">0.4 <span>02</span></button>
             <button class="filter" data-filter="0.3">0.3 <span>03</span></button>
           </div>
-          <div class="archive-count"><span class="state-dot"></span><span data-visible-count>09</span> SURFACES ONLINE</div>
+          <div class="archive-count"><span class="state-dot"></span><span data-visible-count>11</span> SURFACES ONLINE</div>
         </div>
 
         <div id="archive-grid" class="archive-grid"></div>

@@ -1,0 +1,196 @@
+{
+  "version": 6,
+  "implemented": true,
+  "audit_status": "pass",
+  "static_checks": {
+    "status": "pass",
+    "renderer_constructors": 1,
+    "implementation_files": 16,
+    "implementation_bytes_excluding_lock": 761171
+  },
+  "browser": {
+    "executed": true,
+    "intended_route": true,
+    "console_errors": 0,
+    "page_errors": 0,
+    "request_failures": 0
+  },
+  "visual_review": {
+    "status": "creator-reviewed / provisional",
+    "evidence_views": [
+      "hero-default-1440x900",
+      "hero-default-1280x720",
+      "hero-mobile-390x844",
+      "lighthouse-three-quarter",
+      "lighthouse-side",
+      "lighthouse-close-material",
+      "island-contact",
+      "representative-families",
+      "gust-event",
+      "recovery",
+      "mobile-conditions"
+    ],
+    "critical_subjects": [
+      "multi-scale ocean surface",
+      "north-beacon lighthouse island",
+      "gust foam and spray trace",
+      "mobile conditions sheet"
+    ],
+    "locked_passes": [
+      "round-3 hero composition",
+      "round-3 water material",
+      "round-3 lighthouse integration",
+      "round-3 gust response",
+      "round-3 mobile conditions layout"
+    ],
+    "defect_queue": [],
+    "hardening_rounds": 3,
+    "regression_reviewed": true,
+    "unresolved_defects": []
+  },
+  "workflow_review": {
+    "default_route": "pass",
+    "first_use": "pass",
+    "complete_loop": "pass",
+    "comparison_or_validation": "pass",
+    "completion_or_export": "pass",
+    "failure_recovery": "pass",
+    "claim_audit": {
+      "status": "pass",
+      "claims": [
+        "visual-concept only",
+        "directional spectral approximation",
+        "SI-valued canonical weather state"
+      ]
+    }
+  },
+  "domain_validation": {
+    "status": "pass",
+    "claim_level": "visual-concept",
+    "oracle": "deterministic state invariants and replay",
+    "known_cases": [
+      "finite state",
+      "serialization round trip",
+      "deterministic replay",
+      "zero-wind limit",
+      "reverse-current invariance"
+    ],
+    "tolerances_met": true,
+    "invariants_or_geometry_checks": [
+      "finite runtime state",
+      "normalized direction vectors",
+      "canonical reset recovery"
+    ],
+    "round_trip": "pass",
+    "limitations_disclosed": true,
+    "external_review": "creator-reviewed",
+    "unresolved_defects": []
+  },
+  "runtime_engineering": {
+    "status": "pass",
+    "lifecycle": "pass",
+    "history_persistence": "pass",
+    "cancellation_recovery": "pass",
+    "stale_result_rejection": "pass",
+    "unresolved_defects": []
+  },
+  "construction_validation": {
+    "status": "pass",
+    "authoring_strategy": "pass",
+    "proposal_boundary": "not-applicable",
+    "provider_provenance": "not-applicable",
+    "reference_critical_objects": "pass",
+    "pass_locking": "pass",
+    "unresolved_defects": []
+  },
+  "asset_fidelity_validation": {
+    "status": "pass",
+    "style_mode": "realistic",
+    "identity_critical_coverage": "pass",
+    "hero_asset_evidence": "pass",
+    "representative_family_evidence": "pass",
+    "near_band_quality": "pass",
+    "material_validation": "pass",
+    "contact_validation": "pass",
+    "placeholder_audit": "pass",
+    "multi_view_coverage": "pass",
+    "target_size_review": "pass",
+    "runtime_asset_report": "pass",
+    "near_placeholder_ratio": 0,
+    "identity_critical_count": 1,
+    "hero_asset_count": 1,
+    "representative_family_count": 3,
+    "evidence_views": [
+      "hero",
+      "three-quarter",
+      "side-or-rear",
+      "close-material",
+      "contact",
+      "representative-near",
+      "representative-mid"
+    ],
+    "unresolved_defects": []
+  },
+  "spatial_validation": {
+    "status": "pass",
+    "region_continuity": "pass",
+    "placement": "pass",
+    "contact": "pass",
+    "collision": "pass",
+    "navigation_clearance": "pass",
+    "lod_assignment": "pass",
+    "unresolved_defects": []
+  },
+  "evidence_review": {
+    "status": "pass",
+    "scenario_matrix": [
+      "default arrival",
+      "storm preset",
+      "localized gust",
+      "persistent trace",
+      "reset recovery",
+      "mobile drawer"
+    ],
+    "before_after_pairs": [
+      "golden-swell to storm-front",
+      "pre-gust to gust trace",
+      "modified state to reset recovery"
+    ],
+    "blockers_have_evidence": true,
+    "regression_reviewed": true,
+    "unresolved_defects": []
+  },
+  "performance": {
+    "measured": false,
+    "measurement_block": "Browser correctness and stress timing ran under Chromium SwiftShader software rendering; those timings are not representative target-GPU evidence and no target-device FPS claim is made.",
+    "source": "external requestAnimationFrame wall clock under SwiftShader",
+    "software_renderer": true,
+    "application_telemetry_cross_checked": true
+  },
+  "fidelity": {
+    "effective_pixel_ratio": 1,
+    "reconstruction": "none",
+    "adaptive_locked": true,
+    "icon_review": "pass"
+  },
+  "input": {
+    "pointer_direction_review": "pass",
+    "drag_pointerlock_parity": "pass"
+  },
+  "target_sizes_reviewed": [
+    "1440x900",
+    "1280x720",
+    "390x844"
+  ],
+  "limitations": [
+    "Directional spectral approximation; no FFT, fluid volume solve, bathymetry, or wave-island interaction.",
+    "Visual concept only; unsuitable for navigation, weather forecasting, safety, or engineering decisions.",
+    "Target-device GPU performance has not been claimed; the available browser ran with SwiftShader software rendering.",
+    "World objects and atmosphere are code-authored procedural representations rather than scan-derived assets."
+  ],
+  "artifact": {
+    "implementation_bytes": 768292,
+    "workbench_evidence_bytes": 18160324,
+    "evidence_to_implementation_ratio": 23.637
+  }
+}

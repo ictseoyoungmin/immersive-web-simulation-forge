@@ -75,9 +75,22 @@ codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge
 
 ## 예제
 
+현재 전시에는 v0.7 flagship asset gate를 통과한 PELAGIC과 이전 세대 제작 기록이 함께 포함됩니다. v0.7은 모든 결과물의 시각 품질을 자동 보장한다고 주장하지 않으며, 새 gate는 blockout 탈출 증거를 강제하기 위한 계약입니다.
+
 스킬을 설치한 뒤, 에이전트에게 만들고 싶은 제품을 프롬프트로 설명하면 아래와 같은 결과물이 나옵니다.
 
 <table>
+  <tr>
+    <td width="33%" align="center">
+      <a href="examples/0.7.0/realistic-ocean-simulation/dist/">
+        <img src="examples/0.7.0/realistic-ocean-simulation/preview.png" width="100%" alt="PELAGIC living ocean preview">
+        <br>
+        <sub><b>PELAGIC</b><br>A Living Ocean<br>GPT-5.6-SOL · XHIGH</sub>
+      </a>
+    </td>
+    <td width="33%"></td>
+    <td width="33%"></td>
+  </tr>
   <tr>
     <td width="33%" align="center">
       <a href="examples/0.6.0/armory-bench/">
@@ -187,7 +200,7 @@ codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge
 
 ## 제작 기록
 
-이 스킬은 Codex `skill-creator`를 사용해 만들었습니다. 저장소의 예제는 대부분 `gpt-5.6-sol-high`를 사용해 단일 프롬프트로 작성된 결과물이며, [`armory-bench`](examples/0.6.0/armory-bench/)는 Claude Opus 5로 작성했습니다. [`k-holo-status-openworld-revision`](examples/0.6.0/k-holo-status-openworld-revision/k-holo-status-openworld/README.md)은 첫 결과물에서 한번 수정된 결과입니다.
+이 스킬은 Codex `skill-creator`를 사용해 만들었습니다. [`PELAGIC`](examples/0.7.0/realistic-ocean-simulation/README.md)은 Codex CLI 0.147.0의 `gpt-5.6-sol` `xhigh`로 제작했습니다. 이전 예제는 대부분 `gpt-5.6-sol-high`를 사용해 단일 프롬프트로 작성했으며, [`armory-bench`](examples/0.6.0/armory-bench/)는 Claude Opus 5로 작성했습니다. [`k-holo-status-openworld-revision`](examples/0.6.0/k-holo-status-openworld-revision/k-holo-status-openworld/README.md)은 첫 결과물에서 한번 수정된 결과입니다.
 
 단일 프롬프트 예제:
 

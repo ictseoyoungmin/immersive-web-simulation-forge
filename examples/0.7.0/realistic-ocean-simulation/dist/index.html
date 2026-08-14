@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#071418" />
+    <meta
+      name="description"
+      content="PELAGIC — A Living Ocean. A cinematic, deterministic ocean visual concept."
+    />
+    <title>PELAGIC — A Living Ocean</title>
+    <script type="module" crossorigin src="./assets/index-NHc5DUx3.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BqMlGw5r.css">
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="ocean-canvas" aria-label="A living ocean with a distant lighthouse" tabindex="-1"></canvas>
+
+      <header class="masthead" aria-label="Experience title">
+        <a class="wordmark" href="#ocean" aria-label="PELAGIC, A Living Ocean">
+          <svg class="brand-mark" viewBox="0 0 44 22" aria-hidden="true">
+            <path d="M2 12c5-7 10-7 15 0s10 7 15 0 8-4 10-2" />
+            <path d="M7 17c4-4 8-4 12 0s8 4 12 0" />
+          </svg>
+          <span class="wordmark-copy">
+            <strong>PELAGIC</strong>
+            <small>A LIVING OCEAN</small>
+          </span>
+        </a>
+        <div class="condition-readout" aria-live="polite">
+          <i></i>
+          <span id="condition-label">GOLDEN SWELL</span>
+          <span class="condition-separator"></span>
+          <span id="condition-detail">WIND 11.5 M/S</span>
+        </div>
+      </header>
+
+      <button id="drawer-toggle" class="glass-button drawer-toggle" type="button" aria-expanded="false" aria-controls="conditions-drawer">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h16M7 12h10M10 17h4" />
+          <circle cx="8" cy="7" r="1.5" />
+          <circle cx="15" cy="12" r="1.5" />
+          <circle cx="12" cy="17" r="1.5" />
+        </svg>
+        <span>Conditions</span>
+      </button>
+
+      <aside id="conditions-drawer" class="drawer" aria-label="Ocean conditions" aria-hidden="true">
+        <div class="drawer-header">
+          <div>
+            <p class="eyebrow">WEATHER FIELD</p>
+            <h1>Ocean conditions</h1>
+          </div>
+          <button id="drawer-close" class="icon-button" type="button" aria-label="Close conditions">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+
+        <section class="drawer-section" aria-labelledby="preset-title">
+          <div class="section-heading">
+            <h2 id="preset-title">Sea state</h2>
+            <span id="preset-status">DEFAULT</span>
+          </div>
+          <div class="preset-grid" role="group" aria-label="Sea state presets">
+            <button type="button" class="preset" data-preset="calm-dawn">
+              <span class="preset-swatch calm"></span><strong>Calm dawn</strong><small>Low wind · clear east</small>
+            </button>
+            <button type="button" class="preset" data-preset="trade-wind">
+              <span class="preset-swatch trade"></span><strong>Trade wind</strong><small>Cross sea · bright</small>
+            </button>
+            <button type="button" class="preset is-active" data-preset="golden-swell">
+              <span class="preset-swatch golden"></span><strong>Golden swell</strong><small>Long period · west sun</small>
+            </button>
+            <button type="button" class="preset" data-preset="storm-front">
+              <span class="preset-swatch storm"></span><strong>Storm front</strong><small>Steep sea · dark horizon</small>
+            </button>
+          </div>
+        </section>
+
+        <section class="drawer-section controls" aria-labelledby="field-title">
+          <h2 id="field-title">Field</h2>
+          <label class="range-row">
+            <span>Wind speed</span><output id="wind-output" for="wind-speed">11.5 m/s</output>
+            <input id="wind-speed" type="range" min="0" max="24" step="0.1" value="11.5" />
+          </label>
+          <label class="range-row">
+            <span>Wind bearing</span><output id="wind-dir-output" for="wind-direction">292°</output>
+            <input id="wind-direction" type="range" min="0" max="359" step="1" value="292" />
+          </label>
+          <label class="range-row">
+            <span>Swell height</span><output id="swell-output" for="swell-amplitude">1.55 m</output>
+            <input id="swell-amplitude" type="range" min="0.2" max="2.8" step="0.05" value="1.55" />
+          </label>
+          <label class="range-row">
+            <span>Current</span><output id="current-output" for="current-speed">0.42 m/s</output>
+            <input id="current-speed" type="range" min="-1.2" max="1.2" step="0.02" value="0.42" />
+          </label>
+        </section>
+
+        <section class="drawer-section action-section" aria-label="Experience actions">
+          <button id="gust-button" class="primary-action" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h12c3 0 3-4 0-4-1.4 0-2.2.8-2.5 1.7M3 13h16c3.2 0 3.2 5 0 5-1.4 0-2.2-.8-2.5-1.7M3 17h8" /></svg>
+            <span><strong>Call a weather gust</strong><small>Watch the field propagate</small></span>
+          </button>
+          <div class="action-grid">
+            <button id="cinematic-button" type="button" class="secondary-action is-on" aria-pressed="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM9 7l2-3h4l2 3M8 12h8" /></svg>
+              Cinematic
+            </button>
+            <button id="pause-button" type="button" class="secondary-action" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" /></svg>
+              Pause
+            </button>
+          </div>
+        </section>
+
+        <section class="drawer-section compact-options" aria-label="Quality and recovery">
+          <label>
+            <span>Quality</span>
+            <select id="quality-select">
+              <option value="balanced">Balanced</option>
+              <option value="presentation">Presentation</option>
+              <option value="efficient">Efficient</option>
+            </select>
+          </label>
+          <button id="reset-button" type="button" class="text-action">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 2 7M4 10V4m0 6h6" /></svg>
+            Reset ocean
+          </button>
+        </section>
+
+        <details class="about">
+          <summary>About this ocean</summary>
+          <p>
+            PELAGIC is a deterministic visual concept. A directional deep-water wave approximation drives the sea, whitecaps, drift, atmosphere, and camera together. It is not a forecast, fluid solver, or navigation tool.
+          </p>
+        </details>
+      </aside>
+
+      <div id="event-toast" class="event-toast" role="status" aria-live="polite">
+        <span class="event-line"></span>
+        <span><strong>Weather pulse</strong><small id="event-phase">MOVING THROUGH THE FIELD</small></span>
+      </div>
+
+      <div class="interaction-hint" aria-hidden="true">
+        <span>DRAG TO LOOK</span><i></i><span>SCROLL TO BREATHE</span><i></i><span>G CALLS A GUST</span>
+      </div>
+
+      <div id="system-status" class="system-status" role="alert" hidden>
+        <div class="status-card">
+          <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M6 38c8-12 17-12 25 0s17 12 27 0M14 47c5-6 11-6 17 0s12 6 18 0" /></svg>
+          <p class="eyebrow">RENDERER STATUS</p>
+          <h2 id="system-status-title">The ocean is resting</h2>
+          <p id="system-status-copy">This experience needs WebGL 2.0. Try a current browser with hardware acceleration enabled.</p>
+          <button id="recovery-button" type="button">Try again</button>
+        </div>
+      </div>
+
+      <div id="ocean" aria-hidden="true"></div>
+      <noscript>This living ocean requires JavaScript and WebGL 2.0.</noscript>
+    </div>
+  </body>
+</html>
