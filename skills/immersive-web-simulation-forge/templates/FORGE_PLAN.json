@@ -132,6 +132,8 @@
     "claim_level": "visual-concept",
     "authoritative_model": "",
     "canonical_technique": "",
+    "implemented_technique": "",
+    "technique_conformance": "not-applicable",
     "technique_deviation_reason": "",
     "units": {
       "system": "",

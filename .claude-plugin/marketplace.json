@@ -3,7 +3,7 @@
   "owner": {
     "name": "ictseoyoungmin"
   },
-  "description": "Claude Code marketplace for Immersive Web Simulation Forge v0.7.",
+  "description": "Claude Code marketplace for Immersive Web Simulation Forge.",
   "plugins": [
     {
       "name": "immersive-web-simulation-forge",

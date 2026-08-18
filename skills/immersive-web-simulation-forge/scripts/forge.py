@@ -43,6 +43,7 @@ PROFILE_MODES = {
 }
 DOMAIN_PROFILES = {'simulation-lab', 'design-studio', 'data-instrument', 'operations-panel'}
 CLAIM_LEVELS = {'visual-concept', 'educational', 'decision-support', 'engineering'}
+TECHNIQUE_CONFORMANCE_STATES = {'conformant', 'approximation', 'alternative', 'not-applicable'}
 WORKLOADS = {'interactive', 'batch', 'streaming', 'long-running'}
 AUTHORING_STRATEGIES = {'authored', 'procedural', 'reconstructed', 'generative', 'retrieved', 'hybrid'}
 ASSET_STYLE_MODES = {'realistic','reference-driven','stylized','low-poly','abstract','technical','mixed'}
@@ -71,6 +72,26 @@ def check(name: str, ok: bool, detail: str, severity: str = 'error') -> dict[str
 
 def nonempty(value: Any) -> bool:
     return bool(str(value).strip()) if value is not None else False
+
+
+def technique_conformance_check(conformance: str, canonical: str, implemented: str, reason: Any) -> tuple[str, bool, str]:
+    """Shared by the plan-side and runtime-side technique-conformance checks so the two cannot
+    silently drift apart the way the hand-duplicated branches did between v0.8.0 and v0.8.1."""
+    canonical = canonical.strip(); implemented = implemented.strip()
+    reason_ok = nonempty(reason)
+    if conformance == 'not-applicable':
+        name = 'technique not-applicable rationale'
+        ok = reason_ok and not canonical and nonempty(implemented)
+        detail = f"canonical_technique should stay empty when not-applicable (got {canonical!r}); implemented={implemented or 'missing'}; reason={'yes' if reason_ok else 'no'}"
+    elif conformance in {'approximation', 'alternative'}:
+        name = 'technique deviation disclosed'
+        ok = nonempty(canonical) and nonempty(implemented) and reason_ok
+        detail = f"canonical={canonical or 'missing'}; implemented={implemented or 'missing'}; reason={'yes' if reason_ok else 'no'}"
+    else:
+        name = 'technique conformance evidence'
+        ok = nonempty(canonical) and nonempty(implemented)
+        detail = f"canonical={canonical or 'missing'}; implemented={implemented or 'missing'}"
+    return name, ok, detail
 
 
 def finite_number(value: Any) -> float | None:
@@ -158,7 +179,7 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
     ambition = str(plan.get('ambition', '')).strip()
     experience_mode = str(plan.get('experience_mode', '')).strip()
     delivery = str(plan.get('delivery_mode', 'lean')).strip()
-    checks.append(check('plan schema', version >= PLAN_VERSION, f'version {version}; v0.7 requires plan version {PLAN_VERSION}; run `forge.py migrate <project>` for v4/v5 plans'))
+    checks.append(check('plan schema', version >= PLAN_VERSION, f'version {version}; this release requires plan version {PLAN_VERSION}; run `forge.py migrate <project>` for older plans'))
     checks.append(check('profile', profile in PROFILES, profile or 'missing'))
     checks.append(check('ambition', ambition in {'prototype','production','showcase','flagship'}, ambition or 'missing'))
     checks.append(check('experience mode', experience_mode in EXPERIENCE_MODES, experience_mode or 'missing'))
@@ -299,14 +320,18 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
     domain_validation_contract = domain.get('validation', {}) if isinstance(domain, dict) else {}
     checks.append(check('domain claim level', claim_level in CLAIM_LEVELS, claim_level or 'missing'))
     canonical_technique = str(domain.get('canonical_technique', '')).strip()
-    if canonical_technique:
-        authoritative_model = str(domain.get('authoritative_model', '')).strip()
-        technique_deviates = canonical_technique.lower() != authoritative_model.lower()
-        checks.append(check(
-            'canonical technique deviation disclosed',
-            (not technique_deviates) or nonempty(domain.get('technique_deviation_reason')),
-            f"canonical={canonical_technique}; used={authoritative_model or 'missing'}; deviation reason={'yes' if nonempty(domain.get('technique_deviation_reason')) else 'no'}"
-        ))
+    implemented_technique = str(domain.get('implemented_technique', '')).strip()
+    technique_conformance = str(domain.get('technique_conformance', '')).strip().lower()
+    technique_reason = domain.get('technique_deviation_reason')
+    # technique_conformance is required for every product, unconditionally — like claim_level — so
+    # leaving canonical_technique blank can no longer silently skip disclosure the way it used to.
+    # It is a declared judgment, not a string diff: comparing a short technique label against a
+    # detailed authoritative_model description by exact text is unreliable in both directions (an
+    # honest, detailed description almost never matches the label verbatim; a lazy copy-paste does).
+    checks.append(check('technique conformance declared', technique_conformance in TECHNIQUE_CONFORMANCE_STATES, technique_conformance or 'missing'))
+    if technique_conformance in TECHNIQUE_CONFORMANCE_STATES:
+        name, ok, detail = technique_conformance_check(technique_conformance, canonical_technique, implemented_technique, technique_reason)
+        checks.append(check(name, ok, detail))
     if profile in DOMAIN_PROFILES:
         units = domain.get('units', {}) if isinstance(domain, dict) else {}
         checks.append(check('authoritative domain model', nonempty(domain.get('authoritative_model')), str(domain.get('authoritative_model', '')).strip() or 'missing'))
@@ -599,7 +624,7 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
 
     if validation_path:
         browser = validation.get('browser', {})
-        checks.append(check('validation schema', int(validation.get('version', 0) or 0) >= VALIDATION_VERSION, f"version {validation.get('version', 0)}; v0.7 requires {VALIDATION_VERSION}"))
+        checks.append(check('validation schema', int(validation.get('version', 0) or 0) >= VALIDATION_VERSION, f"version {validation.get('version', 0)}; this release requires {VALIDATION_VERSION}"))
         workflow_review = validation.get('workflow_review', {}) if isinstance(validation, dict) else {}
         domain_validation = validation.get('domain_validation', {}) if isinstance(validation, dict) else {}
         runtime_validation = validation.get('runtime_engineering', {}) if isinstance(validation, dict) else {}
@@ -627,12 +652,20 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
             checks.append(check('completion/export runtime review', completion_review == 'pass', completion_review or 'not-run'))
             checks.append(check('failure/recovery runtime review', recovery_review == 'pass', recovery_review or 'not-run'))
             checks.append(check('runtime public-claim audit', str(claim_review.get('status', '')).lower() == 'pass', str(claim_review.get('status', 'not-run'))))
-            if canonical_technique and technique_deviates:
-                checks.append(check(
-                    'runtime technique deviation disclosed',
-                    nonempty(domain_validation.get('technique_deviation_reason')),
-                    f"canonical={domain_validation.get('canonical_technique') or 'missing'}; deviation reason={'yes' if nonempty(domain_validation.get('technique_deviation_reason')) else 'no'}"
-                ))
+            runtime_technique_conformance = str(domain_validation.get('technique_conformance', '')).strip().lower()
+            checks.append(check(
+                'runtime technique conformance matches plan',
+                runtime_technique_conformance == technique_conformance,
+                f"plan={technique_conformance or 'missing'}; validation={runtime_technique_conformance or 'missing'}"
+            ))
+            if technique_conformance in TECHNIQUE_CONFORMANCE_STATES:
+                name, ok, detail = technique_conformance_check(
+                    technique_conformance,
+                    str(domain_validation.get('canonical_technique', '')),
+                    str(domain_validation.get('implemented_technique', '')),
+                    domain_validation.get('technique_deviation_reason')
+                )
+                checks.append(check(f'runtime {name}', ok, detail))
             if profile in DOMAIN_PROFILES:
                 validation_status = str(domain_validation.get('status', '')).lower()
                 unresolved_domain = domain_validation.get('unresolved_defects', []) if isinstance(domain_validation, dict) else []
@@ -893,10 +926,41 @@ def migrate_project(root: Path) -> dict[str, Any]:
     if not plan_path:
         raise SystemExit('FORGE_PLAN.json is required for migration')
     current = int(plan.get('version', 0) or 0)
-    if current >= PLAN_VERSION:
+    if current > PLAN_VERSION:
         return {'status':'pass','project':str(root),'from':current,'to':current,'changed':False}
+    if current == PLAN_VERSION:
+        # Same schema version, but the template can still grow new keys within a version (e.g.
+        # domain.technique_conformance added in v0.8.1) — back-fill those without a version bump,
+        # instead of a project silently starting to fail audit with no automated upgrade path.
+        template = json.loads((SKILL_ROOT / 'templates/FORGE_PLAN.json').read_text(encoding='utf-8'))
+        migrated = merge_defaults(template, plan)
+        migrated_domain = migrated.get('domain') if isinstance(migrated, dict) else None
+        if isinstance(migrated_domain, dict) and nonempty(migrated_domain.get('canonical_technique')) and migrated_domain.get('technique_conformance') == 'not-applicable':
+            # A blind template default of 'not-applicable' would contradict an already-declared
+            # canonical_technique (which the check requires to stay empty under not-applicable).
+            # Land on the most conservative non-conformant state instead of guessing 'conformant'
+            # (an unearned pass) — this reliably fails audit with an actionable prompt to fill in
+            # implemented_technique/technique_deviation_reason rather than a confusing self-contradiction.
+            migrated_domain['technique_conformance'] = 'approximation'
+        changed = migrated != plan
+        if changed:
+            backup = plan_path.with_name(plan_path.name + f'.v{current}.bak')
+            if not backup.exists(): shutil.copy2(plan_path, backup)
+            write_json(plan_path, migrated)
+        validation, validation_path = read_first(root, VALIDATION_LOCATIONS)
+        if validation_path and int(validation.get('version', 0) or 0) <= VALIDATION_VERSION:
+            vcurrent = int(validation.get('version', 0) or 0)
+            vtemplate = json.loads((SKILL_ROOT / 'templates/VALIDATION.json').read_text(encoding='utf-8'))
+            vmigrated = merge_defaults(vtemplate, validation)
+            vmigrated['version'] = VALIDATION_VERSION
+            if vmigrated != validation:
+                vbackup = validation_path.with_name(validation_path.name + f'.v{vcurrent}.bak')
+                if not vbackup.exists(): shutil.copy2(validation_path, vbackup)
+                write_json(validation_path, vmigrated)
+                changed = True
+        return {'status':'pass','project':str(root),'from':current,'to':current,'changed':changed}
     if current not in {4, 5}:
-        raise SystemExit(f'unsupported plan migration: version {current}; v0.7 migrates v4 or v5 only')
+        raise SystemExit(f'unsupported plan migration: version {current}; this release migrates v4 or v5 only')
     template = json.loads((SKILL_ROOT / 'templates/FORGE_PLAN.json').read_text(encoding='utf-8'))
     migrated = merge_defaults(template, plan)
     migrated['version'] = PLAN_VERSION
@@ -1012,7 +1076,7 @@ def doctor() -> dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description='Immersive Web Simulation Forge v0.7')
+    parser = argparse.ArgumentParser(description='Immersive Web Simulation Forge')
     sub = parser.add_subparsers(dest='command', required=True)
 
     init_p = sub.add_parser('init')

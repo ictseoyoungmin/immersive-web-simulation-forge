@@ -24,7 +24,7 @@ class ProfileRegressionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)/'lab'; root.mkdir(); plan=helpers.valid_simulation_plan()
             self.assertFalse(plan['spatial']['applicable'])
-            helpers.make_project(root,plan,validation=helpers.valid_validation('simulation-lab','decision-support'))
+            helpers.make_project(root,plan,validation=helpers.valid_validation('simulation-lab','decision-support', technique_conformance='conformant', canonical_technique='velocity Verlet integration of a linear damped harmonic oscillator', implemented_technique='velocity Verlet integration of a linear damped harmonic oscillator', technique_deviation_reason=''))
             report=forge.audit_project(root)
             self.assertEqual(report['status'],'pass',report)
             names={item['name'] for item in report['checks']}
@@ -49,5 +49,52 @@ class ProfileRegressionTests(unittest.TestCase):
             self.assertTrue(result['changed']); self.assertEqual(migrated['version'],6); self.assertTrue(migrated['asset_fidelity']['applicable'])
             self.assertEqual(migrated['asset_fidelity']['scope_mode'],'world-scale'); self.assertIn('asset_fidelity_validation',migrated_val)
             self.assertTrue((root/'.forge/FORGE_PLAN.json.v5.bak').exists()); self.assertTrue((root/'.forge/VALIDATION.json.v5.bak').exists())
+
+    def test_same_version_migration_backfills_new_fields_added_within_v6(self):
+        # A project already at PLAN_VERSION (e.g. built under v0.8.0, before implemented_technique/
+        # technique_conformance existed) must not be left behind by `migrate` just because its
+        # version number already matches — that used to no-op and start failing audit silently.
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)/'already-v6'; root.mkdir(); forge.init_project(root,'simulation-lab','production')
+            plan_path=root/'.forge/FORGE_PLAN.json'; plan=json.loads(plan_path.read_text())
+            self.assertEqual(plan['version'],6)
+            plan['domain'].pop('implemented_technique'); plan['domain'].pop('technique_conformance')
+            plan_path.write_text(json.dumps(plan))
+            result=forge.migrate_project(root)
+            migrated=json.loads(plan_path.read_text())
+            self.assertTrue(result['changed']); self.assertEqual(result['from'],6); self.assertEqual(result['to'],6)
+            self.assertIn('implemented_technique',migrated['domain']); self.assertIn('technique_conformance',migrated['domain'])
+            self.assertTrue((root/'.forge/FORGE_PLAN.json.v6.bak').exists())
+            second=forge.migrate_project(root)
+            self.assertFalse(second['changed'])
+
+    def test_same_version_migration_does_not_contradict_existing_canonical_technique(self):
+        # A pre-v0.8.1 project that already disclosed canonical_technique (the exact scenario
+        # v0.7.1 was built for) must not have technique_conformance blindly backfilled to
+        # 'not-applicable' from the template default — that would contradict canonical_technique
+        # and fail audit with a confusing self-contradiction instead of an actionable prompt.
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)/'already-v6'; root.mkdir(); forge.init_project(root,'simulation-lab','production')
+            plan_path=root/'.forge/FORGE_PLAN.json'; plan=json.loads(plan_path.read_text())
+            plan['domain']['canonical_technique']='Tessendorf/Horvath spectral synthesis (inverse FFT)'
+            plan['domain']['technique_deviation_reason']='pre-v0.8.1 note'
+            plan['domain'].pop('implemented_technique'); plan['domain'].pop('technique_conformance')
+            plan_path.write_text(json.dumps(plan))
+            forge.migrate_project(root)
+            migrated=json.loads(plan_path.read_text())['domain']
+            self.assertEqual(migrated['canonical_technique'],'Tessendorf/Horvath spectral synthesis (inverse FFT)')
+            self.assertNotEqual(migrated['technique_conformance'],'not-applicable')
+            self.assertIn(migrated['technique_conformance'],{'approximation','alternative','conformant'})
+
+    def test_stale_validation_version_upgraded_when_plan_already_current(self):
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)/'stale-validation'; root.mkdir(); forge.init_project(root,'simulation-lab','production')
+            val_path=root/'.forge/VALIDATION.json'; val=json.loads(val_path.read_text()); val['version']=5
+            val_path.write_text(json.dumps(val))
+            result=forge.migrate_project(root)
+            self.assertTrue(result['changed'])
+            migrated_val=json.loads(val_path.read_text())
+            self.assertEqual(migrated_val['version'],6)
+            self.assertTrue((root/'.forge/VALIDATION.json.v5.bak').exists())
 
 if __name__=='__main__': unittest.main()

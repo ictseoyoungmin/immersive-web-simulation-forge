@@ -27,6 +27,8 @@
     "status": "not-applicable",
     "claim_level": "visual-concept",
     "canonical_technique": "",
+    "implemented_technique": "",
+    "technique_conformance": "not-applicable",
     "technique_deviation_reason": "",
     "oracle": "",
     "known_cases": [],

@@ -6,7 +6,7 @@ Use this contract when fire or smoke is a hero system, a causal simulation, or a
 
 Fire/smoke simulation produces physical or reduced-order fields such as velocity, pressure, temperature, fuel, oxidizer/product proxies, soot/smoke density, and heat release. Rendering consumes those fields.
 
-Do not treat `orange emissive noise + alpha smoke sprites` as a simulation merely because it resembles flame. Conversely, a valid fluid solve does not guarantee convincing radiance; both ledgers must pass their own evidence.
+Do not treat `orange emissive noise + alpha smoke sprites` as a simulation merely because it resembles flame. Conversely, a valid fluid solve does not guarantee convincing radiance: domain validity and perceptual/rendering evidence must each pass on their own terms.
 
 ## Canonical interactive model
 

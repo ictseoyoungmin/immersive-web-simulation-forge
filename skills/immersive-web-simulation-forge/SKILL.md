@@ -13,9 +13,9 @@ description: >-
   is central.
 ---
 
-# Immersive Web Simulation Forge v0.7
+# Immersive Web Simulation Forge
 
-Build a concentrated interactive browser product, prove the level of truth it claims, and package only the runtime a user needs. v0.7 adds structured spatial authoring and enforceable flagship asset-fidelity gates so a correct world or simulation cannot be certified while its hero region remains a primitive blockout.
+Build a concentrated interactive browser product, prove the level of truth it claims, and package only the runtime a user needs. Structured spatial authoring and enforceable flagship asset-fidelity gates mean a correct world or simulation cannot be certified while its hero region remains a primitive blockout.
 
 Use renderer, compute, document, authoring, and provider architectures that fit the product. SVG, Canvas 2D, WebGL, Three.js, WebGPU, DOM hybrids, Workers, WASM, server jobs, authored assets, procedural assets, reconstruction, retrieval, and generative systems are valid when they match the perceptual and domain problem.
 

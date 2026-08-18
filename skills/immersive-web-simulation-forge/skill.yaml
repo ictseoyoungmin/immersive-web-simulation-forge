@@ -1,6 +1,6 @@
 schema: hadara.skill/v0.1
 name: immersive-web-simulation-forge
-version: 0.8.0
+version: 0.8.1
 description: >-
   Design, implement, validate, harden, and lean-package browser-native spatial
   products, open worlds, physics laboratories, parametric design studios, data
@@ -12,7 +12,7 @@ runtime:
   tools:
     forge:
       command: [python, scripts/forge.py]
-      description: Initialize, migrate, audit, package, and verify interactive world, laboratory, authoring, data, and operations projects with v0.7 asset-fidelity contracts.
+      description: Initialize, migrate, audit, package, and verify interactive world, laboratory, authoring, data, and operations projects with structured spatial and asset-fidelity contracts.
     check-html:
       command: [node, scripts/check_html.mjs]
       description: Syntax-check HTML scripts and detect JavaScript/GLSL boundary mistakes.

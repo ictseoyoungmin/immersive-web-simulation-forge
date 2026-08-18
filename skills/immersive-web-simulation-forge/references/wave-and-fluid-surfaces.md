@@ -12,7 +12,7 @@ Do not treat all visible water as one problem. Classify the dominant regime befo
 
 A product may combine regimes, but one must be authoritative in each spatial band. Do not apply a spectral ocean model to a river merely because both are water.
 
-Record the selected regime and canonical technique in `domain.canonical_technique`, what was actually implemented in `domain.authoritative_model`, and — when they differ — the deviation and its visible cost in `domain.technique_deviation_reason` (see `physics-simulation.md`'s canonical technique floor).
+Record the selected regime's canonical technique in `domain.canonical_technique`, what was actually built in `domain.implemented_technique`, and declare `domain.technique_conformance` (`conformant`/`approximation`/`alternative`/`not-applicable`) plus a `domain.technique_deviation_reason` whenever it is not `conformant`. See `physics-simulation.md`'s canonical technique floor for the full contract.
 
 ## Governing relations
 
@@ -21,6 +21,8 @@ For linear surface gravity waves, use the dispersion relation
 `ω² = g·k·tanh(k·h)`
 
 with deep-water limit `ω² = g·k` when `k·h ≫ 1`. Finite-sum and spectral components should derive angular frequency from wavenumber through the same relation rather than choosing animation frequencies by eye.
+
+This pure-gravity relation stops applying at short wavelengths: below roughly 1.7 cm, surface tension dominates and the correct relation is the gravity-capillary dispersion relation `ω² = (g·k + (σ/ρ)·k³)·tanh(k·h)`, where `σ` is surface tension and `ρ` is fluid density. A cascade band claiming to reach true capillary-scale ripples should use this form, not the pure-gravity relation, for its highest-wavenumber components; a cascade that stops at short gravity waves (well above the capillary cutoff) can keep using `ω² = g·k·tanh(k·h)` throughout.
 
 For shallow-water flow, the authoritative model should be based on depth-averaged mass and momentum conservation (Saint-Venant / shallow-water equations) with declared bathymetry, forcing, friction, and boundary conditions.
 
@@ -34,7 +36,7 @@ For a flagship ocean or large open-water hero surface, the canonical real-time t
 2. assign seeded Gaussian random amplitudes;
 3. evolve phase using the physical dispersion relation;
 4. synthesize height, horizontal displacement, and slope fields with an inverse FFT;
-5. use multiple cascades over disjoint spatial/wavenumber bands to cover swell through capillary-scale detail without obvious tiling;
+5. use multiple cascades over disjoint spatial/wavenumber bands to cover swell through short-gravity-wave detail without obvious tiling, adding a gravity-capillary band (see the governing relations above) only when the product genuinely needs sub-centimeter ripple detail;
 6. derive normals from the same slope field and foam from crest compression, curvature, or the displacement Jacobian.
 
 Phillips, Pierson-Moskowitz, JONSWAP, TMA depth correction, or other established spectra are valid when their assumptions fit the scene. State the wind/depth assumptions and cascade bands.

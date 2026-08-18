@@ -1,6 +1,6 @@
 {
   "name": "immersive-web-simulation-forge",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Design, implement, validate, harden, and package browser spatial products, open worlds, simulation labs, design studios, and data/operations tools with hybrid authoring and evidence-driven verification.",
   "author": {
     "name": "ictseoyoungmin",
@@ -22,7 +22,7 @@
   "interface": {
     "displayName": "Immersive Web Simulation Forge",
     "shortDescription": "Build high-fidelity browser spatial products and simulations",
-    "longDescription": "A browser-native expert engineering skill for open worlds, simulation labs, design studios, data instruments, and operational tools. v0.7 adds structured spatial authoring and enforceable flagship asset-fidelity gates: WorldSpec, deterministic reconciliation, identity-critical asset coverage, near/mid/far authoring budgets, primitive-placeholder limits, runtime asset evidence, and target-size multi-view review.",
+    "longDescription": "A browser-native expert engineering skill for open worlds, simulation labs, design studios, data instruments, and operational tools. Structured spatial authoring and enforceable flagship asset-fidelity gates cover WorldSpec, deterministic reconciliation, identity-critical asset coverage, near/mid/far authoring budgets, primitive-placeholder limits, runtime asset evidence, and target-size multi-view review.",
     "developerName": "ictseoyoungmin",
     "category": "Developer Tools",
     "capabilities": [

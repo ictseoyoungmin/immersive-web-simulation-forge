@@ -104,7 +104,9 @@ def valid_plan(stack='three.js'):
             'claim_level': 'visual-concept',
             'authoritative_model': 'deterministic world state',
             'canonical_technique': '',
-            'technique_deviation_reason': '',
+            'implemented_technique': 'authored deterministic world/wind state machine',
+            'technique_conformance': 'not-applicable',
+            'technique_deviation_reason': 'World state and wind response are artistic/authored; no established physical canonical technique applies to this hero mechanism.',
             'units': {'system': 'SI', 'coordinate_system': 'right-handed Y-up', 'quantities': ['position:m', 'speed:m/s']},
             'inputs': ['player actions'], 'outputs': ['world state'],
             'assumptions': [], 'limitations': ['Wind response is artistic, not physical'],
@@ -282,7 +284,15 @@ def valid_plan(stack='three.js'):
 
 
 
-def valid_validation(profile='full-window-world', claim_level='visual-concept'):
+def valid_validation(
+    profile='full-window-world', claim_level='visual-concept',
+    technique_conformance='not-applicable', canonical_technique='', implemented_technique='authored deterministic world/wind state machine',
+    technique_deviation_reason='World state and wind response are artistic/authored; no established physical canonical technique applies to this hero mechanism.'
+):
+    # Defaults match valid_plan()'s domain.technique_conformance ('not-applicable', which requires
+    # canonical_technique to stay empty). Callers paired with a plan that declares a different
+    # technique_conformance (e.g. valid_simulation_plan()'s 'conformant') must pass matching values
+    # here, since 'not-applicable' and the other three states require opposite field emptiness.
     domain_applicable = profile in forge.DOMAIN_PROFILES
     return {
         'version': 6,
@@ -296,7 +306,10 @@ def valid_validation(profile='full-window-world', claim_level='visual-concept'):
         },
         'domain_validation': {
             'status': 'pass' if domain_applicable else 'not-applicable',
-            'claim_level': claim_level, 'canonical_technique': '', 'technique_deviation_reason': '', 'oracle': 'reference fixture',
+            'claim_level': claim_level, 'canonical_technique': canonical_technique, 'implemented_technique': implemented_technique,
+            'technique_conformance': technique_conformance,
+            'technique_deviation_reason': technique_deviation_reason,
+            'oracle': 'reference fixture',
             'known_cases': ['reference case'], 'tolerances_met': True,
             'invariants_or_geometry_checks': ['finite state'],
             'round_trip': 'pass' if profile == 'design-studio' else 'not-applicable',
@@ -373,6 +386,10 @@ def valid_simulation_plan():
     plan['domain'] = {
         'claim_level': 'decision-support',
         'authoritative_model': 'linear damped oscillator m*x2+c*x1+k*x=0',
+        'canonical_technique': 'velocity Verlet integration of a linear damped harmonic oscillator',
+        'implemented_technique': 'velocity Verlet integration of a linear damped harmonic oscillator',
+        'technique_conformance': 'conformant',
+        'technique_deviation_reason': '',
         'units': {'system': 'SI', 'coordinate_system': 'positive displacement right', 'quantities': ['mass:kg', 'stiffness:N/m', 'damping:N*s/m', 'time:s']},
         'inputs': ['mass', 'stiffness', 'damping', 'initial displacement'],
         'outputs': ['position', 'velocity', 'energy'],
@@ -449,6 +466,10 @@ def valid_design_plan():
     plan['domain'] = {
         'claim_level': 'visual-concept',
         'authoritative_model': 'versioned parametric helicopter assembly document',
+        'canonical_technique': '',
+        'implemented_technique': 'authored parametric CAD-style assembly document',
+        'technique_conformance': 'not-applicable',
+        'technique_deviation_reason': 'Authored parametric geometry has no established physical/numerical canonical technique to compare against; this is a document model, not a simulated phenomenon.',
         'units': {'system': 'SI', 'coordinate_system': 'right-handed Y-up, forward -Z', 'quantities': ['length:m', 'angle:deg']},
         'inputs': ['airframe and rotor parameters'], 'outputs': ['concept geometry and measurements'],
         'assumptions': ['visual concept only'],
@@ -514,44 +535,148 @@ class ForgeTests(unittest.TestCase):
             report = forge.audit_project(root)
             self.assertEqual(report['status'], 'pass', report)
 
-    def test_undisclosed_technique_deviation_fails_even_for_full_window_world(self):
+    def test_missing_technique_conformance_fails_even_for_full_window_world(self):
         # A full-window-world flagship (e.g. an ocean/weather showcase) sits outside
         # DOMAIN_PROFILES, so this must fire independently of profile-gated domain checks.
+        # Leaving technique_conformance unset must fail outright — it is no longer possible
+        # to dodge the whole disclosure contract by simply not declaring canonical_technique.
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / 'demo'; root.mkdir()
+            plan = valid_plan()
+            plan['domain']['canonical_technique'] = ''
+            plan['domain']['implemented_technique'] = ''
+            plan['domain']['technique_conformance'] = ''
+            plan['domain']['technique_deviation_reason'] = ''
+            make_project(root, plan)
+            report = forge.audit_project(root)
+            failed = {item['name'] for item in report['checks'] if item['status'] == 'fail'}
+            self.assertIn('technique conformance declared', failed)
+            self.assertEqual(report['status'], 'fail')
+
+    def test_undisclosed_technique_approximation_fails(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td) / 'demo'; root.mkdir()
             plan = valid_plan()
             plan['domain']['canonical_technique'] = 'Tessendorf/Horvath spectral synthesis (inverse FFT)'
-            plan['domain']['authoritative_model'] = 'finite 8-band analytic sum of sines'
+            plan['domain']['implemented_technique'] = 'finite 8-band analytic sum of sines'
+            plan['domain']['technique_conformance'] = 'approximation'
             plan['domain']['technique_deviation_reason'] = ''
             validation = valid_validation()
             validation['domain_validation']['canonical_technique'] = plan['domain']['canonical_technique']
+            validation['domain_validation']['implemented_technique'] = plan['domain']['implemented_technique']
+            validation['domain_validation']['technique_conformance'] = 'approximation'
             validation['domain_validation']['technique_deviation_reason'] = ''
             make_project(root, plan, validation=validation)
             report = forge.audit_project(root)
             failed = {item['name'] for item in report['checks'] if item['status'] == 'fail'}
-            self.assertIn('canonical technique deviation disclosed', failed)
+            self.assertIn('technique deviation disclosed', failed)
             self.assertIn('runtime technique deviation disclosed', failed)
             self.assertEqual(report['status'], 'fail')
 
-    def test_disclosed_technique_deviation_passes(self):
+    def test_disclosed_technique_approximation_passes(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td) / 'demo'; root.mkdir()
             plan = valid_plan()
             plan['domain']['canonical_technique'] = 'Tessendorf/Horvath spectral synthesis (inverse FFT)'
-            plan['domain']['authoritative_model'] = 'finite 8-band analytic sum of sines'
+            plan['domain']['implemented_technique'] = 'finite 8-band analytic sum of sines'
+            plan['domain']['technique_conformance'] = 'approximation'
             plan['domain']['technique_deviation_reason'] = (
                 'Chose a fixed 8-band approximation over IFFT synthesis for a lean WebGL-only build; '
                 'visible cost: waves repeat past ~200m and foam is a decorative noise field, not slope-derived.'
             )
             validation = valid_validation()
             validation['domain_validation']['canonical_technique'] = plan['domain']['canonical_technique']
+            validation['domain_validation']['implemented_technique'] = plan['domain']['implemented_technique']
+            validation['domain_validation']['technique_conformance'] = 'approximation'
             validation['domain_validation']['technique_deviation_reason'] = plan['domain']['technique_deviation_reason']
             make_project(root, plan, validation=validation)
             report = forge.audit_project(root)
             failed = {item['name'] for item in report['checks'] if item['status'] == 'fail'}
-            self.assertNotIn('canonical technique deviation disclosed', failed)
+            self.assertNotIn('technique deviation disclosed', failed)
             self.assertNotIn('runtime technique deviation disclosed', failed)
             self.assertEqual(report['status'], 'pass', report)
+
+    def test_conformant_technique_with_differently_worded_authoritative_model_passes(self):
+        # This is the exact false-positive the old string-diff check produced: an honest,
+        # detailed authoritative_model will almost never match canonical_technique verbatim,
+        # even when the implementation genuinely IS the canonical technique.
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / 'demo'; root.mkdir()
+            plan = valid_plan()
+            plan['domain']['canonical_technique'] = 'Tessendorf/Horvath spectral synthesis (inverse FFT)'
+            plan['domain']['implemented_technique'] = 'Tessendorf/Horvath spectral synthesis (inverse FFT)'
+            plan['domain']['authoritative_model'] = (
+                '3-cascade JONSWAP/TMA spectral ocean, seeded Gaussian amplitudes, '
+                'Stockham IFFT, Jacobian-derived foam'
+            )
+            plan['domain']['technique_conformance'] = 'conformant'
+            plan['domain']['technique_deviation_reason'] = ''
+            validation = valid_validation()
+            validation['domain_validation']['canonical_technique'] = plan['domain']['canonical_technique']
+            validation['domain_validation']['implemented_technique'] = plan['domain']['implemented_technique']
+            validation['domain_validation']['technique_conformance'] = 'conformant'
+            make_project(root, plan, validation=validation)
+            report = forge.audit_project(root)
+            failed = {item['name'] for item in report['checks'] if item['status'] == 'fail'}
+            self.assertNotIn('technique deviation disclosed', failed)
+            self.assertNotIn('technique conformance evidence', failed)
+            self.assertEqual(report['status'], 'pass', report)
+
+    def test_not_applicable_with_named_canonical_technique_fails(self):
+        # Declaring not-applicable while still naming a canonical_technique is a contradiction —
+        # it must not become a quiet way to skip disclosure for a phenomenon that does have one.
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / 'demo'; root.mkdir()
+            plan = valid_plan()
+            plan['domain']['canonical_technique'] = 'Tessendorf/Horvath spectral synthesis (inverse FFT)'
+            plan['domain']['technique_conformance'] = 'not-applicable'
+            plan['domain']['technique_deviation_reason'] = 'no reason needed'
+            make_project(root, plan)
+            report = forge.audit_project(root)
+            failed = {item['name'] for item in report['checks'] if item['status'] == 'fail'}
+            self.assertIn('technique not-applicable rationale', failed)
+
+    def test_runtime_not_applicable_with_named_canonical_technique_fails(self):
+        # Same contradiction as above, but surfacing only in VALIDATION.json's domain_validation
+        # mirror while the plan itself is clean — the runtime check must independently catch it
+        # rather than only checking technique_deviation_reason is nonempty.
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / 'demo'; root.mkdir()
+            plan = valid_plan()
+            plan['domain']['canonical_technique'] = ''
+            plan['domain']['technique_conformance'] = 'not-applicable'
+            plan['domain']['technique_deviation_reason'] = 'No established canonical technique applies here.'
+            validation = valid_validation()
+            validation['domain_validation']['technique_conformance'] = 'not-applicable'
+            validation['domain_validation']['canonical_technique'] = 'Tessendorf/Horvath spectral synthesis (inverse FFT)'
+            validation['domain_validation']['technique_deviation_reason'] = 'No established canonical technique applies here.'
+            make_project(root, plan, validation=validation)
+            report = forge.audit_project(root)
+            failed = {item['name'] for item in report['checks'] if item['status'] == 'fail'}
+            self.assertIn('runtime technique not-applicable rationale', failed)
+
+    def test_runtime_technique_conformance_mismatched_with_plan_fails(self):
+        # The mirrored domain_validation.technique_conformance field must itself be checked against
+        # the plan's declaration, not just used implicitly to pick which branch to validate.
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / 'demo'; root.mkdir()
+            plan = valid_plan()  # domain.technique_conformance = 'not-applicable'
+            validation = valid_validation()
+            validation['domain_validation']['technique_conformance'] = 'conformant'
+            make_project(root, plan, validation=validation)
+            report = forge.audit_project(root)
+            failed = {item['name'] for item in report['checks'] if item['status'] == 'fail'}
+            self.assertIn('runtime technique conformance matches plan', failed)
+
+    def test_not_applicable_requires_implemented_technique_too(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / 'demo'; root.mkdir()
+            plan = valid_plan()
+            plan['domain']['implemented_technique'] = ''
+            make_project(root, plan)
+            report = forge.audit_project(root)
+            failed = {item['name'] for item in report['checks'] if item['status'] == 'fail'}
+            self.assertIn('technique not-applicable rationale', failed)
 
     def test_new_profiles_initialize_with_expected_workflow(self):
         expected = {
@@ -571,7 +696,7 @@ class ForgeTests(unittest.TestCase):
     def test_valid_simulation_lab_passes(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td) / 'lab'; root.mkdir()
-            make_project(root, valid_simulation_plan(), validation=valid_validation('simulation-lab', 'decision-support'))
+            make_project(root, valid_simulation_plan(), validation=valid_validation('simulation-lab', 'decision-support', technique_conformance='conformant', canonical_technique='velocity Verlet integration of a linear damped harmonic oscillator', implemented_technique='velocity Verlet integration of a linear damped harmonic oscillator', technique_deviation_reason=''))
             report = forge.audit_project(root)
             self.assertEqual(report['status'], 'pass', report)
 
@@ -580,7 +705,7 @@ class ForgeTests(unittest.TestCase):
             root = Path(td) / 'lab'; root.mkdir(); plan = valid_simulation_plan()
             plan['domain']['units']['quantities'] = []
             plan['domain']['solver']['stability_or_convergence'] = ''
-            make_project(root, plan, validation=valid_validation('simulation-lab', 'decision-support'))
+            make_project(root, plan, validation=valid_validation('simulation-lab', 'decision-support', technique_conformance='conformant', canonical_technique='velocity Verlet integration of a linear damped harmonic oscillator', implemented_technique='velocity Verlet integration of a linear damped harmonic oscillator', technique_deviation_reason=''))
             report = forge.audit_project(root)
             failed = {item['name'] for item in report['checks'] if item['status'] == 'fail'}
             self.assertIn('units and coordinates', failed)
@@ -591,7 +716,7 @@ class ForgeTests(unittest.TestCase):
             root = Path(td) / 'lab'; root.mkdir(); plan = valid_simulation_plan()
             plan['domain']['validation']['known_cases'] = []
             plan['domain']['validation']['tolerances'] = []
-            make_project(root, plan, validation=valid_validation('simulation-lab', 'decision-support'))
+            make_project(root, plan, validation=valid_validation('simulation-lab', 'decision-support', technique_conformance='conformant', canonical_technique='velocity Verlet integration of a linear damped harmonic oscillator', implemented_technique='velocity Verlet integration of a linear damped harmonic oscillator', technique_deviation_reason=''))
             self.assertEqual(forge.audit_project(root)['status'], 'fail')
 
     def test_heavy_compute_requires_cancel_progress_and_stale_policy(self):
@@ -600,7 +725,7 @@ class ForgeTests(unittest.TestCase):
             plan['compute']['cancellable'] = False
             plan['compute']['progress_reporting'] = 'not-applicable'
             plan['compute']['stale_result_policy'] = ''
-            make_project(root, plan, validation=valid_validation('simulation-lab', 'decision-support'))
+            make_project(root, plan, validation=valid_validation('simulation-lab', 'decision-support', technique_conformance='conformant', canonical_technique='velocity Verlet integration of a linear damped harmonic oscillator', implemented_technique='velocity Verlet integration of a linear damped harmonic oscillator', technique_deviation_reason=''))
             report = forge.audit_project(root)
             self.assertIn('cancellable compute protocol', {item['name'] for item in report['checks'] if item['status'] == 'fail'})
 
@@ -622,7 +747,7 @@ class ForgeTests(unittest.TestCase):
                 'missing_error_policy': 'reject missing time and interpolate no values',
                 'action_confirmation': 'not-applicable', 'recovery': 'restore last valid import'
             }
-            make_project(root, plan, validation=valid_validation('data-instrument', 'decision-support'))
+            make_project(root, plan, validation=valid_validation('data-instrument', 'decision-support', technique_conformance='conformant', canonical_technique='velocity Verlet integration of a linear damped harmonic oscillator', implemented_technique='velocity Verlet integration of a linear damped harmonic oscillator', technique_deviation_reason=''))
             self.assertEqual(forge.audit_project(root)['status'], 'pass')
             plan['data_contract']['provenance'] = ''
             (root / '.forge/FORGE_PLAN.json').write_text(json.dumps(plan))
@@ -640,7 +765,7 @@ class ForgeTests(unittest.TestCase):
                 'action_confirmation': 'preview device and command scope before dispatch',
                 'recovery': 'idempotent retry and explicit rollback command'
             }
-            make_project(root, plan, validation=valid_validation('operations-panel', 'decision-support'))
+            make_project(root, plan, validation=valid_validation('operations-panel', 'decision-support', technique_conformance='conformant', canonical_technique='velocity Verlet integration of a linear damped harmonic oscillator', implemented_technique='velocity Verlet integration of a linear damped harmonic oscillator', technique_deviation_reason=''))
             (root / 'src/main.mjs').write_text('''
             export const panel={mount(){},update(){},resize(){},suspend(){},resume(){},destroy(){}};
             const observer = new ResizeObserver(()=>panel.resize());
@@ -674,7 +799,7 @@ class ForgeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td) / 'lab'; root.mkdir(); plan = valid_simulation_plan()
             plan['review']['domain_validity']['unresolved_blockers'] = ['reference mismatch']
-            make_project(root, plan, validation=valid_validation('simulation-lab', 'decision-support'))
+            make_project(root, plan, validation=valid_validation('simulation-lab', 'decision-support', technique_conformance='conformant', canonical_technique='velocity Verlet integration of a linear damped harmonic oscillator', implemented_technique='velocity Verlet integration of a linear damped harmonic oscillator', technique_deviation_reason=''))
             failed = {item['name'] for item in forge.audit_project(root)['checks'] if item['status'] == 'fail'}
             self.assertIn('domain validity ledger', failed)
             self.assertNotIn('product outcome ledger', failed)

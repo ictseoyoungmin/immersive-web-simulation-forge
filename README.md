@@ -261,7 +261,7 @@ codex plugin add immersive-web-simulation-forge@immersive-web-simulation-forge
 - `examples/`는 스킬 패키지 자체에 필수인 런타임 파일이 아니라 전시·검증 자료입니다.
 
 
-### v0.7 non-goals
+### Non-goals
 
 - 자체 text-to-3D foundation model을 포함하지 않습니다.
 - Blender 또는 특정 생성 모델을 필수 dependency로 만들지 않습니다.
