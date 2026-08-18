@@ -1,33 +1,91 @@
 # Wave and fluid surface fidelity
 
-Use this contract whenever a product's hero visualization is a body of water, a weather-driven fluid field, or any surface whose motion is meant to read as physically simulated (ocean, lake, river, cloud volume, smoke, fire, granular flow). It extends `references/physics-simulation.md`'s canonical technique floor with the concrete technique for this domain; it does not create a new ledger.
+Use this contract when the hero visualization is water or a free surface whose motion is meant to read as physically simulated. It extends `references/physics-simulation.md`; it does not create a new ledger.
 
-## Contents
+## Applicability and regime selection
 
-- Governing relation
-- Spectrum-based water surfaces (the canonical technique)
-- When a finite-sum approximation is legitimate
-- Foam, spray, and secondary detail
-- Compute placement
+Do not treat all visible water as one problem. Classify the dominant regime before choosing the technique:
 
-## Governing relation
+- **open-water wind waves** — ocean, sea, or a large wind-driven lake where surface statistics dominate;
+- **shallow-water flow** — river, flood, harbor surge, coastal inundation, or terrain-coupled flow where depth and horizontal transport dominate;
+- **local free-surface liquid** — breaking waves, splashes, pouring, containers, obstacle-heavy local liquid motion.
 
-Deep-water gravity waves obey the dispersion relation `ω² = g·k·tanh(k·h)` (`ω² = g·k` in the deep-water limit `k·h ≫ 1`). Any water-surface technique — finite sum, FFT synthesis, or hybrid — should derive each component's angular frequency from its wavenumber through this relation rather than picking frequencies by eye; that is what makes even a cheap approximation a real (if simplified) governing relationship instead of an arbitrary animation.
+A product may combine regimes, but one must be authoritative in each spatial band. Do not apply a spectral ocean model to a river merely because both are water.
 
-## Spectrum-based water surfaces (the canonical technique)
+Record the selected regime and canonical technique in `domain.canonical_technique`, what was actually implemented in `domain.authoritative_model`, and — when they differ — the deviation and its visible cost in `domain.technique_deviation_reason` (see `physics-simulation.md`'s canonical technique floor).
 
-The established real-time technique for ocean and large open-water surfaces is Tessendorf's spectral method: sample a directional wave spectrum — Phillips or Pierson-Moskowitz for simple wind seas, JONSWAP for a developing sea, Horvath with TMA depth correction for combined swell and depth-limited wind sea — over a 2D wavenumber grid, assign Gaussian random amplitudes per bin, and synthesize height, displacement, and slope fields with an inverse FFT (Cooley-Tukey or Stockham butterfly), run once per frame or every few frames. Multiple cascades covering disjoint wavenumber bands at different tile sizes (for example ~250 m, ~17 m, ~5 m) avoid visible tiling while keeping each grid resolution tractable. Slope FFTs give normals that are analytically consistent with the visible displacement; the displacement field's Jacobian gives a physically motivated foam mask (compression at a crest → whitecap) instead of a decorative noise field standing in for one.
+## Governing relations
 
-Record `domain.canonical_technique = "Tessendorf/Horvath spectral synthesis (inverse FFT)"` for this class of product, whether or not you implement it.
+For linear surface gravity waves, use the dispersion relation
+
+`ω² = g·k·tanh(k·h)`
+
+with deep-water limit `ω² = g·k` when `k·h ≫ 1`. Finite-sum and spectral components should derive angular frequency from wavenumber through the same relation rather than choosing animation frequencies by eye.
+
+For shallow-water flow, the authoritative model should be based on depth-averaged mass and momentum conservation (Saint-Venant / shallow-water equations) with declared bathymetry, forcing, friction, and boundary conditions.
+
+For local incompressible free-surface liquid, use a velocity/pressure solve with an explicit free-surface representation such as particles plus grid transfer (FLIP/APIC), level set, VOF, or a declared equivalent. The exact solver may vary, but visible motion must be downstream of the same authoritative velocity and pressure state.
+
+## Open-water canonical technique
+
+For a flagship ocean or large open-water hero surface, the canonical real-time technique is spectral synthesis in the Tessendorf/Horvath family:
+
+1. sample a directional wave spectrum over a 2D wavenumber grid;
+2. assign seeded Gaussian random amplitudes;
+3. evolve phase using the physical dispersion relation;
+4. synthesize height, horizontal displacement, and slope fields with an inverse FFT;
+5. use multiple cascades over disjoint spatial/wavenumber bands to cover swell through capillary-scale detail without obvious tiling;
+6. derive normals from the same slope field and foam from crest compression, curvature, or the displacement Jacobian.
+
+Phillips, Pierson-Moskowitz, JONSWAP, TMA depth correction, or other established spectra are valid when their assumptions fit the scene. State the wind/depth assumptions and cascade bands.
 
 ## When a finite-sum approximation is legitimate
 
-A small fixed set of directional sinusoids (Gerstner-style, derived from the same dispersion relation above) is a legitimate, much cheaper approximation for background or decorative water, small viewports, or a deliberately stylized/low-poly treatment — the same way a hand-placed low-poly rock is a legitimate choice under `references/asset-fidelity-gates.md`. It stops being legitimate, and becomes the silent-substitution defect described in `physics-simulation.md`, when any of these hold: the water is the hero subject of a flagship product; the product's own language claims "realistic," "physically simulated," or "spectral"; or the viewport is large and long enough in view for the fixed component count to read as repeating/geometric rather than organic. State the component count and directional bands used in `domain.authoritative_model` — a handful of hard-coded components reads as artificial regardless of how the fragment shader disguises them with unrelated fbm noise.
+A fixed directional sum of Gerstner-style components is legitimate for decorative/background water, small viewports, deliberate low-poly/stylized work, or a bounded hero where the component count is high enough and the camera cannot expose repetition.
+
+It becomes a silent-substitution defect when:
+
+- the water is the hero subject of a flagship product;
+- the product claims `realistic`, `physically simulated`, `spectral`, or equivalent language;
+- a large persistent viewport makes the finite component count read as geometric repetition;
+- unrelated fragment noise is used to disguise an impoverished displacement model.
+
+Record component count, wavelength bands, direction bands, seed policy, and update cadence in `domain.authoritative_model` or adjacent plan notes.
 
 ## Foam, spray, and secondary detail
 
-Foam driven by a noise field unrelated to the displacement/slope state will decouple from the waves under scrutiny: it will not intensify at the actual crest, will not track current advection correctly, and will not respond to a real gust or wind-shift event. Foam should read from crest curvature or the Jacobian of the same field driving the visible surface, even inside a finite-sum approximation — this is the cheapest change that makes an approximate ocean feel causally connected rather than merely animated.
+Foam must be causally linked to the visible wave state. Prefer crest curvature, breaking criteria, or the Jacobian/compression of the same displacement field. Spray and mist may be particle or volumetric consumers of breaking events, but they must not become independent decorative noise systems.
+
+A gust or wind shift should propagate through the authoritative wind input into wave energy/direction, crest state, foam generation, spray, and downstream rendering at their appropriate response times.
+
+## Rendering coupling
+
+Water shading is a consumer of simulation state, not a replacement for it. At minimum couple:
+
+- displacement/slope → geometric normal and micro-normal policy;
+- Fresnel/IOR → reflection-transmission balance;
+- depth/turbidity → absorption and color;
+- wave/foam state → roughness, opacity, or whitecap material transitions;
+- world lighting → reflected environment and direct highlights.
+
+Read `surface-scattering-and-pbr-materials.md`, `real-time-global-illumination.md`, and `volumetric-rendering.md` when those effects are consequential.
 
 ## Compute placement
 
-A real-time IFFT-based cascade is a large parallel numerical kernel; per `references/stack-selection.md` it belongs on WebGPU compute, or a WASM/Worker CPU FFT as a slower fallback. A WebGPU-only implementation with no WebGL fallback is an acceptable architecture, not a defect, when it is declared as a requirement in `compute.fallback` and reflected in the product's stated browser support — a spectral ocean does not need a universal fallback to be a legitimate choice; it needs the requirement disclosed instead of silently downgrading the whole technique to avoid stating it.
+Large IFFT cascades are parallel numerical kernels. Prefer WebGPU compute for flagship browser implementations. A Worker/WASM FFT is a valid slower fallback. A WebGPU-only product is acceptable when `compute.fallback` explicitly declares the browser requirement instead of silently downgrading the entire ocean model.
+
+Shallow-water and local free-surface solvers should likewise be placed according to grid/particle count and coupling cost; do not block the main interaction thread with a solver that can exceed the frame budget.
+
+## Validation
+
+Use the strongest available checks:
+
+- dispersion relation and limiting cases;
+- repeatability from a recorded seed;
+- convergence under FFT/grid resolution where appropriate;
+- mass conservation for shallow/free-surface solvers;
+- known wave propagation or dam-break cases for shallow water;
+- causal wind-shift/gust scenarios;
+- target-size temporal review for tiling, popping, shimmer, foam detachment, and phase drift.
+
+A beautiful still frame is not evidence of a valid water model.

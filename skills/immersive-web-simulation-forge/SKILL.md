@@ -160,6 +160,9 @@ Declare claim level before the hero visualization. Record authoritative units/st
 
 - physics/numerical: read `references/physics-simulation.md`;
 - water, wave, or other fluid-surface hero visualization (any profile, not only simulation-lab): also read `references/wave-and-fluid-surfaces.md`;
+- consequential wind/weather coupling across systems: read `references/wind-and-atmospheric-flow.md`;
+- fire, smoke, or other reactive-flow hero: read `references/fire-smoke-and-reactive-flow.md`;
+- physically based lighting, material, global illumination, or volumetric claims: read `references/lighting-and-radiance.md` and the specialized references it routes to;
 - parametric/CAD-like: read `references/parametric-design.md`;
 - data/operations: read `references/compute-data-pipeline.md`.
 

@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.8.0 — Physical Fields to Radiance Reference Expansion
+
+v0.8 extends the canonical-technique-floor pattern introduced in v0.7.1 from water alone to the full causal chain a hero visualization can claim: physical fields (water, wind, fire/smoke) through to final radiance (PBR materials, real-time GI, path-traced reference, volumetric media). No new ledger, schema field, or profile gate is introduced — every new reference reuses the `domain.canonical_technique` / `domain.authoritative_model` / `domain.technique_deviation_reason` triad shipped in v0.7.1.
+
+### Added
+
+- `references/wave-and-fluid-surfaces.md` rewritten to cover three regimes — open-water wind waves, shallow-water flow, and local free-surface liquid — instead of open-water spectral synthesis alone.
+- `references/wind-and-atmospheric-flow.md`: one authoritative wind state shared by ocean, vegetation, smoke, cloth, audio, and gameplay consumers, with fidelity tiers from procedural divergence-free fields to CFD-grade flow.
+- `references/fire-smoke-and-reactive-flow.md`: Eulerian flow plus advected combustion scalars as the canonical interactive model; state evolution stays separate from `volumetric-rendering.md`'s appearance layer.
+- `references/lighting-and-radiance.md`: routing contract from authoritative lighting state to the four light-transport references below.
+- `references/surface-scattering-and-pbr-materials.md`: energy-aware microfacet BRDF floor and material parameterization discipline.
+- `references/real-time-global-illumination.md`: transport-coverage-matched-to-dynamism as the canonical requirement, plus a named list of GI silent-substitution defects (ambient term labeled `GI`, SSAO as indirect light, baked light surviving a claimed-dynamic change, etc.).
+- `references/reference-light-transport-and-path-tracing.md`: Monte Carlo/path-tracing oracle contract for hardening a shipping raster/hybrid renderer, not a requirement that every product path trace at runtime.
+- `references/volumetric-rendering.md`: radiative-transfer-informed transmittance/scattering/emission floor for fog, smoke, fire, and other participating media.
+- `SKILL.md` Phase B routing extended to wind, fire/smoke, and lighting/material/GI/volumetric claims.
+
+### Guardrails
+
+- Real-time global illumination explicitly has no single canonical algorithm — the floor is transport coverage matched to scene dynamism, not a mandated technique.
+- `monte-carlo-integration.md` is deliberately not split out as its own reference; sampling/MIS theory stays inside `reference-light-transport-and-path-tracing.md` to keep the reference set product-oriented rather than a rendering textbook.
+- This is a reference/documentation expansion only. The three-slice dogfood validation it calls for (water+wind, radiance core, reactive volume) has not been run yet; treat the new references as unverified against a real build until that happens.
+
 ## 0.7.1 — Canonical Technique Disclosure
 
 v0.7.1 is a dogfooding fix. A full-window-world ocean showcase shipped a hand-tuned finite-sum wave approximation under a `visual-concept` claim level with no requirement to disclose that an established canonical technique (FFT/spectral ocean synthesis) exists and was not used, because the domain rigor gates only applied to `DOMAIN_PROFILES` (`simulation-lab`, `design-studio`, `data-instrument`, `operations-panel`).
