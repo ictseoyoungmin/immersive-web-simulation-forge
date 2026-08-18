@@ -12,7 +12,7 @@ Choose by the information the user must perceive.
 | dense linked plots and tabular inspection | DOM/SVG/Canvas hybrid |
 | custom GPU solver with established renderer capital | raw WebGL |
 | cancellable CPU solver | Worker, optionally backed by WASM |
-| large parallel numerical kernels | WebGPU compute with declared fallback |
+| large parallel numerical kernels (e.g. real-time FFT ocean/fluid synthesis) | WebGPU compute with a declared fallback, or a declared WebGPU-only requirement when no fallback is acceptable |
 | durable or protected long-running jobs | server job plus streamed progress |
 
 ## Ceiling questions

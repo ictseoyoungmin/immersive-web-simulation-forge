@@ -29,6 +29,12 @@ Record:
 
 Use one unit system internally. Convert only at input/output boundaries. Reject dimensionally invalid combinations instead of silently coercing them.
 
+## Canonical technique floor
+
+Some domains already have an established standard numerical technique: spectral (FFT) synthesis for ocean/water surfaces, SPH or position-based dynamics for free-surface or granular fluids, mass-spring or FEM for cloth and soft bodies, Verlet/RK4 integrators for rigid-body motion. When one exists for the phenomenon being built, name it in `domain.canonical_technique` even if you do not implement it. Record what you actually built in `domain.authoritative_model`, and when the two differ, use `domain.technique_deviation_reason` to record the deviation and its visible or behavioral cost — for example, "8 fixed directional sine components instead of FFT-synthesized spectrum; visible cost: no organic chop at oblique angles, foam is a decorative noise field rather than slope-derived, and the pattern repeats past ~200m."
+
+This is not a rung on the validation ladder and it is not gated by profile: a `full-window-world` ocean, weather system, or crowd sim that reads as physically simulated owes the same disclosure as a `simulation-lab`. A silent substitution — a small hand-tuned approximation shipped while the product's language, README, or UI implies spectral/FFT/physically-simulated quality — is the same defect the claim-level note above warns against, just surfacing at the technique level instead of the certification level. Leaving `canonical_technique` empty is correct when no established technique exists for the phenomenon; it is not a way to avoid naming one that does. Read `references/wave-and-fluid-surfaces.md` for the water/fluid-surface case in detail.
+
 ## Validation ladder
 
 Use the strongest available oracle:

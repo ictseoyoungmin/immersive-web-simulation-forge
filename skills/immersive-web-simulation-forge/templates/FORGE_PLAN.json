@@ -131,6 +131,8 @@
   "domain": {
     "claim_level": "visual-concept",
     "authoritative_model": "",
+    "canonical_technique": "",
+    "technique_deviation_reason": "",
     "units": {
       "system": "",
       "coordinate_system": "",

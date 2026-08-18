@@ -26,6 +26,8 @@
   "domain_validation": {
     "status": "not-applicable",
     "claim_level": "visual-concept",
+    "canonical_technique": "",
+    "technique_deviation_reason": "",
     "oracle": "",
     "known_cases": [],
     "tolerances_met": null,

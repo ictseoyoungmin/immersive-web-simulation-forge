@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "immersive-web-simulation-forge",
-      "source": "./",
+      "source": "./skills/",
       "description": "Browser-native product engineering for open worlds, simulations, design studios, and spatial tools with hybrid authoring and evidence-driven validation."
     }
   ]

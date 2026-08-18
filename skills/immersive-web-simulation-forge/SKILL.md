@@ -159,6 +159,7 @@ For flagship work, compare at least three concepts that differ in interaction, r
 Declare claim level before the hero visualization. Record authoritative units/state, assumptions, initial/boundary conditions, solver or geometry policy, validity envelope, oracle, tolerances, failure states, and limitations.
 
 - physics/numerical: read `references/physics-simulation.md`;
+- water, wave, or other fluid-surface hero visualization (any profile, not only simulation-lab): also read `references/wave-and-fluid-surfaces.md`;
 - parametric/CAD-like: read `references/parametric-design.md`;
 - data/operations: read `references/compute-data-pipeline.md`.
 

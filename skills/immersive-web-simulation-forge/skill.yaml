@@ -1,6 +1,6 @@
 schema: hadara.skill/v0.1
 name: immersive-web-simulation-forge
-version: 0.7.0
+version: 0.7.1
 description: >-
   Design, implement, validate, harden, and lean-package browser-native spatial
   products, open worlds, physics laboratories, parametric design studios, data

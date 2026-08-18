@@ -298,6 +298,15 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
     claim_level = str(domain.get('claim_level', '')).strip()
     domain_validation_contract = domain.get('validation', {}) if isinstance(domain, dict) else {}
     checks.append(check('domain claim level', claim_level in CLAIM_LEVELS, claim_level or 'missing'))
+    canonical_technique = str(domain.get('canonical_technique', '')).strip()
+    if canonical_technique:
+        authoritative_model = str(domain.get('authoritative_model', '')).strip()
+        technique_deviates = canonical_technique.lower() != authoritative_model.lower()
+        checks.append(check(
+            'canonical technique deviation disclosed',
+            (not technique_deviates) or nonempty(domain.get('technique_deviation_reason')),
+            f"canonical={canonical_technique}; used={authoritative_model or 'missing'}; deviation reason={'yes' if nonempty(domain.get('technique_deviation_reason')) else 'no'}"
+        ))
     if profile in DOMAIN_PROFILES:
         units = domain.get('units', {}) if isinstance(domain, dict) else {}
         checks.append(check('authoritative domain model', nonempty(domain.get('authoritative_model')), str(domain.get('authoritative_model', '')).strip() or 'missing'))
@@ -618,6 +627,12 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
             checks.append(check('completion/export runtime review', completion_review == 'pass', completion_review or 'not-run'))
             checks.append(check('failure/recovery runtime review', recovery_review == 'pass', recovery_review or 'not-run'))
             checks.append(check('runtime public-claim audit', str(claim_review.get('status', '')).lower() == 'pass', str(claim_review.get('status', 'not-run'))))
+            if canonical_technique and technique_deviates:
+                checks.append(check(
+                    'runtime technique deviation disclosed',
+                    nonempty(domain_validation.get('technique_deviation_reason')),
+                    f"canonical={domain_validation.get('canonical_technique') or 'missing'}; deviation reason={'yes' if nonempty(domain_validation.get('technique_deviation_reason')) else 'no'}"
+                ))
             if profile in DOMAIN_PROFILES:
                 validation_status = str(domain_validation.get('status', '')).lower()
                 unresolved_domain = domain_validation.get('unresolved_defects', []) if isinstance(domain_validation, dict) else []

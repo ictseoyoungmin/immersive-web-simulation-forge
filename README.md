@@ -12,7 +12,7 @@
 
 ## 개요
 
-Immersive Web Simulation Forge v0.7은 인터랙티브 브라우저 제품의 제품 설계, 도메인 검증, 런타임 엔지니어링, spatial authoring, hybrid asset orchestration, evidence-driven visual QA를 하나의 품질 체계로 묶고, **spatial flagship의 오브젝트/에셋 품질을 실제 audit gate로 강제**하는 스킬입니다.
+Immersive Web Simulation Forge은 인터랙티브 브라우저 제품의 제품 설계, 도메인 검증, 런타임 엔지니어링, spatial authoring, hybrid asset orchestration, evidence-driven visual QA를 하나의 품질 체계로 묶고, **spatial flagship의 오브젝트/에셋 품질을 실제 audit gate로 강제**하는 스킬입니다.
 
 다음과 같은 제품 유형을 대상으로 합니다.
 
@@ -24,33 +24,7 @@ Immersive Web Simulation Forge v0.7은 인터랙티브 브라우저 제품의 �
 
 이 저장소의 `examples/`는 스킬로 제작된 결과물을 보여주는 전시·검증 자료입니다. 스킬 본체는 [`skills/immersive-web-simulation-forge/`](skills/immersive-web-simulation-forge/)에 있습니다.
 
-## v0.7 — Structured Spatial Authoring & Asset Fidelity Gates
-
-v0.7은 WorldSpec·Asset Router·spatial reconciliation을 도입하고, “계획상 hybrid인데 런타임은 primitive blockout”인 결과를 flagship으로 통과시키지 않도록 스키마와 audit를 강화합니다.
-
-- **`asset_fidelity` v6 contract** — `style_mode`, `scope_mode`, visual target, identity-critical classes, hero assets, representative families, Near/Mid/Far authoring budget
-- **Primitive placeholder gate** — 현실/레퍼런스 지향 flagship에서 Near placeholder ratio 기본 상한 15%, identity-critical primitive-only 금지
-- **Reference-sensitive default** — realistic/reference-driven spatial flagship은 `reference_critical_objects=not-applicable`로 전부 우회할 수 없음
-- **Runtime asset evidence** — `window.__FORGE__.reportAssetEvidence()`로 실제 화면에 올라간 object/family/material/contact/placeholder 상태를 보고
-- **Asset fidelity audit** — `asset_fidelity_audit.mjs`가 hero/family coverage, near placeholder, material region, contact, shadow, multi-view, target-size evidence를 검사
-- **Package blocker** — spatial flagship은 `.forge/asset-fidelity-audit.json`과 `asset_fidelity_validation`이 둘 다 PASS여야 완료
-- **Intentional low-poly escape hatch** — `low-poly`/`abstract`는 primitive vocabulary를 의도적으로 사용할 수 있지만 silhouette·material grouping·contact·multi-view evidence는 여전히 요구
-
-세 개의 기존 ledger(Product Outcome / Domain Validity / Runtime Engineering)는 그대로 유지합니다. Asset Quality를 별도 ledger로 추가하지 않고, **Product Outcome을 증명하는 강제 evidence gate**로 다룹니다.
-
-### Spatial authoring foundation
-
-- `WorldSpec`, semantic regions, global→regional world construction
-- authored/procedural/reconstructed/generative/retrieved/hybrid Asset Router
-- `ObjectSpec`, pass locking, deterministic placement/contact reconciliation
-- multi-angle evidence와 Capture→Inspect→Repair→Regression loop
-
-기존 공개 v0.6(v4) 및 호환 가능한 사전 후보(v5) 프로젝트는 다음으로 v6 스키마로 migration할 수 있습니다. migration은 필드만 보존·추가하며 flagship asset evidence를 자동으로 꾸며내지 않습니다.
-
-```bash
-python3 skills/immersive-web-simulation-forge/scripts/forge.py migrate my-project
-```
-
+버전별 변경 사항(추가된 기능, 스키마 변경, dogfooding fix)은 [CHANGELOG.md](CHANGELOG.md)를 참고하세요.
 
 ## 사용법
 
@@ -89,6 +63,14 @@ node skills/immersive-web-simulation-forge/scripts/browser_verify.mjs my-project
 node skills/immersive-web-simulation-forge/scripts/asset_fidelity_audit.mjs \
   my-project/.forge/evidence.json --flagship \
   --out my-project/.forge/asset-fidelity-audit.json
+```
+
+### 기존 프로젝트 migration
+
+v4/v5로 만들어진 기존 프로젝트를 최신 v6 스키마로 옮기려면 다음을 실행합니다. migration은 필드만 보존·추가하며 flagship asset evidence를 자동으로 꾸며내지 않습니다.
+
+```bash
+python3 skills/immersive-web-simulation-forge/scripts/forge.py migrate my-project
 ```
 
 ### 설치

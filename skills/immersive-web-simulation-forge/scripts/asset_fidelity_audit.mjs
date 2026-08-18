@@ -5,7 +5,7 @@ import path from 'node:path';
 const args = process.argv.slice(2);
 const inputArg = args.find(arg => !arg.startsWith('--'));
 if (!inputArg) {
-  console.error('Usage: node scripts/asset_fidelity_audit.mjs <asset-evidence-or-browser-report.json> [--flagship] [--max-near-placeholder-ratio 0.15] [--out report.json]');
+  console.error('Usage: node scripts/asset_fidelity_audit.mjs <asset-evidence-or-browser-report.json> [--flagship] [--max-near-placeholder-ratio 0.15] [--identity-classes a,b,c] [--plan FORGE_PLAN.json] [--out report.json]');
   process.exit(2);
 }
 const valueAfter = (flag, fallback = null) => {
@@ -16,6 +16,43 @@ const flagship = args.includes('--flagship');
 const maxRatio = Number(valueAfter('--max-near-placeholder-ratio', '0.15'));
 const outPath = valueAfter('--out') ? path.resolve(valueAfter('--out')) : null;
 const inputPath = path.resolve(inputArg);
+
+// The declared identity-critical classes live in FORGE_PLAN.json, not in the runtime evidence
+// payload being audited here — a class present in the plan but absent from every runtime object
+// is a silent coverage gap the runtime's own self-report can't catch. `--identity-classes` overrides;
+// `--plan <path>` points at a specific plan; otherwise search upward from the evidence file for
+// FORGE_PLAN.json (it may sit next to it, as `.forge/FORGE_PLAN.json` + `.forge/evidence.json`, or
+// one or two levels up, as when evidence is nested under `.forge/evidence/evidence.json`) and skip
+// the check silently when none is found, matching every other optional contract in this script.
+function findForgePlanUpward(startDir, maxLevels = 3) {
+  let dir = startDir;
+  for (let level = 0; level <= maxLevels; level++) {
+    const candidate = path.join(dir, 'FORGE_PLAN.json');
+    if (fs.existsSync(candidate)) return candidate;
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return null;
+}
+const explicitIdentityClasses = valueAfter('--identity-classes');
+function loadDeclaredIdentityClasses() {
+  if (explicitIdentityClasses !== null) {
+    return explicitIdentityClasses.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  const planPath = valueAfter('--plan')
+    ? path.resolve(valueAfter('--plan'))
+    : findForgePlanUpward(path.dirname(inputPath));
+  if (!planPath || !fs.existsSync(planPath)) return null;
+  try {
+    const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
+    const classes = plan?.asset_fidelity?.identity_critical_classes;
+    return Array.isArray(classes) ? classes.map(c => String(c).trim()).filter(Boolean) : null;
+  } catch {
+    return null;
+  }
+}
+const declaredIdentityClasses = loadDeclaredIdentityClasses();
 const source = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
 const evidence = source?.evidence?.asset?.evidence || source?.evidence?.asset || source?.assetEvidence || source;
 const objects = Array.isArray(evidence?.objects) ? evidence.objects : [];
@@ -39,6 +76,13 @@ if (objects.some(o => !String(o?.id || '').trim())) add('missing-stable-asset-id
 if (duplicateIds.length) add('duplicate-stable-asset-id', 'error', `duplicate runtime asset IDs: ${duplicateIds.join(', ')}`);
 
 const identity = objects.filter(o => Boolean(o?.identityCritical));
+const identityClassesCovered = unique(identity.map(o => String(o?.class || '').trim()));
+const uncoveredIdentityClasses = declaredIdentityClasses
+  ? declaredIdentityClasses.filter(cls => !identityClassesCovered.includes(cls))
+  : [];
+if (uncoveredIdentityClasses.length) {
+  add('identity-critical-class-uncovered', severity, `declared identity-critical class(es) have no matching runtime identityCritical object: ${uncoveredIdentityClasses.join(', ')}`);
+}
 const heroes = objects.filter(o => Boolean(o?.hero));
 const near = objects.filter(o => normalizeBand(o?.band) === 'near');
 const mid = objects.filter(o => normalizeBand(o?.band) === 'mid');
@@ -94,6 +138,8 @@ const report = {
     scope_mode: scopeMode || null,
     object_count: objects.length,
     identity_critical_count: identity.length,
+    identity_critical_classes_declared: declaredIdentityClasses,
+    identity_critical_classes_uncovered: uncoveredIdentityClasses,
     hero_asset_count: heroes.length,
     family_count: families.length,
     near_count: near.length,

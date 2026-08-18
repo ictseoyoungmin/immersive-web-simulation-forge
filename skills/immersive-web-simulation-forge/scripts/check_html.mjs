@@ -35,12 +35,20 @@ function maskStringsAndComments(src){
   return out.join('');
 }
 
+const JS_SCRIPT_TYPE_RE = /^(?:text\/javascript|application\/javascript|application\/ecmascript|text\/ecmascript|module)$/i;
+
 function extractHtmlScripts(html){
   const scripts=[]; const re=/<script\b([^>]*)>([\s\S]*?)<\/script>/gi; let m;
   while((m=re.exec(html))){
     const attrs=m[1]||'';
     if(/\bsrc\s*=/.test(attrs)) continue;
-    scripts.push({module:/\btype\s*=\s*["']module["']/i.test(attrs), code:m[2]});
+    const typeMatch=attrs.match(/\btype\s*=\s*["']([^"']+)["']/i);
+    const type=typeMatch?typeMatch[1].trim():'';
+    // A script tag with a type that isn't executable JS (importmap, application/json,
+    // application/ld+json, speculationrules, text/x-template, ...) holds data, not code;
+    // checking it as JavaScript syntax produces a false positive.
+    if(type && !JS_SCRIPT_TYPE_RE.test(type)) continue;
+    scripts.push({module:/^module$/i.test(type), code:m[2]});
   }
   return scripts;
 }

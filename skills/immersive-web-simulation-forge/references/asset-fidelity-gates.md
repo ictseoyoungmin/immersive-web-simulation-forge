@@ -40,6 +40,8 @@ A flagship object/world scope requires:
 
 Reality-derived scenes such as cities, vehicles, aircraft, machinery, architecture, ships, industrial equipment, interiors, vegetation, or recognizable infrastructure are reference-sensitive by default. Do not mark all such subjects `not-applicable` merely because exact photogrammetric matching was not requested.
 
+`identityCritical` marks one representative instance per identity-critical class, not every repeated instance of that class — each `identityCritical` object owes its own multi-view evidence (see Evidence minimum below), so marking every rock stack, buoy, or house in a repeated set `identityCritical:true` multiplies that evidence requirement per instance instead of once per class. Repeated members of the same class belong in `families[]` instead, which the runtime and audit only require aggregate `memberCount`/`variantCount` and one representative evidence set for, not per-member multi-view review. A hero building has one `identityCritical` runtime record; the 40 background houses around it are a `families[]` entry, not 40 more `identityCritical` records.
+
 ## Near / Mid / Far authoring floors
 
 Record authoring budgets, not only LOD distances.
@@ -112,7 +114,7 @@ window.__FORGE__.reportAssetEvidence = () => ({
 });
 ```
 
-Run the browser evidence suite, then run `asset_fidelity_audit.mjs` over the browser report or a raw asset-evidence JSON document. Preserve the audit result as `.forge/asset-fidelity-audit.json`.
+Run the browser evidence suite, then run `asset_fidelity_audit.mjs` over the browser report or a raw asset-evidence JSON document. Preserve the audit result as `.forge/asset-fidelity-audit.json`. When a `FORGE_PLAN.json` sits next to the evidence file (the standard `.forge/` layout), the audit auto-discovers it and cross-checks that every declared `identity_critical_classes` entry has at least one matching runtime `identityCritical` object of that `class` — a declared class with zero runtime coverage fails the audit even if the aggregate identity-critical count is nonzero. Point elsewhere with `--plan <path>` or override the class list directly with `--identity-classes a,b,c`.
 
 `asset_fidelity_audit.mjs` and the `forge.py` gates it feeds only check that the `reportAssetEvidence()` payload is internally consistent and complete (fields present, ratios within ceiling, view counts met). They cannot see the render. `primitiveOnly:false`, `silhouetteReviewed:true`, and `materialRegions:6` are claims the runtime code makes about itself — a mesh assembled from twenty boxes is honestly "not primitive-only" by that flag and can still look unconvincing. Before recording any of these fields as the basis for a `pass`, the authoring agent must open the actual capture named in `evidenceViews` and judge it by eye: does the silhouette read as intended at target size, does the material look like the stated substance, would a human call this a finished asset rather than a dressed-up blockout? A passing structural audit is necessary but not sufficient for flagship completion; it is not a substitute for having looked at the picture.
 

@@ -14,6 +14,8 @@ const outPath = outIndex >= 0 ? path.resolve(args[outIndex + 1]) : null;
 const inputPath = path.resolve(input);
 const file = fs.statSync(inputPath).isDirectory() ? path.join(inputPath, 'index.html') : inputPath;
 const projectRoot = fs.statSync(inputPath).isDirectory() ? inputPath : path.dirname(file);
+const JS_SCRIPT_TYPE_RE = /^(?:text\/javascript|application\/javascript|application\/ecmascript|text\/ecmascript|module)$/i;
+const IMPORT_REF_RE = /(?:import\s*(?:[^"']*?\sfrom\s*)?|export\s+[^"']*?\sfrom\s*|import\s*\()\s*["']([^"']+)["']/g;
 const visited = new Set();
 const sourceFiles = [];
 const queue = [file];
@@ -27,9 +29,19 @@ while (queue.length) {
   const refs = [];
   if (/\.html?$/i.test(current)) {
     for (const match of source.matchAll(/<(?:script|link)\b[^>]*(?:src|href)\s*=\s*["']([^"']+)["'][^>]*>/gi)) refs.push(match[1]);
+    // Inline <script type="module"> bodies can themselves `import` other modules; walk those
+    // the same way an external .js/.mjs file is walked below, or the imported graph is never visited.
+    for (const scriptMatch of source.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+      const attrs = scriptMatch[1] || '';
+      if (/\bsrc\s*=/i.test(attrs)) continue;
+      const typeMatch = attrs.match(/\btype\s*=\s*["']([^"']+)["']/i);
+      const type = typeMatch ? typeMatch[1].trim() : '';
+      if (type && !JS_SCRIPT_TYPE_RE.test(type)) continue;
+      for (const match of scriptMatch[2].matchAll(IMPORT_REF_RE)) refs.push(match[1]);
+    }
   }
   if (/\.[mc]?js$/i.test(current)) {
-    for (const match of source.matchAll(/(?:import\s*(?:[^"']*?\sfrom\s*)?|export\s+[^"']*?\sfrom\s*|import\s*\()\s*["']([^"']+)["']/g)) refs.push(match[1]);
+    for (const match of source.matchAll(IMPORT_REF_RE)) refs.push(match[1]);
   }
   for (const ref of refs) {
     if (!ref || ref.startsWith('#') || ref.startsWith('//') || /^[a-z][a-z0-9+.-]*:/i.test(ref)) continue;

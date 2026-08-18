@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.7.1 — Canonical Technique Disclosure
+
+v0.7.1 is a dogfooding fix. A full-window-world ocean showcase shipped a hand-tuned finite-sum wave approximation under a `visual-concept` claim level with no requirement to disclose that an established canonical technique (FFT/spectral ocean synthesis) exists and was not used, because the domain rigor gates only applied to `DOMAIN_PROFILES` (`simulation-lab`, `design-studio`, `data-instrument`, `operations-panel`).
+
+### Added
+
+- `domain.canonical_technique` and `domain.technique_deviation_reason` in `FORGE_PLAN.json`/`VALIDATION.json`. Schema stays v6; both fields are additive and backward-compatible.
+- `references/wave-and-fluid-surfaces.md`: the dispersion relation, Tessendorf/Horvath spectral synthesis as the canonical ocean technique, when a finite-sum approximation is legitimate, Jacobian-driven foam, and WebGPU compute placement.
+
+### Dogfooding fixes
+
+- `forge.py` requires `technique_deviation_reason` whenever a declared `canonical_technique` differs from `authoritative_model`, checked independently of `profile` so `full-window-world`, `game-arena`, and `ambient-system` flagships can no longer bypass technique disclosure the way `DOMAIN_PROFILES`-gated checks allowed.
+- `references/physics-simulation.md` names this failure mode explicitly as a canonical technique floor instead of relying on a general warning against replacing governing relationships with heuristics.
+
 ## 0.7.0 — Structured Spatial Authoring & Flagship Asset Fidelity
 
 v0.7 preserves the Forge's three independent ledgers—Product Outcome, Domain Validity, and Runtime Engineering—and its eight-phase workflow while adding structured spatial construction, hybrid asset orchestration, deterministic reconciliation, and enforceable flagship asset-fidelity gates.

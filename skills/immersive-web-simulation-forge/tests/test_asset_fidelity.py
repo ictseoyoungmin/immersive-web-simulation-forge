@@ -59,6 +59,93 @@ class AssetFidelityTests(unittest.TestCase):
             ids={f['id'] for f in json.loads(proc.stdout)['findings']}
             self.assertIn('identity-critical-placeholder',ids); self.assertIn('near-placeholder-ratio',ids)
 
+    def test_identity_critical_class_uncovered_by_explicit_flag(self):
+        with tempfile.TemporaryDirectory() as td:
+            src=Path(td)/'asset.json'; src.write_text(json.dumps({
+                'styleMode':'realistic','scopeMode':'world-scale','targetSizeReviewed':True,
+                'evidenceViews':['hero','close','contact'],
+                'objects':[{
+                    'id':'lighthouse-hero','class':'lighthouse','band':'near','identityCritical':True,'hero':True,
+                    'representation':'authored','primitiveOnly':False,'placeholder':False,
+                    'materialRegions':4,'contactValidated':True,'shadowPolicy':'cast+receive',
+                    'silhouetteReviewed':True,'evidenceViews':['hero','three-quarter','contact']
+                }],
+                'families':[{'id':'rock-stacks','memberCount':15,'variantCount':3,'evidenceViews':['representative-mid']}]
+            }))
+            # 'rock-stack' is declared identity-critical in the plan but only appears in families[],
+            # never as its own identityCritical runtime object — the audit must catch that gap.
+            proc=subprocess.run(['node',str(ROOT/'scripts/asset_fidelity_audit.mjs'),str(src),'--flagship','--identity-classes','lighthouse,rock-stack'],capture_output=True,text=True)
+            self.assertEqual(proc.returncode,1,proc.stdout+proc.stderr)
+            report=json.loads(proc.stdout)
+            ids={f['id'] for f in report['findings']}
+            self.assertIn('identity-critical-class-uncovered',ids)
+            self.assertEqual(report['metrics']['identity_critical_classes_uncovered'],['rock-stack'])
+
+    def test_identity_critical_class_coverage_auto_discovers_forge_plan(self):
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)/'.forge'; root.mkdir()
+            (root/'FORGE_PLAN.json').write_text(json.dumps({'asset_fidelity':{'identity_critical_classes':['lighthouse','rock-stack']}}))
+            src=root/'evidence.json'; src.write_text(json.dumps({
+                'styleMode':'realistic','scopeMode':'world-scale','targetSizeReviewed':True,
+                'evidenceViews':['hero','close','contact'],
+                'objects':[{
+                    'id':'lighthouse-hero','class':'lighthouse','band':'near','identityCritical':True,'hero':True,
+                    'representation':'authored','primitiveOnly':False,'placeholder':False,
+                    'materialRegions':4,'contactValidated':True,'shadowPolicy':'cast+receive',
+                    'silhouetteReviewed':True,'evidenceViews':['hero','three-quarter','contact']
+                }],
+                'families':[{'id':'rock-stacks','memberCount':15,'variantCount':3,'evidenceViews':['representative-mid']}]
+            }))
+            # No --plan or --identity-classes flag: FORGE_PLAN.json sits next to evidence.json,
+            # matching the standard .forge/ layout, so it must be picked up automatically.
+            proc=subprocess.run(['node',str(ROOT/'scripts/asset_fidelity_audit.mjs'),str(src),'--flagship'],capture_output=True,text=True)
+            self.assertEqual(proc.returncode,1,proc.stdout+proc.stderr)
+            self.assertIn('identity-critical-class-uncovered',{f['id'] for f in json.loads(proc.stdout)['findings']})
+
+    def test_identity_critical_class_coverage_auto_discovers_forge_plan_one_level_up(self):
+        # Evidence nested one directory below FORGE_PLAN.json (e.g. .forge/evidence/evidence.json
+        # next to .forge/FORGE_PLAN.json) must still be found by the upward search.
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)/'.forge'; root.mkdir()
+            (root/'FORGE_PLAN.json').write_text(json.dumps({'asset_fidelity':{'identity_critical_classes':['lighthouse','rock-stack']}}))
+            evidence_dir=root/'evidence'; evidence_dir.mkdir()
+            src=evidence_dir/'evidence.json'; src.write_text(json.dumps({
+                'styleMode':'realistic','scopeMode':'world-scale','targetSizeReviewed':True,
+                'evidenceViews':['hero','close','contact'],
+                'objects':[{
+                    'id':'lighthouse-hero','class':'lighthouse','band':'near','identityCritical':True,'hero':True,
+                    'representation':'authored','primitiveOnly':False,'placeholder':False,
+                    'materialRegions':4,'contactValidated':True,'shadowPolicy':'cast+receive',
+                    'silhouetteReviewed':True,'evidenceViews':['hero','three-quarter','contact']
+                }],
+                'families':[{'id':'rock-stacks','memberCount':15,'variantCount':3,'evidenceViews':['representative-mid']}]
+            }))
+            proc=subprocess.run(['node',str(ROOT/'scripts/asset_fidelity_audit.mjs'),str(src),'--flagship'],capture_output=True,text=True)
+            self.assertEqual(proc.returncode,1,proc.stdout+proc.stderr)
+            self.assertIn('identity-critical-class-uncovered',{f['id'] for f in json.loads(proc.stdout)['findings']})
+
+    def test_identity_critical_class_coverage_passes_when_every_class_matched(self):
+        with tempfile.TemporaryDirectory() as td:
+            src=Path(td)/'asset.json'; src.write_text(json.dumps({
+                'styleMode':'realistic','scopeMode':'world-scale','targetSizeReviewed':True,
+                'evidenceViews':['hero','close','contact'],
+                'objects':[{
+                    'id':'lighthouse-hero','class':'lighthouse','band':'near','identityCritical':True,'hero':True,
+                    'representation':'authored','primitiveOnly':False,'placeholder':False,
+                    'materialRegions':4,'contactValidated':True,'shadowPolicy':'cast+receive',
+                    'silhouetteReviewed':True,'evidenceViews':['hero','three-quarter','contact']
+                },{
+                    'id':'rock-stack-representative','class':'rock-stack','band':'near','identityCritical':True,'hero':False,
+                    'representation':'authored','primitiveOnly':False,'placeholder':False,
+                    'materialRegions':2,'contactValidated':True,'shadowPolicy':'cast+receive',
+                    'silhouetteReviewed':True,'evidenceViews':['hero','three-quarter','contact']
+                }],
+                'families':[{'id':'rock-stacks','memberCount':15,'variantCount':3,'evidenceViews':['representative-mid']}]
+            }))
+            proc=subprocess.run(['node',str(ROOT/'scripts/asset_fidelity_audit.mjs'),str(src),'--flagship','--identity-classes','lighthouse,rock-stack'],capture_output=True,text=True)
+            self.assertEqual(proc.returncode,0,proc.stdout+proc.stderr)
+            self.assertEqual(json.loads(proc.stdout)['status'],'pass')
+
     def test_intentional_low_poly_can_use_primitives_but_still_needs_evidence(self):
         with tempfile.TemporaryDirectory() as td:
             src=Path(td)/'asset.json'; src.write_text(json.dumps({

@@ -103,6 +103,8 @@ def valid_plan(stack='three.js'):
         'domain': {
             'claim_level': 'visual-concept',
             'authoritative_model': 'deterministic world state',
+            'canonical_technique': '',
+            'technique_deviation_reason': '',
             'units': {'system': 'SI', 'coordinate_system': 'right-handed Y-up', 'quantities': ['position:m', 'speed:m/s']},
             'inputs': ['player actions'], 'outputs': ['world state'],
             'assumptions': [], 'limitations': ['Wind response is artistic, not physical'],
@@ -294,7 +296,7 @@ def valid_validation(profile='full-window-world', claim_level='visual-concept'):
         },
         'domain_validation': {
             'status': 'pass' if domain_applicable else 'not-applicable',
-            'claim_level': claim_level, 'oracle': 'reference fixture',
+            'claim_level': claim_level, 'canonical_technique': '', 'technique_deviation_reason': '', 'oracle': 'reference fixture',
             'known_cases': ['reference case'], 'tolerances_met': True,
             'invariants_or_geometry_checks': ['finite state'],
             'round_trip': 'pass' if profile == 'design-studio' else 'not-applicable',
@@ -510,6 +512,45 @@ class ForgeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td) / 'demo'; root.mkdir(); make_project(root)
             report = forge.audit_project(root)
+            self.assertEqual(report['status'], 'pass', report)
+
+    def test_undisclosed_technique_deviation_fails_even_for_full_window_world(self):
+        # A full-window-world flagship (e.g. an ocean/weather showcase) sits outside
+        # DOMAIN_PROFILES, so this must fire independently of profile-gated domain checks.
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / 'demo'; root.mkdir()
+            plan = valid_plan()
+            plan['domain']['canonical_technique'] = 'Tessendorf/Horvath spectral synthesis (inverse FFT)'
+            plan['domain']['authoritative_model'] = 'finite 8-band analytic sum of sines'
+            plan['domain']['technique_deviation_reason'] = ''
+            validation = valid_validation()
+            validation['domain_validation']['canonical_technique'] = plan['domain']['canonical_technique']
+            validation['domain_validation']['technique_deviation_reason'] = ''
+            make_project(root, plan, validation=validation)
+            report = forge.audit_project(root)
+            failed = {item['name'] for item in report['checks'] if item['status'] == 'fail'}
+            self.assertIn('canonical technique deviation disclosed', failed)
+            self.assertIn('runtime technique deviation disclosed', failed)
+            self.assertEqual(report['status'], 'fail')
+
+    def test_disclosed_technique_deviation_passes(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / 'demo'; root.mkdir()
+            plan = valid_plan()
+            plan['domain']['canonical_technique'] = 'Tessendorf/Horvath spectral synthesis (inverse FFT)'
+            plan['domain']['authoritative_model'] = 'finite 8-band analytic sum of sines'
+            plan['domain']['technique_deviation_reason'] = (
+                'Chose a fixed 8-band approximation over IFFT synthesis for a lean WebGL-only build; '
+                'visible cost: waves repeat past ~200m and foam is a decorative noise field, not slope-derived.'
+            )
+            validation = valid_validation()
+            validation['domain_validation']['canonical_technique'] = plan['domain']['canonical_technique']
+            validation['domain_validation']['technique_deviation_reason'] = plan['domain']['technique_deviation_reason']
+            make_project(root, plan, validation=validation)
+            report = forge.audit_project(root)
+            failed = {item['name'] for item in report['checks'] if item['status'] == 'fail'}
+            self.assertNotIn('canonical technique deviation disclosed', failed)
+            self.assertNotIn('runtime technique deviation disclosed', failed)
             self.assertEqual(report['status'], 'pass', report)
 
     def test_new_profiles_initialize_with_expected_workflow(self):
