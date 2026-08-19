@@ -15,11 +15,13 @@ Store temporary material under `.forge/`:
 
 Replace superseded screenshots instead of accumulating them.
 
-## Default product ZIP
+## Product deliverable
 
-Include only runtime/source needed by the user, assets, a short README, compact `VALIDATION.json`, and optionally one preview.
+Leave the result as a lean project folder by default: only runtime/source needed by the user, assets, a short README, compact `VALIDATION.json`, and optionally one preview.
 
-Exclude `.forge`, evidence directories, browser caches, recordings, discarded concepts, duplicate inline bundles, copied skill utilities, and repeated reports.
+Exclude `.forge`, evidence directories, browser caches, recordings, discarded concepts, duplicate inline bundles, copied skill utilities, and repeated reports — this applies whether or not the result is zipped.
+
+Zipping is a user-prompt-level decision, not a default step. Run `forge.py package <project> --out <project>.zip` only when the user has asked for a zip or a packaged/downloadable deliverable.
 
 A separate full-evidence archive is created only when the user requests auditability, handoff to QA, or regulatory/research traceability.
 

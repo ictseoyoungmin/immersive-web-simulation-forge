@@ -84,7 +84,10 @@
     "collision": "not-run",
     "navigation_clearance": "not-run",
     "lod_assignment": "not-run",
-    "unresolved_defects": []
+    "unresolved_defects": [],
+    "support_semantics": "not-run",
+    "support_surface_consistency": "not-run",
+    "stability": "not-applicable"
   },
   "evidence_review": {
     "status": "not-run",
@@ -140,7 +143,11 @@
     "pointer_direction_review": "not-run",
     "drag_pointerlock_parity": "not-run",
     "selection_transform_review": "not-applicable",
-    "keyboard_path_review": "not-run"
+    "keyboard_path_review": "not-run",
+    "movement_direction_review": "not-run",
+    "camera_relative_movement_review": "not-run",
+    "diagonal_speed_review": "not-run",
+    "grounding_review": "not-applicable"
   },
   "target_sizes_reviewed": [],
   "limitations": [],

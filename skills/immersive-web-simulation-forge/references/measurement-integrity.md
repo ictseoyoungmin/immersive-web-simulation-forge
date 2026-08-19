@@ -91,7 +91,27 @@ SwiftShader, llvmpipe, Mesa offscreen, and similar software renderers are useful
 - relative stress investigation under a declared environment;
 - representative screenshot generation when time allows.
 
-They cannot substantiate target-GPU FPS. If only software evidence exists, state that performance is measurement-limited. Do not translate it into a consumer-device claim.
+They cannot substantiate target-GPU FPS. The authoritative signal is the renderer string (`WEBGL_debug_renderer_info`): treat any of the strings above as software-rendered, and confirm a non-software renderer string before trusting a measurement.
+
+If only software evidence exists, this is not a blocked task — it is the expected, fully valid outcome for a sandboxed/CI/headless-agent environment. Report it as such instead of a missing or apologetic performance section:
+
+- set `performance.measured = false`;
+- set `performance.measurement_block` to the concrete, one-sentence reason (the detected renderer string, no GPU-capable browser available, etc.);
+- still record `performance.renderer` and `performance.software_renderer = true` from whatever was detected;
+- an informal wall-clock sample taken anyway is legitimate *correctness/stress* evidence — keep it, but keep `measured = false` and do not let it read as a target-device FPS claim.
+
+```json
+{
+  "measured": false,
+  "measurement_block": "WebGL reports an ANGLE-over-SwiftShader renderer in this sandbox, which cannot substantiate target-GPU FPS. See references/measurement-integrity.md.",
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device ...), SwiftShader driver)",
+  "software_renderer": true
+}
+```
+
+`forge.py audit` treats `measured=false` with a nonempty `measurement_block` as a full pass of the performance gate, including for `ambition=flagship` — it is not a partial or degraded result. The combination it rejects is `measured=true` together with `software_renderer=true`: that fails flagship completion outright, and warns at every lower ambition, rather than certifying a number that cannot represent target hardware.
+
+An actual FPS claim requires `browser_verify.mjs` to run against a non-software renderer. It always launches headless Chromium, so point it at a GPU-capable browser with `--executable <path>` (or `CHROME_PATH`), pass whatever GPU flags the environment needs through `--browser-arg`, and re-read the renderer string to confirm the fallback is gone. Do not compensate with a longer software-rendered sample or a higher sample count; more samples of the wrong signal do not fix the signal.
 
 ## Footprint dimensions
 

@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.8.2 — Spatial / Input Contract Hardening
+
+v0.8.2 is a pre-dogfood hardening pass. It removes several process/technique rules that were stronger than the product claim warranted, while making support/contact and locomotion evidence materially harder to fake or omit.
+
+### Changed
+
+- Generic physics guidance no longer declares broad phenomenon labels to have one universal solver; specialist references own narrow regime/canonical technique selection. Visual-concept work may use physically informed reduced/procedural models when stronger simulation claims are not made.
+- Fire/smoke is split into artistic hero, coupled visual simulation, and quantitative reactive-flow tiers.
+- `realistic` no longer implies `reference-driven`; specific reference evidence is required only when reference identity is part of the promise.
+- Spatial flagship and object-fidelity applicability are separated; genuinely non-object spatial flagships are legitimate with an explicit rationale. Representative repeated-family evidence is conditional on repeated families actually being part of the world.
+- Fixed process counts are softened: canonical state needs two meaningful consumers by default, and one complete evidence/repair/regression cycle is the minimum rather than a mandatory two revisions regardless of defects.
+- Near placeholder ratio remains a diagnostic/advisory budget; identity-critical/hero blockout substitution remains a hard defect.
+
+### Spatial / input hardening
+
+- Added explicit support modes (`ground`, `surface`, attachments, suspended, buoyant, airborne, dynamic/free), support-surface/render-surface authority, raw support-probe evidence, and optional stability checks. Missing support evidence is no longer interpreted as zero floating distance.
+- `placement-solver.mjs` no longer assumes local origin `(0,0,0)` is a support anchor; support-required placement fails when an anchor is unknown. Footprint calibration is symmetric by default; asymmetric tolerance requires a project-specific reason.
+- `spatial_audit.mjs --strict-support` recomputes support gaps/penetration from probe data and detects support/render authority drift. Flagship spatial validation now requires `.forge/spatial-audit.json`.
+- Added camera-basis `locomotion.mjs` and `input_audit.mjs` for W/S/A/D direction, diagonal normalization, and optional grounding checks.
+- Pointer validation no longer treats `yaw += dx` or `yaw -= dx` as intrinsically correct/incorrect; actual view basis or observable bearing is the oracle.
+
+### Integration fixes
+
+- `fidelity_audit.mjs` and `asset_fidelity_audit.mjs` were rewritten from scratch rather than patched, and the rewrite silently dropped several checks unrelated to this release's stated intent: `css-only-reduced-motion` (an accessibility check), `pointer-direction-contract-missing`, `high-frequency-before-upscale`, `full-screen-post-without-adaptation`, `missing-stable-asset-id`, `duplicate-stable-asset-id`, and the entire identity-critical-**class**-coverage feature (`identity-critical-class-uncovered`, `--identity-classes`/`--plan` flags, upward `FORGE_PLAN.json` search) — the last of which four now-passing tests exercise, so its absence would have made those tests silently verify nothing. All restored.
+- `non-object-identity-unsubstantiated` (asset_fidelity_audit.mjs) initially fired on any `scopeMode=non-object` evidence regardless of whether the plan had actually entered the asset-fidelity contract. Spatial flagship != automatically object-centric flagship: a genuine field/particle/astronomical product that legitimately set `asset_fidelity.applicable=false` states its rationale in `FORGE_PLAN.json` (which `forge.py` already checks) and must not be flagged again here. The check now reads the plan's `asset_fidelity.applicable` (via the same upward-search used for identity classes) and only fires when the contract was actually entered — `applicable=true` and `scopeMode=non-object` together — leaving `applicable=false` products alone and staying silent when no plan is reachable at all.
+
+### Tooling and documentation fixes
+
+- Zipping the deliverable is no longer an unconditional final phase. `SKILL.md` Phase H, its "Run the tools" checklist, and `references/lean-delivery.md` now run `forge.py package ... --out <project>.zip` only when the user has asked for a zip or a packaged/downloadable deliverable; the lean-folder discipline (exclude `.forge/`, caches, dead evidence) still applies either way. `forge.py package` itself is unchanged — still zip-only when invoked.
+- `references/measurement-integrity.md`'s "Renderer and hardware claims" section now spells out the sandboxed/CI/no-GPU-agent case by name (not just "software renderers" abstractly) with the exact `performance.measured=false` + `measurement_block` schema pattern and a worked JSON example, and states plainly that this is already a full pass of the performance gate at any ambition — not a degraded result — so an agent hitting a GPU-less sandbox doesn't have to reverse-engineer the mechanism from the template. It also states the rejected combination precisely — `measured=true` with `software_renderer=true` fails at `flagship` and warns at lower ambitions, matching `forge.py`'s severity split rather than reading as an unconditional failure — and documents how to actually obtain a hardware-renderer run: `browser_verify.mjs` always launches headless Chromium, so `--executable`/`CHROME_PATH` and `--browser-arg` are the escape hatch, and neither flag was mentioned in any reference before. No check behavior changed; `forge.py` already accepted this path (existing test coverage: `test_explicit_measurement_block_is_accepted`, which runs at `ambition=flagship`).
+- `forge.py doctor`'s file-integrity check (`required`) listed only 13 of the 25 files under `references/` and was missing `kits/input/locomotion.mjs`, so a deleted or corrupted reference file — including all 8 added in v0.8.0's physical-fields-to-radiance expansion (`wave-and-fluid-surfaces.md`, `wind-and-atmospheric-flow.md`, `fire-smoke-and-reactive-flow.md`, `lighting-and-radiance.md`, `surface-scattering-and-pbr-materials.md`, `real-time-global-illumination.md`, `reference-light-transport-and-path-tracing.md`, `volumetric-rendering.md`) plus four older ones (`lean-delivery.md`, `profiles.md`, `stack-selection.md`, `systemic-rendering.md`) — would go undetected by `doctor` even though `SKILL.md` routes to all of them. `required` now lists all 25 reference files plus `kits/input/locomotion.mjs` and `scripts/input_audit.mjs`; `doctor()['missing']` is empty again.
+
 ## 0.8.1 — Technique Conformance Hardening
 
 v0.8.1 is a review-driven hardening pass on v0.8.0's canonical-technique disclosure mechanism, found before the planned three-slice dogfood run. The `canonical_technique`/`authoritative_model` string comparison introduced in v0.7.1 was structurally unsound in both directions: an honest, detailed `authoritative_model` almost never matches a short technique label verbatim (false positive — every conformant implementation got flagged as deviating), while copying the label verbatim into `authoritative_model` made the check pass with nothing useful recorded (false negative). Worse, leaving `canonical_technique` empty skipped the whole check — the exact silent-substitution escape hatch v0.7.1 was written to close.

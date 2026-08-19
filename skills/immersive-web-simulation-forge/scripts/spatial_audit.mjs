@@ -1,101 +1,28 @@
 #!/usr/bin/env node
-import fs from 'node:fs';
-import path from 'node:path';
-import http from 'node:http';
-import { createRequire } from 'node:module';
-
-const args = process.argv.slice(2);
-const positional = args.find(arg => !arg.startsWith('--'));
-if (!positional) {
-  console.error('Usage: spatial_audit.mjs <project-or-report.json> [--out report.json] [--float-tol 0.03] [--penetration-tol 0.08] [--executable path] [--browser-arg value]');
-  process.exit(2);
+import fs from 'node:fs'; import path from 'node:path'; import http from 'node:http'; import {createRequire} from 'node:module';
+const args=process.argv.slice(2),positional=args.find(a=>!a.startsWith('--'));if(!positional){console.error('Usage: spatial_audit.mjs <project-or-report.json> [--out report.json] [--strict-support] [--float-tol 0.03] [--penetration-tol 0.08]');process.exit(2);}
+const valueAfter=(f,d=null)=>{const i=args.indexOf(f);return i>=0?args[i+1]:d;},target=path.resolve(positional),out=valueAfter('--out'),strictSupport=args.includes('--strict-support'),floatTol=Number(valueAfter('--float-tol','.03')),penetrationTol=Number(valueAfter('--penetration-tol','.08')),executablePath=valueAfter('--executable',process.env.CHROME_PATH||null),browserArgs=args.flatMap((v,i)=>v==='--browser-arg'&&args[i+1]?[args[i+1]]:[]);
+const finite=n=>Number.isFinite(Number(n)); const finiteVector=v=>v&&['x','y','z'].every(k=>finite(v[k])); const validBounds=b=>b&&['minX','minY','minZ','maxX','maxY','maxZ'].every(k=>finite(b[k]))&&b.maxX>=b.minX&&b.maxY>=b.minY&&b.maxZ>=b.minZ;
+const normalizeObjects=raw=>Array.isArray(raw?.objects)?raw.objects:Array.isArray(raw?.scene?.objects)?raw.scene.objects:Array.isArray(raw?.spatial?.objects)?raw.spatial.objects:[];
+const modes=new Set(['ground','surface','parent/socket','wall-mounted','ceiling-mounted','suspended','buoyant','airborne','dynamic/free']);
+function pointInPoly(p,poly){let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j],hit=((a.z>p.z)!=(b.z>p.z))&&(p.x<(b.x-a.x)*(p.z-a.z)/((b.z-a.z)||1e-12)+a.x);if(hit)inside=!inside;}return inside;}
+function audit(raw,source='report'){
+ if(!raw||raw.status==='not-applicable')return{status:'not-applicable',source,reason:raw?.reason||'no spatial evidence',findings:[],metrics:{objects:0}};
+ const objects=normalizeObjects(raw),findings=[],ids=new Set();const add=(id,severity,detail,object=null)=>findings.push({id,severity,detail,...(object?{object}:{})});
+ const supportAuthority=String(raw.supportSurfaceAuthority||raw.spatial?.supportSurfaceAuthority||'').trim(),renderAuthority=String(raw.renderSurfaceAuthority||raw.spatial?.renderSurfaceAuthority||'').trim();
+ const supportRelevant=objects.filter(o=>o?.contactRequired===true||o?.supportRequired===true||o?.hero===true||o?.identityCritical===true||String(o?.band||'').toLowerCase()==='near');
+ if(supportRelevant.length){if(!supportAuthority||!renderAuthority)add('support-surface-authority-missing',strictSupport?'error':'warning','support-relevant objects exist but support/render surface authority is not fully declared');else if(supportAuthority!==renderAuthority&&raw.surfaceAuthorityEquivalent!==true)add('support-render-surface-drift','error',`support authority ${supportAuthority} differs from render authority ${renderAuthority} without an equivalence contract`);}
+ for(const object of objects){const id=String(object.id??'').trim();if(!id)add('missing-stable-id','error','object has no stable id');else if(ids.has(id))add('duplicate-stable-id','error',`duplicate stable id ${id}`,id);else ids.add(id);
+  if(object.position&&!finiteVector(object.position))add('non-finite-position','error','position contains NaN/Infinity',id||null);if(object.scale){if(!finiteVector(object.scale))add('non-finite-scale','error','scale contains NaN/Infinity',id||null);else if(Math.min(Math.abs(object.scale.x),Math.abs(object.scale.y),Math.abs(object.scale.z))<1e-8)add('zero-scale','error','scale is zero or near zero',id||null);}if(object.bounds&&!validBounds(object.bounds))add('invalid-bounds','error','bounds are non-finite or inverted',id||null);
+  const critical=object.contactRequired===true||object.supportRequired===true||object.hero===true||object.identityCritical===true||String(object.band||'').toLowerCase()==='near';const mode=String(object.supportMode||'').toLowerCase();if(critical&&!modes.has(mode))add('support-mode-missing','error','contact/identity/near object lacks a valid supportMode',id||null);
+  if(['ground','surface'].includes(mode)){const samples=Array.isArray(object.supportSamples)?object.supportSamples:[];if(!samples.length)add('support-probes-missing','error','ground/surface object has no supportSamples',id||null);else{let supported=0,valid=0,maxFloat=0,maxPen=0;for(const s of samples){let delta;if(finite(s.delta))delta=Number(s.delta);else if(finite(s.y)&&finite(s.surfaceY))delta=Number(s.y)-Number(s.surfaceY);else{add('invalid-support-probe','error','support probe must expose delta or y+surfaceY',id||null);continue;}valid++;if(delta>floatTol)maxFloat=Math.max(maxFloat,delta);else if(delta<-penetrationTol)maxPen=Math.max(maxPen,-delta);else supported++;}const ratio=valid?supported/valid:0,required=finite(object.requiredSupportRatio)?Number(object.requiredSupportRatio):.6;if(maxFloat>floatTol)add('floating-object','error',`recomputed support gap ${maxFloat.toFixed(4)} > ${floatTol}`,id||null);if(maxPen>penetrationTol)add('terrain-penetration','error',`recomputed penetration ${maxPen.toFixed(4)} > ${penetrationTol}`,id||null);if(valid&&ratio<required)add('insufficient-support-ratio','error',`support ratio ${ratio.toFixed(3)} < ${required}`,id||null);}}
+  else if(['parent/socket','wall-mounted','ceiling-mounted','suspended','buoyant'].includes(mode)){if(!String(object.supportTarget||'').trim()||object.supportConstraintVerified!==true)add('support-constraint-unverified','error','non-ground supported object requires supportTarget and supportConstraintVerified=true',id||null);}
+  else if(['airborne','dynamic/free'].includes(mode)&&critical){if(!String(object.intentionalSupportExemption||'').trim())add('support-exemption-undisclosed','error','unsupported object must explain why airborne/free support is intentional',id||null);}
+  if(object.stabilityRequired===true){const p=object.centerOfMassProjection,poly=Array.isArray(object.supportPolygon)?object.supportPolygon:[];if(!p||!finite(p.x)||!finite(p.z)||poly.length<3||poly.some(q=>!finite(q.x)||!finite(q.z)))add('stability-evidence-missing','error','stabilityRequired object needs finite centerOfMassProjection and supportPolygon',id||null);else if(!pointInPoly({x:Number(p.x),z:Number(p.z)},poly.map(q=>({x:Number(q.x),z:Number(q.z)}))))add('unstable-support','error','center of mass projection lies outside support polygon',id||null);}
+  if((raw.lodRequired||object.lodRequired)&&(object.lodBand==null||object.lodBand===''))add('missing-lod-assignment','error','LOD/representation band required but missing',id||null);const overlaps=object.collisionOverlaps||[];if(overlaps.length&&object.allowOverlap!==true)add('collision-overlap','error',`unexpected overlaps: ${overlaps.join(', ')}`,id||null);if(object.worldBoundsViolation===true)add('world-bounds-violation','error','object lies outside declared bounds without exception',id||null);
+ }
+ const camera=raw.camera||raw.scene?.camera||{};if(finite(camera.near)&&finite(camera.far)&&Number(camera.far)<=Number(camera.near))add('invalid-camera-clip','error','camera far plane must exceed near plane');for(const c of raw.criticalSubjects||[]){const d=Number(c.distance);if(!finite(d))continue;if(finite(camera.near)&&d<Number(camera.near))add('critical-camera-clipping','error',`${c.id||'critical subject'} is before near plane`,c.id||null);if(finite(camera.far)&&d>Number(camera.far))add('critical-camera-clipping','error',`${c.id||'critical subject'} is beyond far plane`,c.id||null);}
+ const errors=findings.filter(f=>f.severity==='error');return{status:errors.length?'fail':'pass',source,strictSupport,thresholds:{floatTol,penetrationTol},metrics:{objects:objects.length,uniqueIds:ids.size,supportRelevant:supportRelevant.length,findings:findings.length},findings};
 }
-function valueAfter(flag, fallback = null) { const i=args.indexOf(flag); return i>=0 ? args[i+1] : fallback; }
-const target=path.resolve(positional);
-const out=valueAfter('--out');
-const floatTol=Number(valueAfter('--float-tol','0.03'));
-const penetrationTol=Number(valueAfter('--penetration-tol','0.08'));
-const executablePath=valueAfter('--executable',process.env.CHROME_PATH||null);
-const browserArgs=args.flatMap((v,i)=>v==='--browser-arg'&&args[i+1]?[args[i+1]]:[]);
-
-function finiteVector(value) { return value && ['x','y','z'].every(k=>Number.isFinite(Number(value[k]))); }
-function validBounds(b) {
-  if (!b) return false;
-  const keys=['minX','minY','minZ','maxX','maxY','maxZ'];
-  return keys.every(k=>Number.isFinite(Number(b[k]))) && b.maxX>=b.minX && b.maxY>=b.minY && b.maxZ>=b.minZ;
-}
-function normalizeObjects(raw) {
-  if (Array.isArray(raw?.objects)) return raw.objects;
-  if (Array.isArray(raw?.scene?.objects)) return raw.scene.objects;
-  if (Array.isArray(raw?.spatial?.objects)) return raw.spatial.objects;
-  return [];
-}
-function audit(raw, source='report') {
-  if (!raw || raw.status === 'not-applicable') return {status:'not-applicable',source,reason:raw?.reason||'no spatial evidence',findings:[],metrics:{objects:0}};
-  const objects=normalizeObjects(raw); const findings=[]; const ids=new Set();
-  const add=(id,severity,detail,object=null)=>findings.push({id,severity,detail,...(object?{object}: {})});
-  for (const object of objects) {
-    const id=String(object.id??'').trim();
-    if (!id) add('missing-stable-id','error','object has no stable id');
-    else if (ids.has(id)) add('duplicate-stable-id','error',`duplicate stable id ${id}`,id); else ids.add(id);
-    if (object.position && !finiteVector(object.position)) add('non-finite-position','error','position contains NaN/Infinity',id||null);
-    if (object.scale) {
-      if (!finiteVector(object.scale)) add('non-finite-scale','error','scale contains NaN/Infinity',id||null);
-      else if (Math.min(Math.abs(object.scale.x),Math.abs(object.scale.y),Math.abs(object.scale.z)) < 1e-8) add('zero-scale','error','scale is zero or near zero',id||null);
-    }
-    if (object.bounds && !validBounds(object.bounds)) add('invalid-bounds','error','bounds are non-finite or inverted',id||null);
-    if (Number(object.floatingDistance??0)>floatTol) add('floating-object','error',`floating ${Number(object.floatingDistance).toFixed(4)} > ${floatTol}`,id||null);
-    if (Number(object.penetrationDepth??0)>penetrationTol) add('terrain-penetration','error',`penetration ${Number(object.penetrationDepth).toFixed(4)} > ${penetrationTol}`,id||null);
-    if ((raw.lodRequired||object.lodRequired) && (object.lodBand===null||object.lodBand===undefined||object.lodBand==='')) add('missing-lod-assignment','error','LOD/representation band required but missing',id||null);
-    const overlaps=object.collisionOverlaps||[]; if (overlaps.length && object.allowOverlap!==true) add('collision-overlap','error',`unexpected overlaps: ${overlaps.join(', ')}`,id||null);
-    if (object.worldBoundsViolation===true) add('world-bounds-violation','error','object lies outside declared bounds without exception',id||null);
-  }
-  const camera=raw.camera||raw.scene?.camera||{};
-  if (Number.isFinite(Number(camera.near)) && Number.isFinite(Number(camera.far)) && Number(camera.far)<=Number(camera.near)) add('invalid-camera-clip','error','camera far plane must exceed near plane');
-  for (const critical of raw.criticalSubjects||[]) {
-    const distance=Number(critical.distance); if (!Number.isFinite(distance)) continue;
-    if (Number.isFinite(Number(camera.near)) && distance<Number(camera.near)) add('critical-camera-clipping','error',`${critical.id||'critical subject'} is before near plane`,critical.id||null);
-    if (Number.isFinite(Number(camera.far)) && distance>Number(camera.far)) add('critical-camera-clipping','error',`${critical.id||'critical subject'} is beyond far plane`,critical.id||null);
-  }
-  const errors=findings.filter(f=>f.severity==='error');
-  return {status:errors.length?'fail':'pass',source,thresholds:{floatTol,penetrationTol},metrics:{objects:objects.length,uniqueIds:ids.size,findings:findings.length},findings};
-}
-
-async function acquireFromBrowser(project) {
-  const entry=fs.statSync(project).isDirectory()?path.join(project,'index.html'):project;
-  const root=fs.statSync(project).isDirectory()?project:path.dirname(project);
-  if (!fs.existsSync(entry)) return {status:'not-applicable',reason:'no index.html/entry found'};
-  let playwright;
-  try { playwright=await import('playwright'); }
-  catch { try { playwright=createRequire(path.join(root,'package.json'))('playwright'); } catch { return {status:'not-applicable',reason:'playwright not installed; use --report JSON or install Playwright'}; } }
-  const types={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.wasm':'application/wasm'};
-  const server=http.createServer((req,res)=>{const pathname=decodeURIComponent((req.url||'/').split('?')[0]);let file=path.resolve(root,pathname==='/'?path.basename(entry):pathname.replace(/^\/+/,''));if(!file.startsWith(root+path.sep)&&file!==entry){res.writeHead(403);res.end();return;}if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');if(!fs.existsSync(file)){res.writeHead(404);res.end();return;}res.writeHead(200,{'content-type':types[path.extname(file)]||'application/octet-stream','cache-control':'no-store'});fs.createReadStream(file).pipe(res);});
-  await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});
-  let browser;
-  try {
-    browser=await playwright.chromium.launch({headless:true,...(executablePath?{executablePath}:{}),...(browserArgs.length?{args:browserArgs}:{})});
-    const page=await browser.newPage({viewport:{width:1280,height:720}});
-    await page.goto(`http://127.0.0.1:${server.address().port}/${encodeURI(path.basename(entry))}`,{waitUntil:'networkidle',timeout:30000});
-    await page.evaluate(async()=>{if(window.__FORGE__?.prepareVerification) await window.__FORGE__.prepareVerification('spatial-audit');});
-    return await page.evaluate(async()=>{
-      const forge=window.__FORGE__;
-      if (typeof forge?.reportSpatialEvidence==='function') return await forge.reportSpatialEvidence();
-      if (typeof forge?.reportScene==='function') return await forge.reportScene();
-      return {status:'not-applicable',reason:'window.__FORGE__.reportSpatialEvidence/reportScene hook is absent'};
-    });
-  } finally { await browser?.close(); server.close(); }
-}
-
-let raw, source;
-try {
-  if (target.toLowerCase().endsWith('.json') && fs.statSync(target).isFile()) { raw=JSON.parse(fs.readFileSync(target,'utf8')); source=target; }
-  else { raw=await acquireFromBrowser(target); source=target; }
-  const report=audit(raw,source);
-  if(out){const op=path.resolve(out);fs.mkdirSync(path.dirname(op),{recursive:true});fs.writeFileSync(op,JSON.stringify(report,null,2));}
-  console.log(JSON.stringify(report,null,2));
-  process.exit(report.status==='fail'?1:0);
-} catch(error) {
-  const report={status:'fail',source:target,fatal:String(error?.stack||error),findings:[]};
-  if(out){const op=path.resolve(out);fs.mkdirSync(path.dirname(op),{recursive:true});fs.writeFileSync(op,JSON.stringify(report,null,2));}
-  console.log(JSON.stringify(report,null,2)); process.exit(1);
-}
+async function acquireFromBrowser(project){const entry=fs.statSync(project).isDirectory()?path.join(project,'index.html'):project,root=fs.statSync(project).isDirectory()?project:path.dirname(project);if(!fs.existsSync(entry))return{status:'not-applicable',reason:'no index.html/entry found'};let playwright;try{playwright=await import('playwright')}catch{try{playwright=createRequire(path.join(root,'package.json'))('playwright')}catch{return{status:'not-applicable',reason:'playwright not installed'}}}const types={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.wasm':'application/wasm'},server=http.createServer((req,res)=>{const pathname=decodeURIComponent((req.url||'/').split('?')[0]);let file=path.resolve(root,pathname==='/'?path.basename(entry):pathname.replace(/^\/+/,''));if(!file.startsWith(root+path.sep)&&file!==entry){res.writeHead(403);res.end();return;}if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');if(!fs.existsSync(file)){res.writeHead(404);res.end();return;}res.writeHead(200,{'content-type':types[path.extname(file)]||'application/octet-stream','cache-control':'no-store'});fs.createReadStream(file).pipe(res);});await new Promise((r,j)=>{server.once('error',j);server.listen(0,'127.0.0.1',r)});let browser;try{browser=await playwright.chromium.launch({headless:true,...(executablePath?{executablePath}:{}),...(browserArgs.length?{args:browserArgs}:{})});const page=await browser.newPage({viewport:{width:1280,height:720}});await page.goto(`http://127.0.0.1:${server.address().port}/${encodeURI(path.basename(entry))}`,{waitUntil:'networkidle',timeout:30000});await page.evaluate(async()=>{if(window.__FORGE__?.prepareVerification)await window.__FORGE__.prepareVerification('spatial-audit')});return await page.evaluate(async()=>{const f=window.__FORGE__;if(typeof f?.reportSpatialEvidence==='function')return await f.reportSpatialEvidence();if(typeof f?.reportScene==='function')return await f.reportScene();return{status:'not-applicable',reason:'reportSpatialEvidence/reportScene absent'}});}finally{await browser?.close();server.close();}}
+let raw,source;try{if(target.toLowerCase().endsWith('.json')&&fs.statSync(target).isFile()){raw=JSON.parse(fs.readFileSync(target,'utf8'));source=target;}else{raw=await acquireFromBrowser(target);source=target;}const report=audit(raw,source);if(out){const op=path.resolve(out);fs.mkdirSync(path.dirname(op),{recursive:true});fs.writeFileSync(op,JSON.stringify(report,null,2));}console.log(JSON.stringify(report,null,2));process.exit(report.status==='fail'?1:0);}catch(error){const report={status:'fail',source:target,fatal:String(error?.stack||error),findings:[]};if(out){const op=path.resolve(out);fs.mkdirSync(path.dirname(op),{recursive:true});fs.writeFileSync(op,JSON.stringify(report,null,2));}console.log(JSON.stringify(report,null,2));process.exit(1);}

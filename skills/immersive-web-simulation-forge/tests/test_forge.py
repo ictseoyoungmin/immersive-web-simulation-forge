@@ -330,7 +330,7 @@ def valid_validation(
             'runtime_asset_report':'pass','near_placeholder_ratio':0.05,'identity_critical_count':2,'hero_asset_count':1,
             'representative_family_count':2,'evidence_views':['hero','three-quarter','contact'],'unresolved_defects':[]
         },
-        'spatial_validation': {'status':'pass' if profile == 'full-window-world' else 'not-applicable','region_continuity':'pass' if profile == 'full-window-world' else 'not-applicable','placement':'pass' if profile == 'full-window-world' else 'not-applicable','contact':'pass' if profile == 'full-window-world' else 'not-applicable','collision':'pass' if profile == 'full-window-world' else 'not-applicable','navigation_clearance':'pass' if profile == 'full-window-world' else 'not-applicable','lod_assignment':'pass' if profile == 'full-window-world' else 'not-applicable','unresolved_defects':[]},
+        'spatial_validation': {'status':'pass' if profile == 'full-window-world' else 'not-applicable','region_continuity':'pass' if profile == 'full-window-world' else 'not-applicable','placement':'pass' if profile == 'full-window-world' else 'not-applicable','contact':'pass' if profile == 'full-window-world' else 'not-applicable','collision':'pass' if profile == 'full-window-world' else 'not-applicable','navigation_clearance':'pass' if profile == 'full-window-world' else 'not-applicable','lod_assignment':'pass' if profile == 'full-window-world' else 'not-applicable','support_semantics':'pass' if profile == 'full-window-world' else 'not-applicable','support_surface_consistency':'pass' if profile == 'full-window-world' else 'not-applicable','unresolved_defects':[]},
         'evidence_review': {'status':'pass','scenario_matrix':['default','transformed'],'before_after_pairs':['hero-before→hero-after'],'blockers_have_evidence':True,'regression_reviewed':True,'unresolved_defects':[]},
         'visual_review': {'status': 'creator-reviewed / provisional', 'evidence_views':['hero','alternate'] if profile == 'full-window-world' else ['hero'], 'critical_subjects':['hero system'], 'locked_passes':['structure','interaction','appearance'], 'defect_queue':[], 'hardening_rounds': 2, 'regression_reviewed':True, 'unresolved_defects': []},
         'performance': {
@@ -525,6 +525,9 @@ def make_project(root: Path, plan=None, html=None, validation=None):
             'status':'pass','flagship':True,'contract':'asset-fidelity/v1',
             'metrics':{'near_placeholder_ratio':0.05,'identity_critical_count':2,'hero_asset_count':1,'family_count':2},
             'findings':[]
+        }), encoding='utf-8')
+        (root / '.forge/spatial-audit.json').write_text(json.dumps({
+            'status':'pass','strictSupport':True,'findings':[]
         }), encoding='utf-8')
 
 
@@ -950,6 +953,37 @@ class ForgeTests(unittest.TestCase):
             make_project(root, plan)
             self.assertEqual(forge.audit_project(root)['status'], 'fail')
 
+    def test_locomotion_requires_movement_direction_contract(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / 'demo'; root.mkdir(); plan = valid_plan()
+            plan['input'].update({
+                'locomotion': True, 'movement_frame': 'none',
+                'forward_key': 'KeyW', 'backward_key': 'KeyS', 'left_key': 'KeyA', 'right_key': 'KeyD',
+                'movement_direction_reviewed': True, 'diagonal_speed_normalized': True
+            })
+            validation = valid_validation()
+            validation['input'].update({
+                'movement_direction_review': 'pass', 'camera_relative_movement_review': 'pass', 'diagonal_speed_review': 'pass'
+            })
+            make_project(root, plan, validation=validation)
+            self.assertEqual(forge.audit_project(root)['status'], 'fail')
+            plan['input']['movement_frame'] = 'camera-planar'
+            (root / '.forge/FORGE_PLAN.json').write_text(json.dumps(plan))
+            self.assertEqual(forge.audit_project(root)['status'], 'pass')
+
+    def test_flagship_locomotion_requires_movement_direction_runtime_review(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / 'demo'; root.mkdir(); plan = valid_plan()
+            plan['input'].update({
+                'locomotion': True, 'movement_frame': 'camera-planar',
+                'forward_key': 'KeyW', 'backward_key': 'KeyS', 'left_key': 'KeyA', 'right_key': 'KeyD',
+                'movement_direction_reviewed': True, 'diagonal_speed_normalized': True
+            })
+            validation = valid_validation(); validation['input']['movement_direction_review'] = 'not-run'
+            make_project(root, plan, validation=validation)
+            failed = {item['name'] for item in forge.audit_project(root)['checks'] if item['status'] == 'fail'}
+            self.assertIn('WASD movement runtime review', failed)
+
     def test_performance_requires_external_wall_clock_evidence(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td) / 'demo'; root.mkdir(); validation = valid_validation()
@@ -973,7 +1007,7 @@ class ForgeTests(unittest.TestCase):
             const gl=canvas.getContext('webgl2',{antialias:false});
             const state={testMode:true,renderScale:testMode?.34:.66,quality:.88,yaw:0};
             if(state.fps>57&&state.renderScale<.80)state.renderScale=Math.min(.80,state.renderScale+.02);
-            addEventListener('mousemove',e=>state.yaw-=e.movementX*.002);
+            addEventListener('mousemove',e=>state.yaw+=e.movementX*.002);
             let fpsFrames=0,fpsAccum=0; function frame(now){const dt=Math.min(.05,now/1000);fpsFrames++;fpsAccum+=dt;const fps=fpsFrames/fpsAccum;requestAnimationFrame(frame)}
             requestAnimationFrame(frame);
             </script>''', encoding='utf-8')
@@ -983,7 +1017,7 @@ class ForgeTests(unittest.TestCase):
             self.assertNotEqual(proc.returncode, 0)
             self.assertIn('unicode-icon-placeholders', ids)
             self.assertIn('low-adaptive-ceiling', ids)
-            self.assertIn('possible-inverted-horizontal-look', ids)
+            self.assertIn('pointer-semantic-direction-unverified', ids)
             self.assertIn('displayed-world-area-mismatch', ids)
             self.assertIn('clamped-delta-performance-telemetry', ids)
 

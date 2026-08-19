@@ -1,63 +1,53 @@
 schema: hadara.skill/v0.1
 name: immersive-web-simulation-forge
-version: 0.8.1
+version: 0.8.2
 description: >-
   Design, implement, validate, harden, and lean-package browser-native spatial
   products, open worlds, physics laboratories, parametric design studios, data
   instruments, operations panels, and other high-fidelity interactive graphical
-  products with hybrid authoring, enforceable flagship asset-fidelity gates, and evidence-driven validation.
+  products with hybrid authoring, enforceable spatial/asset contracts, and evidence-driven validation.
 entry:
   skill: SKILL.md
 runtime:
   tools:
     forge:
       command: [python, scripts/forge.py]
-      description: Initialize, migrate, audit, package, and verify interactive world, laboratory, authoring, data, and operations projects with structured spatial and asset-fidelity contracts.
+      description: Initialize, migrate, audit, package, and verify interactive world, laboratory, authoring, data, and operations projects.
     check-html:
       command: [node, scripts/check_html.mjs]
       description: Syntax-check HTML scripts and detect JavaScript/GLSL boundary mistakes.
     browser-verify:
       command: [node, scripts/browser_verify.mjs]
-      description: Execute capture, evidence-suite, workflow/domain, pointer-direction, and external wall-clock performance checks in Chromium.
+      description: Execute capture, evidence-suite, workflow/domain, semantic pointer-direction, and external wall-clock performance checks in Chromium.
     fidelity-audit:
       command: [node, scripts/fidelity_audit.mjs]
-      description: Detect low-resolution upscale, false area claims, clamped FPS telemetry, placeholder icons, lifecycle gaps, and input-direction risks.
+      description: Detect low-resolution upscale, false area claims, placeholder icons, lifecycle gaps, and unverified semantic input direction without assuming an Euler sign.
+    input-audit:
+      command: [node, scripts/input_audit.mjs]
+      description: Verify W/S/A/D against actual camera/player basis, diagonal normalization, and optional grounding through runtime probes.
     spatial-audit:
       command: [node, scripts/spatial_audit.mjs]
-      description: Audit spatial evidence for finite transforms, support/contact, collision, LOD assignment, bounds, and camera clipping.
+      description: Recompute support/contact from probe evidence and audit support semantics, surface authority, stability, collision, LOD, bounds, and camera clipping.
     asset-fidelity-audit:
       command: [node, scripts/asset_fidelity_audit.mjs]
-      description: Audit runtime asset evidence for flagship identity coverage, primitive placeholders, near-band quality, material regions, contact, and multi-view evidence.
+      description: Audit runtime asset evidence for identity coverage, primitive placeholders, near-band quality, linked contact evidence, and multi-view review.
 dependencies:
   python: '>=3.10'
   node: '>=20'
-  optional:
-    - playwright
-    - pillow
+  optional: [playwright, pillow]
 resources:
   templates: templates/
   references: references/
   kits: kits/
 permissions:
   filesystem:
-    read:
-      - skill_root/**
-      - project_root/**
-    write:
-      - project_root/**
-      - .forge/**
+    read: [skill_root/**, project_root/**]
+    write: [project_root/**, .forge/**]
   network:
     mode: project-declared
   commands:
-    allow:
-      - python
-      - node
-      - npm
-      - npx
-      - zip
-    approval_required:
-      - npm install
-      - npx playwright install
+    allow: [python, node, npm, npx, zip]
+    approval_required: [npm install, npx playwright install]
 lifecycle:
   install:
     command: [python, scripts/forge.py, doctor]
@@ -69,12 +59,5 @@ lifecycle:
   uninstall:
     strategy: remove-skill-folder-only
 compatibility:
-  agents:
-    - Claude Code
-    - Codex CLI
-    - Hermes Agent
-    - HADARA-compatible runtimes
-  os:
-    - windows
-    - linux
-    - macos
+  agents: [Claude Code, Codex CLI, Hermes Agent, HADARA-compatible runtimes]
+  os: [windows, linux, macos]

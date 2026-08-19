@@ -92,10 +92,46 @@ class WorldContractTests(unittest.TestCase):
         self.assertEqual(proc.returncode,0,proc.stderr); result=json.loads(proc.stdout)
         self.assertAlmostEqual(result['sum'],1); self.assertTrue(result['reachable']); self.assertEqual(result['policy']['representation'],'explicit')
 
+    def test_pointer_look_semantic_yaw_agrees_with_locomotion_basis_end_to_end(self):
+        # Regression: two hand-written example worlds in this repo defined "yaw" with
+        # opposite signs relative to their own forward-vector formula, so one turned the
+        # camera left on a rightward mouse drag while looking identical in source review.
+        # pointer-look.mjs keeps yaw semantic (positive = right) and pushes the Three.js
+        # sign quirk into threeJsEulerFromSemanticLook; this test chains that adapter's
+        # output through the actual Three.js rotation.y formula (independently
+        # implemented here, not imported from three.js) into locomotion.mjs's own
+        # cross-product basis, so a rightward mouse move is proven to end up moving
+        # toward the same "right" locomotion.mjs would compute — not just that the two
+        # files independently look plausible.
+        look=(ROOT/'kits/input/pointer-look.mjs').as_uri(); loco=(ROOT/'kits/input/locomotion.mjs').as_uri()
+        script=f'''import {{createPointerLook,threeJsEulerFromSemanticLook}} from {json.dumps(look)};
+        import {{planarBasisFromForward}} from {json.dumps(loco)};
+        globalThis.window={{addEventListener(){{}},removeEventListener(){{}}}};
+        globalThis.document={{pointerLockElement:null}};
+        const element={{addEventListener(){{}},removeEventListener(){{}}}};
+        const pl=createPointerLook({{element}});
+        // Three.js Matrix4.makeRotationY, pitch=0: forward=(0,0,-1) rotates to
+        // (-sin(rotY), 0, -cos(rotY)). Implemented directly, not via three.js.
+        const forwardFromRotationY = rotY => ({{x:-Math.sin(rotY), y:0, z:-Math.cos(rotY)}});
+        const b0 = planarBasisFromForward(forwardFromRotationY(threeJsEulerFromSemanticLook({{yaw:0}}).y));
+        pl.applyDelta(90,0); // rightward mouse move
+        const euler = threeJsEulerFromSemanticLook({{yaw:pl.state.yaw,pitch:pl.state.pitch}});
+        const forwardAfter = forwardFromRotationY(euler.y);
+        console.log(JSON.stringify({{semanticYaw:pl.state.yaw,rotationY:euler.y,b0,forwardAfter}}));'''
+        proc=subprocess.run(['node','--input-type=module','-e',script],capture_output=True,text=True)
+        self.assertEqual(proc.returncode,0,proc.stderr); result=json.loads(proc.stdout)
+        # A rightward drag must increase the semantic yaw (pointer-look.mjs's own contract).
+        self.assertGreater(result['semanticYaw'],0)
+        self.assertTrue(result['b0']['ok'])
+        self.assertAlmostEqual(result['b0']['right']['x'],1,places=9); self.assertAlmostEqual(result['b0']['right']['z'],0,places=6)
+        # The resulting forward vector must have swept toward locomotion.mjs's own "right" (+X),
+        # not away from it — the exact failure mode found in the wild.
+        self.assertGreater(result['forwardAfter']['x'],0)
+
     def test_spatial_audit_detects_floating_and_duplicate_ids(self):
         with tempfile.TemporaryDirectory() as td:
             report=Path(td)/'scene.json'; report.write_text(json.dumps({'objects':[
-                {'id':'tree','position':{'x':0,'y':1,'z':0},'scale':{'x':1,'y':1,'z':1},'floatingDistance':0.2},
+                {'id':'tree','position':{'x':0,'y':1,'z':0},'scale':{'x':1,'y':1,'z':1},'supportMode':'ground','supportSamples':[{'y':1,'surfaceY':0}]},
                 {'id':'tree','position':{'x':1,'y':0,'z':0},'scale':{'x':1,'y':1,'z':1}}
             ]}))
             proc=subprocess.run(['node',str(ROOT/'scripts/spatial_audit.mjs'),str(report)],capture_output=True,text=True)

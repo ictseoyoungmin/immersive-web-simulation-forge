@@ -1,71 +1,73 @@
 # Fire, smoke, and reactive-flow fidelity
 
-Use this contract when fire or smoke is a hero system, a causal simulation, or a material input to lighting/visibility rather than a decorative particle effect. It extends `physics-simulation.md`; rendering of the resulting medium is governed separately by `volumetric-rendering.md`.
+Use this contract when fire or smoke is a hero visual, a causal simulation, or a material input to lighting/visibility. It extends `physics-simulation.md`; rendering of the resulting medium is governed separately by `volumetric-rendering.md`.
+
+## Choose the intent tier first
+
+Do not force every prominent flame through the same CFD stack.
+
+### Tier A — artistic / cinematic hero fire
+
+Use authored, procedural, particle, SDF, or reduced field techniques when the product primarily promises a convincing visual and does not claim a fluid/combustion simulation. Keep major consumers causally coherent where the user can compare them: flame motion, smoke drift, embers, heat distortion, and lighting should not obviously contradict the same wind/event state.
+
+Do not label this tier as physically simulated combustion unless the stronger model exists.
+
+### Tier B — coupled visual fire/smoke simulation
+
+When the product claims a real flow-driven fire/smoke simulation or obstacle/wind response is a hero behavior, a strong canonical baseline is an Eulerian incompressible velocity field with pressure projection, advected scalar fields, reaction/source terms, and buoyancy. Alternatives are allowed when disclosed and capable of preserving the claimed behavior.
+
+A practical state may include velocity, pressure/projection state, temperature, fuel/reactant proxy, smoke/soot/product density, obstacle state, and external wind/forcing.
+
+### Tier C — quantitative reactive flow
+
+Decision-support/engineering combustion requires domain-appropriate chemistry/turbulence/transport models and external benchmark validation. The browser visual model in this reference is not an engineering combustion certification.
 
 ## Separate state evolution from appearance
 
-Fire/smoke simulation produces physical or reduced-order fields such as velocity, pressure, temperature, fuel, oxidizer/product proxies, soot/smoke density, and heat release. Rendering consumes those fields.
+Simulation/reduced-order state produces fields such as velocity, temperature, fuel, soot, and heat release. Rendering consumes those fields.
 
-Do not treat `orange emissive noise + alpha smoke sprites` as a simulation merely because it resembles flame. Conversely, a valid fluid solve does not guarantee convincing radiance: domain validity and perceptual/rendering evidence must each pass on their own terms.
+`orange emissive noise + unrelated alpha smoke` is not a coupled simulation merely because it resembles flame. Conversely, a valid flow solve does not guarantee convincing radiance: domain validity and perceptual/rendering evidence must each pass on their own terms.
 
-## Canonical interactive model
+## Combustion coupling for Tier B/C
 
-For flagship visual simulation, the canonical floor is an Eulerian incompressible flow with pressure projection and advected scalar fields, augmented by combustion/reaction source terms and buoyancy. A practical authoritative state may include:
+The reaction model may be simplified, but it should connect state causally:
 
-- `u(x,t)` velocity;
-- pressure or the projected velocity constraint;
-- temperature;
-- fuel/reactant fraction;
-- smoke/soot/product density;
-- obstacle/boundary state;
-- external wind/forcing.
+`fuel + reaction conditions → heat/products → temperature/buoyancy → flow → advection`
 
-Semi-Lagrangian advection is legitimate for interactive work; MacCormack/BFECC or other higher-order corrections may be used when bounded and stable. Vorticity confinement may restore visually important rotational detail lost to numerical diffusion, but it must be identified as a modeling/visual correction rather than a new physical law.
-
-## Combustion coupling
-
-The reaction model may be simplified, but it must connect the state causally:
-
-`fuel + reaction conditions → heat release + products/soot → temperature/buoyancy → flow → advection`
-
-A flame color animation that ignores temperature and fuel state is a representation shortcut, not a coupled combustion model.
-
-For visual-concept work, a reduced reaction model is acceptable. For quantitative combustion claims, use domain-appropriate chemistry/turbulence models and external validation; this reference is not an engineering combustion certification.
+Vorticity confinement or higher-order advection corrections may be used as declared numerical/visual corrections; do not present them as new physical laws.
 
 ## Wind and obstacles
 
-Read `wind-and-atmospheric-flow.md` when weather drives the effect. Wind should enter as authoritative forcing or boundary state, not as an unrelated shader drift. Obstacles must affect velocity/pressure and therefore downstream flame/smoke transport when the user can observe the interaction.
+Read `wind-and-atmospheric-flow.md` when weather drives the effect. For Tier B/C, wind should enter as authoritative forcing/boundary state, and visible obstacles should affect downstream transport when that interaction is part of the promise.
+
+Tier A may use cheaper collision/advection approximations, but should not claim obstacle-resolved flow if smoke simply passes through walls.
 
 ## Secondary phenomena
 
-Embers, sparks, ash, and heat haze are secondary consumers. Their emission rate, launch region, advection, lifetime, and visibility should derive from combustion/flow state or a declared event model. Do not use dense particles to hide a weak primary flame field.
+Embers, sparks, ash, and heat haze are secondary consumers. Derive their emission/launch/advection from the primary state or a declared event model when causal coupling is visible. Do not use dense particles to hide a weak primary effect.
 
-Heat distortion is a rendering approximation and should be spatially tied to hot regions. Smoke extinction and flame emission belong to `volumetric-rendering.md`.
+Smoke extinction and flame emission belong to `volumetric-rendering.md`. Nearby surface illumination belongs to the selected lighting/GI contract.
 
 ## Compute placement
 
-3D grids are expensive parallel kernels. WebGPU compute is the preferred browser path for flagship volumes; lower-dimensional or sparse variants may run in Worker/WASM. Record:
+Tier A may stay in shaders or lightweight CPU logic. Tier B 3D grids are expensive and commonly belong in WebGPU compute or a Worker/WASM reduced path. Record grid/world dimensions, cadence, advection/projection policy, pressure budget, boundary conditions, and fallback.
 
-- grid/voxel dimensions and world scale;
-- solver cadence and render interpolation;
-- advection and projection method;
-- pressure iteration budget/convergence policy;
-- boundary conditions;
-- fallback and failure states.
-
-Do not silently lower a 3D fire claim to layered 2D noise solely to fit WebGL if WebGPU is an acceptable declared requirement.
+Do not silently downgrade a claimed 3D flow simulation to layered 2D noise solely to preserve universal browser support; declare the fallback or requirement.
 
 ## Validation
 
-Use:
+Apply tests by tier.
 
+Tier A:
+- target-size temporal inspection for repetition, detached flame/smoke, and contradictory wind response;
+- deterministic/replayable hero scenarios where regression matters.
+
+Tier B:
 - divergence/projection diagnostics;
 - scalar boundedness and NaN/Inf checks;
-- deterministic replay or recorded seeds;
-- simple buoyant plume and cross-flow cases;
-- obstacle interaction cases;
-- mass/energy trend checks appropriate to the reduced model;
-- a wind-change scenario proving shared-field coupling;
-- target-size temporal inspection of billowing, attachment, repetition, and boundary artifacts.
+- buoyant plume/cross-flow cases;
+- obstacle interaction;
+- wind-change coupling;
+- appropriate mass/energy trend checks for the reduced model.
 
-For decision-support or engineering claims, add external benchmark cases and tolerances. Never infer combustion accuracy from visual resemblance alone.
+Tier C adds accepted external benchmarks and quantitative tolerances.

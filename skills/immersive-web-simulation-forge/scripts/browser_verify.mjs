@@ -180,12 +180,17 @@ async function readLookState(page) {
   return page.evaluate(() => {
     const forge = window.__FORGE__;
     const state = forge?.getLookState?.() || forge?.input?.state || forge?.player || null;
+    const probe = typeof forge?.getInputProbeState === 'function' ? forge.getInputProbeState() : null;
     const bearingText = document.querySelector('[data-forge-bearing], #bearing')?.textContent || '';
     const bearing = Number.parseFloat(bearingText);
+    const finiteVec = value => value && ['x','y','z'].every(key => Number.isFinite(Number(value[key])));
     return {
       yaw: Number.isFinite(state?.yaw) ? state.yaw : null,
       pitch: Number.isFinite(state?.pitch) ? state.pitch : null,
-      bearing: Number.isFinite(bearing) ? bearing : null
+      bearing: Number.isFinite(bearing) ? bearing : null,
+      forward: finiteVec(probe?.forward) ? probe.forward : null,
+      right: finiteVec(probe?.right) ? probe.right : null,
+      up: finiteVec(probe?.up) ? probe.up : {x:0,y:1,z:0}
     };
   });
 }
@@ -339,11 +344,15 @@ try {
       const yawDelta = before.yaw !== null && after.yaw !== null ? after.yaw - before.yaw : null;
       const pitchDelta = before.pitch !== null && after.pitch !== null ? after.pitch - before.pitch : null;
       const bearingDelta = before.bearing !== null && after.bearing !== null ? signedDegrees(after.bearing, before.bearing) : null;
-      const rightPass = yawDelta !== null ? yawDelta > 0 : bearingDelta !== null ? bearingDelta > 0 : null;
-      const upPass = pitchDelta !== null ? pitchDelta > 0 : null;
-      const status = rightPass === true && (upPass === true || upPass === null) ? 'pass' : 'fail';
-      report.pointer_direction = { status, before, after, yawDelta, pitchDelta, bearingDelta, rightPass, upPass };
-      if (status !== 'pass') report.status = 'fail';
+      const dot = (a,b) => a && b ? Number(a.x)*Number(b.x)+Number(a.y)*Number(b.y)+Number(a.z)*Number(b.z) : null;
+      const basisRightPass = before.right && after.forward ? dot(after.forward, before.right) > 0.01 : null;
+      const basisUpPass = before.forward && after.forward && before.up ? dot({x:after.forward.x-before.forward.x,y:after.forward.y-before.forward.y,z:after.forward.z-before.forward.z}, before.up) > 0.001 : null;
+      // Raw yaw/pitch signs are renderer-specific and are diagnostic only, never the oracle.
+      const rightPass = basisRightPass !== null ? basisRightPass : bearingDelta !== null ? bearingDelta > 0 : null;
+      const upPass = basisUpPass !== null ? basisUpPass : null;
+      const status = rightPass === null ? 'blocked' : rightPass === true && (upPass === true || upPass === null) ? 'pass' : 'fail';
+      report.pointer_direction = { status, before, after, yawDelta, pitchDelta, bearingDelta, basisRightPass, basisUpPass, rightPass, upPass };
+      if (status !== 'pass') { report.status = 'fail'; if (status === 'blocked') report.limitations.push('Pointer direction could not be verified from actual view basis or observable bearing; raw yaw sign is not accepted as proof.'); }
     }
   }
 

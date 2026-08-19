@@ -120,7 +120,11 @@
       "camera_grounded": false,
       "support_policy": "",
       "collision_policy": "",
-      "navigation_clearance_policy": ""
+      "navigation_clearance_policy": "",
+      "support_modes": [],
+      "support_surface_authority": "",
+      "render_surface_authority": "",
+      "support_revalidation": ""
     },
     "scale_bands": {
       "near": {},
@@ -276,7 +280,8 @@
       ],
       "target_size_review": true,
       "runtime_asset_report": true
-    }
+    },
+    "repeated_families_expected": false
   },
   "construction_evidence": {
     "critical_subjects": [],
@@ -289,7 +294,8 @@
       "representative_region": "",
       "hero_asset": "",
       "placement_contact_path": false,
-      "runtime_interaction": false
+      "runtime_interaction": false,
+      "hero_subject": ""
     }
   },
   "fidelity": {
@@ -341,7 +347,16 @@
     "direction_reviewed": false,
     "drag_pointerlock_parity": false,
     "invert_x_configurable": false,
-    "invert_y_configurable": false
+    "invert_y_configurable": false,
+    "locomotion": false,
+    "movement_frame": "camera-planar",
+    "forward_key": "KeyW",
+    "backward_key": "KeyS",
+    "left_key": "KeyA",
+    "right_key": "KeyD",
+    "movement_direction_reviewed": false,
+    "diagonal_speed_normalized": true,
+    "player_grounded": false
   },
   "measurement": {
     "wall_clock_source": "external-requestAnimationFrame",

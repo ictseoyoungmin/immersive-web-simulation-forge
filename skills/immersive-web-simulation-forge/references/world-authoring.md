@@ -1,149 +1,68 @@
 # World authoring: global structure before local detail
 
-Use this reference when a product contains a freely navigable or consequential 3D spatial world. Do **not** apply it to non-spatial products merely because they use WebGL.
-
-## Contents
-
-- WorldSpec and global-to-local construction
-- Semantic fields, terrain, and scattering
-- Regional proposals, landmarks, and traversal
-- Authoring bands and representative slices
-- Failure modes and flagship visual floor
+Use this reference when a product contains a freely navigable or consequential 3D spatial world. Do not apply it to non-spatial products merely because they use WebGL.
 
 ## WorldSpec is a spatial contract, not a scene dump
 
-A `WorldSpec` records the minimum global structure that must remain coherent while local detail changes. It should contain:
-
-- world scale and authored/explorable extents;
-- stable regions and semantic relationships;
-- terrain authority and regional landform requirements;
-- traversal graph, routes, gates, and navigation exclusions;
-- landmark hierarchy and orientation cues;
-- asset and material families with reuse policy;
-- interaction zones and systemic regions;
-- near/mid/far authoring policies.
-
-Coordinates alone are insufficient. Record relations such as `adjacent`, `contains`, `connects`, `overlooks`, `upstream`, `downhill`, and `reachable` when they affect construction or traversal.
+Record world scale/extents, stable regions/relations, terrain authority, traversal routes/gates, landmark hierarchy, asset/material families when present, interaction/system regions, and near/mid/far policies. Coordinates alone are insufficient when relations such as adjacent/contains/connects/upstream/downhill/reachable affect construction.
 
 ## Global → regional → object
 
 Construct in this order unless the project has a documented reason not to:
 
-1. **World thesis** — what spatial experience must the world produce?
-2. **WorldSpec** — regions, relations, scale, traversal, terrain authority.
-3. **Global skeleton** — world bounds, major terrain masses, water, routes, horizon landmarks.
-4. **Semantic regions** — soft region weights rather than isolated object clusters.
-5. **Terrain and routes** — region-aware landform operators plus traversable continuity.
-6. **Landmarks** — orientation, destination, and progression anchors.
-7. **Regional composition** — develop only regions that need additional detail.
-8. **Object population** — route each asset class through the appropriate authoring strategy.
-9. **Spatial reconciliation** — support, collision, scale, slope, and clearance checks.
-10. **Runtime coupling** — interaction, ecology, audio, simulation, and LOD consume the same state.
+1. world thesis;
+2. WorldSpec;
+3. global skeleton;
+4. semantic regions;
+5. terrain/routes;
+6. landmarks;
+7. representative regional composition;
+8. object population when the world uses object assets;
+9. spatial reconciliation;
+10. runtime coupling.
 
-Do not build every region to final detail before a representative regional slice is proven.
+Do not build every region to final detail before one representative slice is proven.
 
 ## Semantic spatial fields
 
-Represent region membership as soft weights where possible. A semantic field may expose channels such as biome, wetness, hazard, walkability, settlement affinity, vegetation density, or interaction intensity. Consequential consumers should sample the same field instead of re-encoding the same phenomenon independently.
+Represent consequential region membership as inspectable weights/IDs where useful. Terrain, placement, ecology, shading, sound, routes, events, and representation policy should consume shared semantics rather than re-encoding the same phenomenon independently.
 
-A useful field has:
+## Terrain hierarchy and authority
 
-- stable region IDs;
-- normalized or inspectable weights;
-- boundary blending;
-- deterministic sampling;
-- explicit consumer mapping;
-- serialization or regeneration policy.
+Record terrain authority, units, operator ranges, boundary blending, water/non-height-field exceptions, and deterministic seed/replay policy where required.
 
-## Terrain hierarchy
-
-For height-field terrain, a robust regional model is conceptually:
-
-`height = blended(base elevation + multi-frequency noise + geomorphic operators)`
-
-Operators may include ridge, basin, terrace, dune, erosion approximation, river incision, cliff, or plateau. The exact implementation is provider-neutral. What matters is that regional semantics, material assignment, scattering, and terrain shape share the same spatial partition.
-
-Record:
-
-- terrain authority (`height-field`, explicit mesh, SDF, tiled mesh, external source);
-- world scale and unit system;
-- base elevations and operator ranges;
-- boundary blending width;
-- water and non-height-field exceptions;
-- deterministic seed/replay policy where required.
+**Support-relevant visible terrain must share authority with placement/collision queries.** If the GPU adds displacement that changes apparent ground height, expose equivalent support sampling or validate a bounded discrepancy; do not certify objects against a stale CPU height field while rendering another surface.
 
 ## Terrain-aware scattering
 
-Repeated terrain assets should be sampled from policy rather than uniform randomness. Typical factors:
+Repeated terrain assets should sample semantic affinity, elevation/slope/normal, density, separation, route/interaction clearance, silhouette budget, and distance policy. Functional or identity-critical objects should usually use explicit/regional placement.
 
-- semantic affinity;
-- elevation and slope;
-- surface normal;
-- density field;
-- minimum separation;
-- route and interaction clearance;
-- visibility/silhouette budget;
-- near/mid/far representation policy.
+Scattering produces candidate x/z positions, not automatic support validity. Resolve each accepted object's support mode and vertical/orientation placement against the authoritative surface before commit.
 
-Functional or identity-critical objects should usually be deferred to regional planning or explicit placement.
+## Regional/generative proposals
 
-## Regional composition and generative proposals
+Generated appearance remains a proposal:
 
-When a generative model is useful, condition it on the existing canonical world state. A terrain render, camera, region specification, or document state may be used to propose local composition. The generated output remains **evidence/proposal**, not authoritative geometry or placement.
+`canonical 3D state → evidence view → proposal → reconstruction/procedural build → spatial reconciliation → canonical update`
 
-Use the pattern:
-
-`canonical 3D state → evidence view → generative proposal → reconstruction/procedural build → spatial reconciliation → canonical state update`
-
-Render the existing canonical terrain from the intended camera **before** invoking the generative step, and pass that render — not just a text description — as the primary conditioning image, together with the regional specification and any optional concept reference. Conditioning on the actual terrain render rather than the region spec alone is what keeps local topography, material continuity, and viewpoint consistent with the already-established world; a generator prompted from text/spec alone tends to invent ground that does not match what is already there.
-
-Preserve camera parameters whenever a 2D proposal must be reprojected into 3D.
+Preserve camera parameters when a 2D proposal must be reprojected into 3D.
 
 ## Landmark and traversal continuity
 
-A world is not coherent because every region looks attractive. Validate:
-
-- major route continuity across region boundaries;
-- landmark visibility from intended approach paths;
-- reachable progression and recovery routes;
-- collision/nav clearance around populated regions;
-- no generated content closing required open space;
-- authored/explorable extent claims against actual bounds.
+Validate route continuity, landmark visibility, progression/recovery reachability, collision/nav clearance, required open space, and authored/explorable extent claims.
 
 ## Authoring fidelity bands
 
-Treat near/mid/far as authoring budgets as well as render LOD.
+- **Near** — explicit geometry where needed, full material response, accurate support/contact/collision, interaction, unique detail when justified.
+- **Mid** — coherent families or structures, simplified geometry/materials, instancing/proxies, reduced updates.
+- **Far** — silhouette/macro material/atmosphere; no irrelevant interaction.
 
-- **Near** — explicit geometry, full materials, accurate contact/collision, interaction, unique assets where justified.
-- **Mid** — asset families, simplified geometry/materials, shared collisions, instancing, reduced update rates.
-- **Far** — silhouette and macro material, impostors or low-detail representation, atmospheric integration, no irrelevant interaction.
-
-Fidelity should depend on both region importance and view scale.
+A singular world does not need to invent a repeated family. Repeated-family evidence is required when repeated families materially define the experience.
 
 ## Representative world slice
 
-Before large expansion, prove one slice containing:
-
-- the global skeleton needed to understand the world;
-- one representative semantic region;
-- one hero or identity-critical asset;
-- one terrain/object placement and contact path;
-- one runtime interaction that propagates through multiple consumers;
-- one multi-view evidence set and spatial audit.
+Before expansion prove the minimum global skeleton, one representative region, one hero/identity subject **when the world is object-centric**, a representative repeated family **when one is materially used**, one placement/contact path for support-relevant content, one runtime interaction, multi-view evidence, and a deterministic spatial check.
 
 ## Common failure modes
 
-Reject or repair:
-
-- disconnected local dioramas instead of one global terrain structure;
-- object-count density used as a substitute for semantic richness;
-- generated 2D composition written directly into world coordinates by eye;
-- identical asset vocabulary at every distance;
-- landmarks with no traversal or orientation role;
-- terrain materials that ignore the semantic region map;
-- floating, penetrating, or slope-incompatible placements;
-- world-area claims based on a nominal size rather than verified authored/explorable bounds.
-
-## v0.7 flagship visual floor
-
-For a world-scale flagship, Near/Mid/Far are enforceable authoring floors as well as LOD policies. The representative slice must prove one finished hero asset and one repeated family; primitive-only Near identity, visible clone tiling, missing material regions, or absent target-size multi-view evidence blocks expansion/completion. See `asset-fidelity-gates.md`.
+Reject/repair disconnected dioramas, object-count-as-richness, eyeballed generated placement, identical vocabulary at every distance, landmarks with no traversal role, semantic/material drift, floating/penetrating/slope-incompatible objects, support queries that disagree with rendered ground, accidental airborne classification, and nominal world-area claims not backed by actual bounds.

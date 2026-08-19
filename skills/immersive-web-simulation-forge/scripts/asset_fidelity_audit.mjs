@@ -1,163 +1,38 @@
 #!/usr/bin/env node
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from 'node:fs';import path from 'node:path';
+const args=process.argv.slice(2),inputArg=args.find(a=>!a.startsWith('--'));if(!inputArg){console.error('Usage: asset_fidelity_audit.mjs <evidence.json> [--flagship] [--max-near-placeholder-ratio 0.15] [--identity-classes a,b,c] [--plan FORGE_PLAN.json] [--out report.json]');process.exit(2);}const valueAfter=(f,d=null)=>{const i=args.indexOf(f);return i>=0&&args[i+1]&&!args[i+1].startsWith('--')?args[i+1]:d;};
+const flagship=args.includes('--flagship'),maxRatio=Number(valueAfter('--max-near-placeholder-ratio','.15')),outPath=valueAfter('--out')?path.resolve(valueAfter('--out')):null,inputPath=path.resolve(inputArg);
+// Declared identity-critical classes live in FORGE_PLAN.json, not the runtime evidence payload —
+// a class named in the plan but never built as a runtime identityCritical object is a silent
+// coverage gap the evidence's own self-report can't catch. --identity-classes overrides; --plan
+// points at a specific plan; otherwise search upward from the evidence file (it may sit next to
+// FORGE_PLAN.json, or one/two levels under it) and skip the check silently when none is found.
+function findForgePlanUpward(startDir,maxLevels=3){let dir=startDir;for(let level=0;level<=maxLevels;level++){const candidate=path.join(dir,'FORGE_PLAN.json');if(fs.existsSync(candidate))return candidate;const parent=path.dirname(dir);if(parent===dir)break;dir=parent;}return null;}
+function loadPlan(){const planPath=valueAfter('--plan')?path.resolve(valueAfter('--plan')):findForgePlanUpward(path.dirname(inputPath));if(!planPath||!fs.existsSync(planPath))return null;try{return JSON.parse(fs.readFileSync(planPath,'utf8'));}catch{return null;}}
+const plan=loadPlan();
+const explicitIdentityClasses=valueAfter('--identity-classes');
+function loadDeclaredIdentityClasses(){if(explicitIdentityClasses!==null)return explicitIdentityClasses.split(',').map(s=>s.trim()).filter(Boolean);const classes=plan?.asset_fidelity?.identity_critical_classes;return Array.isArray(classes)?classes.map(c=>String(c).trim()).filter(Boolean):null;}
+const declaredIdentityClasses=loadDeclaredIdentityClasses();
+// Spatial flagship != automatically object-centric flagship: a genuine field/particle/astronomical
+// product with asset_fidelity.applicable=false in the plan is not in this contract at all, and
+// its rationale lives in FORGE_PLAN.json (forge.py checks it there). This check only applies once
+// an agent has entered the contract (asset_fidelity.applicable=true) and still marks scopeMode
+// non-object within it. Unknown plan state (no FORGE_PLAN.json reachable) does not fire it.
+const assetFidelityApplicable=plan?.asset_fidelity?.applicable===true;
+const source=JSON.parse(fs.readFileSync(inputPath,'utf8')),evidence=source?.evidence?.asset?.evidence||source?.evidence?.asset||source?.assetEvidence||source,objects=Array.isArray(evidence?.objects)?evidence.objects:[],families=Array.isArray(evidence?.families)?evidence.families:[],evidenceViews=Array.isArray(evidence?.evidenceViews)?evidence.evidenceViews:[],styleMode=String(evidence?.styleMode||'').toLowerCase(),scopeMode=String(evidence?.scopeMode||'').toLowerCase(),intentionalPrimitiveStyle=Boolean(evidence?.intentionalPrimitiveStyle),repeatedExpected=evidence?.repeatedFamiliesExpected===true,nonObjectIdentity=Boolean(evidence?.nonObjectIdentity),nonObjectIdentityRationale=String(evidence?.nonObjectIdentityRationale||'').trim(),findings=[];const add=(id,severity,detail,objectId=null)=>findings.push({id,severity,detail,...(objectId?{objectId}:{})}),severity=flagship?'error':'warning',passLike=v=>v===true||String(v||'').toLowerCase()==='pass',band=v=>['near','mid','far'].includes(String(v||'').toLowerCase())?String(v).toLowerCase():'unknown',unique=vs=>[...new Set(vs.filter(Boolean))];
 
-const args = process.argv.slice(2);
-const inputArg = args.find(arg => !arg.startsWith('--'));
-if (!inputArg) {
-  console.error('Usage: node scripts/asset_fidelity_audit.mjs <asset-evidence-or-browser-report.json> [--flagship] [--max-near-placeholder-ratio 0.15] [--identity-classes a,b,c] [--plan FORGE_PLAN.json] [--out report.json]');
-  process.exit(2);
-}
-const valueAfter = (flag, fallback = null) => {
-  const i = args.indexOf(flag);
-  return i >= 0 && args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : fallback;
-};
-const flagship = args.includes('--flagship');
-const maxRatio = Number(valueAfter('--max-near-placeholder-ratio', '0.15'));
-const outPath = valueAfter('--out') ? path.resolve(valueAfter('--out')) : null;
-const inputPath = path.resolve(inputArg);
+const objectIds=objects.map(o=>String(o?.id||'').trim()).filter(Boolean),duplicateIds=unique(objectIds.filter((id,i)=>objectIds.indexOf(id)!==i));
+if(objects.some(o=>!String(o?.id||'').trim()))add('missing-stable-asset-id',severity,'one or more runtime asset records are missing stable IDs');
+if(duplicateIds.length)add('duplicate-stable-asset-id','error',`duplicate runtime asset IDs: ${duplicateIds.join(', ')}`);
 
-// The declared identity-critical classes live in FORGE_PLAN.json, not in the runtime evidence
-// payload being audited here — a class present in the plan but absent from every runtime object
-// is a silent coverage gap the runtime's own self-report can't catch. `--identity-classes` overrides;
-// `--plan <path>` points at a specific plan; otherwise search upward from the evidence file for
-// FORGE_PLAN.json (it may sit next to it, as `.forge/FORGE_PLAN.json` + `.forge/evidence.json`, or
-// one or two levels up, as when evidence is nested under `.forge/evidence/evidence.json`) and skip
-// the check silently when none is found, matching every other optional contract in this script.
-function findForgePlanUpward(startDir, maxLevels = 3) {
-  let dir = startDir;
-  for (let level = 0; level <= maxLevels; level++) {
-    const candidate = path.join(dir, 'FORGE_PLAN.json');
-    if (fs.existsSync(candidate)) return candidate;
-    const parent = path.dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  return null;
-}
-const explicitIdentityClasses = valueAfter('--identity-classes');
-function loadDeclaredIdentityClasses() {
-  if (explicitIdentityClasses !== null) {
-    return explicitIdentityClasses.split(',').map(s => s.trim()).filter(Boolean);
-  }
-  const planPath = valueAfter('--plan')
-    ? path.resolve(valueAfter('--plan'))
-    : findForgePlanUpward(path.dirname(inputPath));
-  if (!planPath || !fs.existsSync(planPath)) return null;
-  try {
-    const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
-    const classes = plan?.asset_fidelity?.identity_critical_classes;
-    return Array.isArray(classes) ? classes.map(c => String(c).trim()).filter(Boolean) : null;
-  } catch {
-    return null;
-  }
-}
-const declaredIdentityClasses = loadDeclaredIdentityClasses();
-const source = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
-const evidence = source?.evidence?.asset?.evidence || source?.evidence?.asset || source?.assetEvidence || source;
-const objects = Array.isArray(evidence?.objects) ? evidence.objects : [];
-const families = Array.isArray(evidence?.families) ? evidence.families : [];
-const evidenceViews = Array.isArray(evidence?.evidenceViews) ? evidence.evidenceViews : [];
-const styleMode = String(evidence?.styleMode || '').toLowerCase();
-const scopeMode = String(evidence?.scopeMode || '').toLowerCase();
-const intentionalPrimitiveStyle = Boolean(evidence?.intentionalPrimitiveStyle);
-const nonObjectIdentity = Boolean(evidence?.nonObjectIdentity);
-const nonObjectIdentityRationale = String(evidence?.nonObjectIdentityRationale || '').trim();
-const findings = [];
-const add = (id, severity, detail, objectId = null) => findings.push({ id, severity, detail, ...(objectId ? { objectId } : {}) });
-const severity = flagship ? 'error' : 'warning';
-const isPassLike = value => value === true || String(value || '').toLowerCase() === 'pass';
-const normalizeBand = value => ['near','mid','far'].includes(String(value || '').toLowerCase()) ? String(value).toLowerCase() : 'unknown';
-const unique = values => [...new Set(values.filter(Boolean))];
-
-const ids = objects.map(o => String(o?.id || '').trim()).filter(Boolean);
-const duplicateIds = unique(ids.filter((id, index) => ids.indexOf(id) !== index));
-if (objects.some(o => !String(o?.id || '').trim())) add('missing-stable-asset-id', severity, 'one or more runtime asset records are missing stable IDs');
-if (duplicateIds.length) add('duplicate-stable-asset-id', 'error', `duplicate runtime asset IDs: ${duplicateIds.join(', ')}`);
-
-const identity = objects.filter(o => Boolean(o?.identityCritical));
-const identityClassesCovered = unique(identity.map(o => String(o?.class || '').trim()));
-const uncoveredIdentityClasses = declaredIdentityClasses
-  ? declaredIdentityClasses.filter(cls => !identityClassesCovered.includes(cls))
-  : [];
-if (uncoveredIdentityClasses.length) {
-  add('identity-critical-class-uncovered', severity, `declared identity-critical class(es) have no matching runtime identityCritical object: ${uncoveredIdentityClasses.join(', ')}`);
-}
-const heroes = objects.filter(o => Boolean(o?.hero));
-const near = objects.filter(o => normalizeBand(o?.band) === 'near');
-const mid = objects.filter(o => normalizeBand(o?.band) === 'mid');
-const far = objects.filter(o => normalizeBand(o?.band) === 'far');
-const nearPlaceholders = near.filter(o => Boolean(o?.placeholder) || String(o?.representation || '').toLowerCase() === 'primitive-placeholder');
-const nearPlaceholderRatio = near.length ? nearPlaceholders.length / near.length : 0;
-
-if (flagship && !styleMode) add('asset-style-mode-missing', 'error', 'flagship runtime asset evidence must declare styleMode');
-if (flagship && !scopeMode) add('asset-scope-mode-missing', 'error', 'flagship runtime asset evidence must declare scopeMode');
-if (flagship && scopeMode !== 'non-object' && identity.length === 0) add('identity-critical-assets-missing', 'error', 'flagship spatial asset evidence has no identity-critical runtime object');
-if (flagship && scopeMode !== 'non-object' && heroes.length === 0) add('hero-asset-missing', 'error', 'flagship spatial asset evidence has no hero asset');
-if (flagship && scopeMode === 'world-scale' && families.length === 0) add('representative-family-missing', 'error', 'world-scale flagship requires at least one representative asset family');
-if (scopeMode === 'non-object' && (!nonObjectIdentity || !nonObjectIdentityRationale)) add('non-object-identity-unsubstantiated', flagship ? 'error' : 'warning', 'non-object asset scope requires an explicit runtime identity rationale');
-
-const primitiveExempt = intentionalPrimitiveStyle && ['low-poly','abstract'].includes(styleMode);
-if (!primitiveExempt && nearPlaceholderRatio > maxRatio) {
-  add('near-placeholder-ratio', severity, `near-field placeholder ratio ${(nearPlaceholderRatio * 100).toFixed(1)}% exceeds ${(maxRatio * 100).toFixed(1)}% (${nearPlaceholders.length}/${near.length})`);
-}
-for (const obj of identity) {
-  if ((obj.placeholder || obj.primitiveOnly) && !primitiveExempt) add('identity-critical-placeholder', severity, 'identity-critical asset is still primitive-only/placeholder', obj.id);
-  if (!isPassLike(obj.silhouetteReviewed)) add('identity-silhouette-unreviewed', severity, 'identity-critical asset lacks silhouette review', obj.id);
-  const views = Array.isArray(obj.evidenceViews) ? obj.evidenceViews : [];
-  if (flagship && views.length < 3) add('identity-multiview-insufficient', 'error', `identity-critical asset has ${views.length} evidence view(s); at least 3 are required`, obj.id);
-}
-for (const obj of near) {
-  if (!primitiveExempt && Boolean(obj.primitiveOnly) && !Boolean(obj.intentionalPrimitive)) add('near-primitive-only', severity, 'near-field object remains primitive-only without an intentional style exemption', obj.id);
-  if (!Number.isFinite(Number(obj.materialRegions)) || Number(obj.materialRegions) < 1) add('near-material-regions-missing', severity, 'near-field object has no validated material regions', obj.id);
-  if (!isPassLike(obj.contactValidated)) add('near-contact-unvalidated', severity, 'near-field object lacks support/contact validation', obj.id);
-  if (!String(obj.shadowPolicy || '').trim()) add('near-shadow-policy-missing', flagship ? 'error' : 'warning', 'near-field object has no shadow policy', obj.id);
-}
-
-for (const family of families) {
-  const familyId = String(family?.id || 'unnamed-family');
-  const memberCount = Number(family?.memberCount || 0);
-  const variantCount = Number(family?.variantCount || family?.variationCount || 0);
-  const views = Array.isArray(family?.evidenceViews) ? family.evidenceViews : [];
-  if (memberCount < 1) add('empty-asset-family', severity, `${familyId} has no members`);
-  if (scopeMode === 'world-scale' && memberCount >= 4 && variantCount < 2) add('asset-family-variation-thin', severity, `${familyId} repeats ${memberCount} members with fewer than 2 validated variants`);
-  if (flagship && views.length < 1) add('asset-family-evidence-missing', 'error', `${familyId} lacks representative family evidence`);
-}
-
-if (flagship && !isPassLike(evidence?.targetSizeReviewed)) add('asset-target-size-review-missing', 'error', 'flagship asset evidence was not reviewed at target presentation size');
-if (flagship && evidenceViews.length < 3 && scopeMode !== 'non-object') add('asset-evidence-view-set-small', 'error', `runtime asset evidence exposes only ${evidenceViews.length} global evidence view(s); at least 3 are required`);
-
-const errors = findings.filter(f => f.severity === 'error');
-const report = {
-  status: errors.length ? 'fail' : 'pass',
-  source: inputPath,
-  flagship,
-  contract: 'asset-fidelity/v1',
-  metrics: {
-    style_mode: styleMode || null,
-    scope_mode: scopeMode || null,
-    object_count: objects.length,
-    identity_critical_count: identity.length,
-    identity_critical_classes_declared: declaredIdentityClasses,
-    identity_critical_classes_uncovered: uncoveredIdentityClasses,
-    hero_asset_count: heroes.length,
-    family_count: families.length,
-    near_count: near.length,
-    mid_count: mid.length,
-    far_count: far.length,
-    near_placeholder_count: nearPlaceholders.length,
-    near_placeholder_ratio: Number(nearPlaceholderRatio.toFixed(4)),
-    max_near_placeholder_ratio: Number.isFinite(maxRatio) ? maxRatio : 0.15,
-    target_size_reviewed: isPassLike(evidence?.targetSizeReviewed),
-    evidence_view_count: evidenceViews.length,
-    intentional_primitive_style: intentionalPrimitiveStyle,
-    primitive_style_exempt: primitiveExempt
-  },
-  findings
-};
-if (outPath) {
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, JSON.stringify(report, null, 2));
-}
-console.log(JSON.stringify(report, null, 2));
-process.exit(report.status === 'pass' ? 0 : 1);
+const identity=objects.filter(o=>o?.identityCritical),identityClassesCovered=unique(identity.map(o=>String(o?.class||'').trim())),uncoveredIdentityClasses=declaredIdentityClasses?declaredIdentityClasses.filter(c=>!identityClassesCovered.includes(c)):[];
+if(uncoveredIdentityClasses.length)add('identity-critical-class-uncovered',severity,`declared identity-critical class(es) have no matching runtime identityCritical object: ${uncoveredIdentityClasses.join(', ')}`);
+const heroes=objects.filter(o=>o?.hero),near=objects.filter(o=>band(o?.band)==='near'),nearPlaceholders=near.filter(o=>o?.placeholder||String(o?.representation||'').toLowerCase()==='primitive-placeholder'),ratio=near.length?nearPlaceholders.length/near.length:0,primitiveExempt=intentionalPrimitiveStyle&&['low-poly','abstract'].includes(styleMode);
+if(flagship&&!styleMode)add('asset-style-mode-missing','error','flagship asset evidence must declare styleMode');if(flagship&&!scopeMode)add('asset-scope-mode-missing','error','flagship asset evidence must declare scopeMode');if(flagship&&scopeMode!=='non-object'&&!identity.length)add('identity-critical-assets-missing','error','object-centric flagship has no identity-critical runtime object');if(flagship&&scopeMode!=='non-object'&&!heroes.length)add('hero-asset-missing','error','object-centric flagship has no hero asset');if(flagship&&scopeMode==='world-scale'&&repeatedExpected&&!families.length)add('representative-family-missing','error','repeatedFamiliesExpected=true but no representative family exists');
+if(assetFidelityApplicable&&scopeMode==='non-object'&&(!nonObjectIdentity||!nonObjectIdentityRationale))add('non-object-identity-unsubstantiated',flagship?'error':'warning','asset-fidelity contract is entered (asset_fidelity.applicable=true) with scopeMode=non-object; that combination requires an explicit runtime identity rationale');
+if(!primitiveExempt&&ratio>maxRatio)add('near-placeholder-ratio-review','warning',`near placeholder ratio ${(ratio*100).toFixed(1)}% exceeds default ${(maxRatio*100).toFixed(1)}%; ratio is diagnostic, inspect salience/hero impact rather than failing by count alone`);
+for(const o of identity){if((o.placeholder||o.primitiveOnly)&&!primitiveExempt)add('identity-critical-placeholder',severity,'identity-critical asset is still primitive-only/placeholder',o.id);if(!passLike(o.silhouetteReviewed))add('identity-silhouette-unreviewed',severity,'identity-critical asset lacks silhouette review',o.id);const views=Array.isArray(o.evidenceViews)?o.evidenceViews:[];if(flagship&&views.length<3)add('identity-multiview-insufficient','error',`identity-critical asset has ${views.length} evidence view(s); at least 3 are required`,o.id);}
+for(const o of near){if(!primitiveExempt&&o.primitiveOnly&&!o.intentionalPrimitive)add('near-primitive-only',severity,'near object remains accidental primitive-only',o.id);if(!Number.isFinite(Number(o.materialRegions))||Number(o.materialRegions)<1)add('near-material-regions-missing',severity,'near object has no validated material regions',o.id);if(o.contactRequired!==false){const ce=o.contactEvidence;const linked=ce&&passLike(ce.status)&&String(ce.source||ce.audit||'').trim();if(!linked){if(passLike(o.contactValidated))add('near-contact-self-report-only','warning','contactValidated boolean is present but no spatial/contact audit evidence is linked',o.id);else add('near-contact-unvalidated',severity,'near support-relevant object lacks contact audit evidence',o.id);}}if(!String(o.shadowPolicy||'').trim())add('near-shadow-policy-missing',flagship?'error':'warning','near object has no shadow policy',o.id);}
+for(const f of families){const id=String(f?.id||'unnamed-family'),members=Number(f?.memberCount||0),variants=Number(f?.variantCount||f?.variationCount||0),views=Array.isArray(f?.evidenceViews)?f.evidenceViews:[];if(members<1)add('empty-asset-family',severity,`${id} has no members`);if(members>=4&&variants<2)add('asset-family-variation-thin',severity,`${id} repeats ${members} members with fewer than 2 variants`);if(flagship&&repeatedExpected&&views.length<1)add('asset-family-evidence-missing','error',`${id} lacks representative family evidence`);}
+if(flagship&&!passLike(evidence?.targetSizeReviewed))add('asset-target-size-review-missing','error','flagship evidence was not reviewed at target size');if(flagship&&evidenceViews.length<3&&scopeMode!=='non-object')add('asset-evidence-view-set-small','error',`only ${evidenceViews.length} global evidence view(s)`);
+const errors=findings.filter(f=>f.severity==='error'),report={status:errors.length?'fail':'pass',source:inputPath,flagship,contract:'asset-fidelity/v1.1',metrics:{style_mode:styleMode||null,scope_mode:scopeMode||null,object_count:objects.length,identity_critical_count:identity.length,identity_critical_classes_declared:declaredIdentityClasses,identity_critical_classes_uncovered:uncoveredIdentityClasses,hero_asset_count:heroes.length,family_count:families.length,repeated_families_expected:repeatedExpected,near_count:near.length,near_placeholder_count:nearPlaceholders.length,near_placeholder_ratio:Number(ratio.toFixed(4)),max_near_placeholder_ratio:maxRatio,target_size_reviewed:passLike(evidence?.targetSizeReviewed),evidence_view_count:evidenceViews.length,intentional_primitive_style:intentionalPrimitiveStyle},findings};if(outPath){fs.mkdirSync(path.dirname(outPath),{recursive:true});fs.writeFileSync(outPath,JSON.stringify(report,null,2));}console.log(JSON.stringify(report,null,2));process.exit(report.status==='pass'?0:1);

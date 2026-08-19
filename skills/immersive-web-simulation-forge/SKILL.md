@@ -103,9 +103,9 @@ Set `spatial.applicable=true` only when spatial structure is consequential; a 3D
 
 ### Flagship asset fidelity
 
-For `ambition=flagship` with `spatial.applicable=true`, require `asset_fidelity.applicable=true`. Record style/scope, visual target, identity-critical classes, hero assets, world-scale representative families, Near/Mid/Far authoring floors, primitive policy, material response, and runtime evidence.
+For `ambition=flagship` with `spatial.applicable=true`, enable `asset_fidelity.applicable=true` **when object/asset presentation materially contributes to identity or interaction**. A genuinely non-object spatial identity (field, volume, astronomical/procedural space, SDF environment, etc.) may keep object fidelity non-applicable when it records a concrete rationale; do not invent a hero mesh to satisfy a gate.
 
-Realistic or reference-driven flagships must name at least one reference-sensitive ObjectSpec path. Deliberate low-poly or abstract primitives are valid only as an explicit final style; unfinished primitive substitution is not. Read `references/asset-fidelity-gates.md`.
+Reality-grounded `realistic` work and `reference-driven` work are different. Only the latter inherently requires a specific reference-sensitive ObjectSpec path. Deliberate low-poly or abstract primitives are valid final styles; accidental blockout substitution is not. World-scale representative-family evidence is required when repeated families materially define the world, not as an abstract count. Read `references/asset-fidelity-gates.md`.
 
 ### Compute, provider, and delivery boundaries
 
@@ -170,15 +170,15 @@ Do not call creator-authored fixtures independent validation. Decision-support a
 
 ### Phase C — Freeze architecture and authority
 
-Identify authoritative, saved, derived, transient, render-only, and proposal-only state. Select representation, compute boundary, authoring routes, provider capabilities, component hierarchy, placement/contact authority, persistence/migration, and import/export contracts.
+Identify authoritative, saved, derived, transient, render-only, and proposal-only state. Select representation, compute boundary, authoring routes, provider capabilities, component hierarchy, placement/contact authority, **per-object support semantics and authoritative support/render surface relationship**, persistence/migration, and import/export contracts.
 
 For flagship spatial work, identify identity-critical Near/Mid/Far classes, permitted temporary placeholders, their completion-blocking replacement trigger, and what makes each class visibly finished. Extend strong existing renderer, solver, geometry, asset, and interaction capital. Read `references/stack-selection.md`, `references/systemic-rendering.md`, and the applicable authoring/data references.
 
 ### Phase D — Prove one vertical slice
 
-Build the smallest runnable slice with an honest default composition, one complete profile loop, one authoritative state affecting at least three consequential consumers, a valid starting case, result inspection and comparison/validation, failure/cancel/recovery, target-size clarity, and representative runtime cost.
+Build the smallest runnable slice with an honest default composition, one complete profile loop, and explicit authoritative state. When shared-state/systemic coupling is part of the product promise, prove that state through multiple consequential consumers; do not manufacture a third consumer for a single-purpose tool merely to satisfy a count. Include a valid starting case, result inspection and comparison/validation, failure/cancel/recovery, target-size clarity, and representative runtime cost.
 
-A spatial slice also needs the minimum global skeleton, one semantic region, one finished hero/identity asset, one representative repeated family for world-scale work, one placement/contact path, one runtime interaction, multi-view target-size evidence, and a deterministic spatial check.
+A spatial slice also needs the minimum global skeleton, one semantic region, one finished hero/identity **subject when object-centric**, a representative repeated family **when repeated families materially define a world-scale scene**, one support/placement path for contact-relevant content, one runtime interaction, multi-view target-size evidence, and a deterministic spatial check.
 
 Reject disconnected controls, unsupported simulations, scene-only editor mutations, untested exports, hidden low resolution, eye-balled consequential placement, or a hero region that still reads as a blockout. Do not expand until the slice is safe and worth expanding.
 
@@ -192,7 +192,7 @@ For worlds, build global structure before regional detail. Let shared semantic f
 
 Track CSS, output, expensive scene-pass, and native micro-interface sizes. Separate deterministic capture from performance measurement. Keep text, icons, plots, reticles, and fine overlays native or deliberately reconstructed.
 
-For consequential 3D work verify that the declared Asset Router reached runtime; review placeholder ratios, family variation, multi-view silhouette/proportion, hierarchy, materials, contact/penetration, collision/clearance, LOD assignment, and temporal stability.
+For consequential 3D work verify that the declared authoring route reached runtime; review placeholder salience, family variation when applicable, multi-view silhouette/proportion, hierarchy, materials, **support mode, raw support/contact probes, support-vs-render surface consistency, stability when consequential**, collision/clearance, LOD assignment, and temporal stability.
 
 Measure raw wall-frame intervals after warmup across default, representative, and stress states. Report p50/p95 and sample count; never derive FPS from clamped simulation delta. Software rendering proves correctness/stress behavior, not representative GPU performance. Read `references/measurement-integrity.md` and `references/perceptual-fidelity.md`.
 
@@ -202,7 +202,7 @@ Validate domain claims independently: known cases/invariants/convergence for sim
 
 For embedded work expose mount, update/load, resize, suspend, resume, and destroy. Scope styles/input, suspend hidden views, dispose resources, handle context loss, and prove repeatable mount/destroy.
 
-Expose `window.__FORGE__.prepareVerification`, `verifyWorkflow`, and `verifyDomain` when applicable. Spatial work may add `prepareEvidenceView`, `reportScene`, and `reportSpatialEvidence`; flagship object/world work adds `reportAssetEvidence`.
+Expose `window.__FORGE__.prepareVerification`, `verifyWorkflow`, and `verifyDomain` when applicable. Spatial work may add `prepareEvidenceView`, `reportScene`, and `reportSpatialEvidence`; flagship object/world work adds `reportAssetEvidence`. Pointer-look work exposes `getLookState()` returning `{yaw, pitch}`; traversable work adds `getInputProbeState()` returning at least `{position, forward, right}` so `--pointer-test` and `scripts/input_audit.mjs` can check actual view basis and real WASD displacement instead of trusting a self-report or a raw yaw sign. Read `references/interface-fidelity.md` for why numeric yaw sign is renderer-specific and is never the oracle by itself.
 
 Runtime hooks report what code believes, not visual proof. Before recording any visual, spatial, or asset-fidelity pass, open every referenced capture at target size and independently confirm the visible claim. The capture outranks a self-reported boolean or count.
 
@@ -210,13 +210,13 @@ Run `Capture → Inspect → Classify → Prioritize → Repair → Re-capture �
 
 Lock applicable passes in order: `structure → spatial → domain → interaction → appearance → performance → delivery`. Expensive jobs require IDs, cancellation, progress/indeterminate state, stale-result rejection, bounded resources, and recovery. Documents require dirty state, undo/redo, save confirmation, migration, invalid-import recovery, and deterministic serialization.
 
-Flagship completion requires at least two revisions after the full slice, browser execution when available, no ledger blocker, and a declared review status. Spatial flagships additionally require `asset_fidelity_validation=pass` and a passing flagship `.forge/asset-fidelity-audit.json`; object-based hero regions cannot hide behind `not-applicable`. Do not lower ambition to make a failed gate pass without explicit user acceptance.
+Flagship completion requires at least one complete evidence → repair → re-capture/regression cycle after the full slice, then as many additional cycles as unresolved blockers require; quality is not certified by a fixed revision count. Require browser execution when available, no ledger blocker, and a declared review status. Spatial flagships require a passing `.forge/spatial-audit.json`; when object fidelity is applicable they additionally require `asset_fidelity_validation=pass` and a passing flagship `.forge/asset-fidelity-audit.json`. Do not lower ambition to make a failed gate pass without explicit user acceptance.
 
-### Phase H — Package lean
+### Phase H — Keep the deliverable lean
 
 Include only application entry/runtime source, required assets/workers/WASM/schemas/presets/migrations/data, a short README, compact `VALIDATION.json`, and optionally one preview. Exclude `.forge/`, raw captures, copied audit tools, browser caches, `__pycache__`, discarded concepts, and duplicate bundles.
 
-Use `python scripts/forge.py package <project> --out <project>.zip`. Read `references/lean-delivery.md`.
+Leave the result as this lean project folder by default. Whether to also zip it is a user-prompt-level decision, not a default step: run `python scripts/forge.py package <project> --out <project>.zip` only when the user has asked for a zip or a packaged/downloadable deliverable. Read `references/lean-delivery.md`.
 
 ## 7. Apply specialized rules conditionally
 
@@ -226,7 +226,7 @@ Use `python scripts/forge.py package <project> --out <project>.zip`. Read `refer
 - Simulation labs: provide a valid preset, adjacent units, run/cancel, explicit solver failure, reproducible comparison, and machine-readable export.
 - Design studios: use a versioned document, constraints, stable IDs, shared selection, one history transaction per gesture, measurements, save state, and tested import/export.
 - Data/operations: expose provenance, freshness, filters, transformations, scope preview, proportional confirmation, in-flight state, last-known-good state, and recovery.
-- Interfaces: use one authored icon system, native-resolution micrographics, accessible labels, visible focus, and keyboard paths; avoid emoji/Unicode functional icons.
+- Interfaces/input: when functional UI is consequential, use a coherent authored icon system, native-resolution micrographics, accessible labels, visible focus, and keyboard paths. For traversable products verify semantic pointer direction and WASD against the actual view/player basis; do not infer correctness from Euler/yaw sign. Inversion settings are conditional UX, not a mandatory panel.
 - Performance: separate transfer, main-thread, solver/job, geometry/draw, pixel/post, memory, and provider costs; optimize the measured bottleneck before reducing visible or numerical quality.
 
 Read the profile and specialist references rather than expanding these rules in the core prompt.
@@ -243,7 +243,7 @@ Flagship spatial work also keeps `.forge/asset-fidelity-audit.json`. Do not call
 - `kits/authoring` and `analysis` provide history, constrained parameters, asset routing/fidelity policy, measurements, plots, and CSV.
 - `kits/world`, `spatial`, and `systems` provide regions, semantic fields, region-aware terrain/scatter, placement/contact validation, shared fields, and deterministic events.
 - `kits/three`, `canvas`, and `webgl` provide bounded renderers, picking, LOD policy, shared-field bridges, post/resolve, and layered field rendering.
-- `kits/input` and `ui` provide pointer-look and authored SVG icon foundations.
+- `kits/input` and `ui` provide semantic pointer-look, camera-basis locomotion, and authored SVG icon foundations.
 
 Use kits as starting capital, not mandatory architecture.
 
@@ -254,16 +254,13 @@ python scripts/forge.py doctor
 python scripts/forge.py init <project> --profile <profile> --ambition <ambition>
 python scripts/forge.py migrate <project>
 python scripts/forge.py audit <project>
-node scripts/browser_verify.mjs <project> --workflow-test --domain-test
+node scripts/browser_verify.mjs <project> --pointer-test --workflow-test --domain-test
 node scripts/browser_verify.mjs <project> --evidence-suite --evidence-views hero,alternate,interaction
+node scripts/input_audit.mjs <project> --out <project>/.forge/input-audit.json
+node scripts/spatial_audit.mjs <project> --strict-support --out <project>/.forge/spatial-audit.json
 node scripts/asset_fidelity_audit.mjs <project>/.forge/evidence.json --flagship
-python scripts/forge.py package <project> --out <project>.zip
 ```
 
-Use `check_html.mjs`, `fidelity_audit.mjs`, and `spatial_audit.mjs` as applicable. `browser_verify.mjs` requires Playwright even though non-browser workflows do not; run `doctor` and inspect `playwright_available` before promising browser or asset-fidelity evidence.
+Use `check_html.mjs` and `fidelity_audit.mjs` as applicable. `browser_verify.mjs` requires Playwright even though non-browser workflows do not; run `doctor` and inspect `playwright_available` before promising browser or asset-fidelity evidence. Only run `python scripts/forge.py package <project> --out <project>.zip` when the user asked for a zip.
 
 Lead final responses with the runnable product and completed workflow. State claim level, strongest domain evidence, strongest spatial/visual evidence when applicable, the most important limitation, and only quantitative claims supported by compact evidence.
-
-## 11. Preserve scope
-
-Do not turn the Forge into a proprietary foundation model, a Blender or vendor-required workflow, a reproduction of one external system, a requirement that every asset be generated or every product carry a WorldSpec, or a one-prompt production-world guarantee.

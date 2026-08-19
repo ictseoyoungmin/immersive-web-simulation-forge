@@ -1,6 +1,8 @@
 /**
- * Host-safe pointer look. Standard defaults: moving right turns right and
- * moving up looks up. Drag and pointer-lock paths share the same sign rules.
+ * Host-safe pointer look.
+ *
+ * `state.yaw` is a SEMANTIC yaw: positive means "turn the view right". Do not assume the
+ * renderer's Euler Y uses the same sign. Use `toRenderer` or an adapter helper when needed.
  */
 export function createPointerLook(options) {
   const element = options?.element;
@@ -24,22 +26,21 @@ export function createPointerLook(options) {
     target.addEventListener(type, handler, config);
     listeners.push(() => target.removeEventListener(type, handler, config));
   };
-  const emit = () => options.onChange?.({ yaw: state.yaw, pitch: state.pitch });
+  const emit = () => {
+    const semantic={yaw:state.yaw,pitch:state.pitch};
+    const renderer = typeof options.toRenderer === 'function' ? options.toRenderer(semantic) : null;
+    options.onChange?.({ ...semantic, semanticYaw:state.yaw, semanticPitch:state.pitch, renderer });
+  };
 
   function applyDelta(dx, dy) {
-    // Positive mouse X means turn right in the default convention.
     state.yaw += dx * state.sensitivityX * (state.invertX ? -1 : 1);
-    // Screen Y grows downward, so positive dy normally lowers the view.
     state.pitch -= dy * state.sensitivityY * (state.invertY ? -1 : 1);
     state.pitch = Math.max(minPitch, Math.min(maxPitch, state.pitch));
     emit();
   }
 
   on(element, 'pointerdown', event => {
-    state.dragging = true;
-    state.pointerId = event.pointerId;
-    state.x = event.clientX;
-    state.y = event.clientY;
+    state.dragging = true; state.pointerId = event.pointerId; state.x = event.clientX; state.y = event.clientY;
     try { element.setPointerCapture?.(event.pointerId); } catch {}
   });
   on(window, 'pointerup', event => {
@@ -49,16 +50,9 @@ export function createPointerLook(options) {
     state.pointerId = null;
   });
   on(window, 'pointermove', event => {
-    if (document.pointerLockElement === element) {
-      applyDelta(event.movementX || 0, event.movementY || 0);
-      return;
-    }
+    if (document.pointerLockElement === element) { applyDelta(event.movementX || 0, event.movementY || 0); return; }
     if (!state.dragging || event.pointerId !== state.pointerId) return;
-    const dx = event.clientX - state.x;
-    const dy = event.clientY - state.y;
-    state.x = event.clientX;
-    state.y = event.clientY;
-    applyDelta(dx, dy);
+    const dx=event.clientX-state.x, dy=event.clientY-state.y; state.x=event.clientX; state.y=event.clientY; applyDelta(dx,dy);
   });
 
   async function requestLock() {
@@ -71,11 +65,12 @@ export function createPointerLook(options) {
       try { element.requestPointerLock(); return true; } catch { return false; }
     }
   }
-
-  function setInversion({ x = state.invertX, y = state.invertY } = {}) {
-    state.invertX = Boolean(x);
-    state.invertY = Boolean(y);
-  }
+  function setInversion({ x = state.invertX, y = state.invertY } = {}) { state.invertX=Boolean(x); state.invertY=Boolean(y); }
   function destroy() { listeners.splice(0).forEach(off => off()); }
   return { state, applyDelta, requestLock, setInversion, destroy };
+}
+
+/** Map semantic positive-right yaw to the common Three.js camera Euler convention. */
+export function threeJsEulerFromSemanticLook({yaw=0,pitch=0}={}) {
+  return {x:pitch,y:-yaw,z:0,order:'YXZ'};
 }

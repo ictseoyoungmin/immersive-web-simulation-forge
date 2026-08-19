@@ -19,7 +19,7 @@ PLAN_LOCATIONS = (Path('.forge/FORGE_PLAN.json'), Path('FORGE_PLAN.json'))
 VALIDATION_LOCATIONS = (Path('.forge/VALIDATION.json'), Path('VALIDATION.json'))
 KNOWN_FORGE_TOOLS = {
     'score_guard.py', 'visual_diff.py', 'audit_project.py', 'build_inline.py',
-    'browser_verify.py', 'static_check.py', 'make_validation_report.py', 'fidelity_audit.mjs', 'asset_fidelity_audit.mjs'
+    'browser_verify.py', 'static_check.py', 'make_validation_report.py', 'fidelity_audit.mjs', 'asset_fidelity_audit.mjs', 'spatial_audit.mjs', 'input_audit.mjs'
 }
 EXCLUDED_PARTS = {'.git', '.forge', 'evidence', 'coverage', 'node_modules', '__pycache__', '.pytest_cache', '.playwright'}
 COMMON_RUNTIME_FILES = {
@@ -395,8 +395,8 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
     system = plan.get('system', {})
     consumers = system.get('consumers', []) if isinstance(system, dict) else []
     consequential_consumers = [item for item in consumers if isinstance(item, dict) and nonempty(item.get('name')) and nonempty(item.get('consequence'))]
-    min_consumers = 3 if ambition in {'showcase', 'flagship'} else 2
-    checks.append(check('consequential canonical-state consumers', len(consequential_consumers) >= min_consumers, f'{len(consequential_consumers)} consequential consumer(s), need {min_consumers}'))
+    min_consumers = 2
+    checks.append(check('consequential canonical-state consumers', len(consequential_consumers) >= min_consumers, f'{len(consequential_consumers)} consequential consumer(s), need {min_consumers}; add more only when systemic coupling is part of the promise'))
 
     spatial = plan.get('spatial', {}) if isinstance(plan, dict) else {}
     spatial_applicable = bool(spatial.get('applicable', False)) if isinstance(spatial, dict) else False
@@ -444,8 +444,9 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
     if spatial_applicable and ambition == 'flagship':
         checks.append(check('multi-angle evidence plan', bool(critical_subjects) and len(required_views) >= 2, f'subjects={len(critical_subjects)}; views={len(required_views)}'))
         vertical = construction_evidence.get('vertical_slice', {}) if isinstance(construction_evidence, dict) else {}
-        vertical_ok = bool(vertical.get('global_skeleton')) and nonempty(vertical.get('representative_region')) and nonempty(vertical.get('hero_asset')) and bool(vertical.get('placement_contact_path')) and bool(vertical.get('runtime_interaction'))
-        checks.append(check('world vertical slice contract', vertical_ok, f'global={bool(vertical.get("global_skeleton"))}; region={vertical.get("representative_region") or "missing"}; hero={vertical.get("hero_asset") or "missing"}; contact={bool(vertical.get("placement_contact_path"))}; interaction={bool(vertical.get("runtime_interaction"))}'))
+        hero_subject = vertical.get('hero_asset') or vertical.get('hero_subject')
+        vertical_ok = bool(vertical.get('global_skeleton')) and nonempty(vertical.get('representative_region')) and nonempty(hero_subject) and bool(vertical.get('placement_contact_path')) and bool(vertical.get('runtime_interaction'))
+        checks.append(check('world vertical slice contract', vertical_ok, f'global={bool(vertical.get("global_skeleton"))}; region={vertical.get("representative_region") or "missing"}; hero-subject={hero_subject or "missing"}; contact={bool(vertical.get("placement_contact_path"))}; interaction={bool(vertical.get("runtime_interaction"))}'))
     bad_reference_objects = []
     for item in reference_objects if isinstance(reference_objects, list) else []:
         if not isinstance(item, dict) or not nonempty(item.get('id')) or not nonempty(item.get('object_spec')) or not bool(item.get('critical_views')):
@@ -456,17 +457,19 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
         checks.append(check('reference-critical object contract', not bad_reference_objects, f'objects={len(reference_objects)}; invalid={len(bad_reference_objects)}'))
 
     asset_fidelity = plan.get('asset_fidelity', {}) if isinstance(plan, dict) else {}
-    flagship_asset_gate = ambition == 'flagship' and spatial_applicable
+    asset_applicable = bool(asset_fidelity.get('applicable', False))
+    non_object_rationale = str(asset_fidelity.get('non_object_identity_rationale', '')).strip()
+    if ambition == 'flagship' and spatial_applicable and not asset_applicable:
+        checks.append(check('flagship asset fidelity applicability', bool(non_object_rationale), non_object_rationale or 'object fidelity disabled without a non-object spatial-identity rationale'))
+    flagship_asset_gate = ambition == 'flagship' and spatial_applicable and asset_applicable
     if flagship_asset_gate:
-        asset_applicable = bool(asset_fidelity.get('applicable', False))
         style_mode = str(asset_fidelity.get('style_mode', '')).strip().lower()
         scope_mode = str(asset_fidelity.get('scope_mode', '')).strip().lower()
-        checks.append(check('flagship asset fidelity enabled', asset_applicable, 'enabled' if asset_applicable else 'flagship spatial work requires asset_fidelity.applicable=true'))
         checks.append(check('asset style contract', style_mode in ASSET_STYLE_MODES and nonempty(asset_fidelity.get('visual_target')), f'style={style_mode or "missing"}; target={"yes" if nonempty(asset_fidelity.get("visual_target")) else "missing"}'))
         checks.append(check('asset scope contract', scope_mode in ASSET_SCOPE_MODES, scope_mode or 'missing'))
-        if profile == 'full-window-world':
-            checks.append(check('world-scale asset scope', scope_mode == 'world-scale', f'full-window-world flagship requires world-scale; got {scope_mode or "missing"}'))
-        non_object_allowed = scope_mode == 'non-object' and profile not in {'full-window-world','game-arena'} and style_mode in {'abstract','technical'} and nonempty(asset_fidelity.get('non_object_identity_rationale'))
+        if profile == 'full-window-world' and scope_mode != 'non-object':
+            checks.append(check('world-scale asset scope', scope_mode == 'world-scale', f'object-centric full-window-world flagship requires world-scale; got {scope_mode or "missing"}'))
+        non_object_allowed = scope_mode == 'non-object' and nonempty(asset_fidelity.get('non_object_identity_rationale'))
         object_based = scope_mode != 'non-object'
         if scope_mode == 'non-object':
             checks.append(check('non-object asset rationale', non_object_allowed, str(asset_fidelity.get('non_object_identity_rationale', '')).strip() or 'missing/invalid non-object exemption'))
@@ -475,8 +478,9 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
             hero_assets = asset_fidelity.get('hero_assets', []) if isinstance(asset_fidelity, dict) else []
             representative_families = asset_fidelity.get('representative_families', []) if isinstance(asset_fidelity, dict) else []
             checks.append(check('identity-critical asset coverage', bool(identity_classes) and bool(hero_assets), f'classes={len(identity_classes)}; heroes={len(hero_assets)}'))
-            if scope_mode == 'world-scale':
-                checks.append(check('representative asset families', bool(representative_families), f'families={len(representative_families)}'))
+            repeated_families_expected = bool(asset_fidelity.get('repeated_families_expected', False))
+            if scope_mode == 'world-scale' and repeated_families_expected:
+                checks.append(check('representative asset families', bool(representative_families), f'families={len(representative_families)}; repeated families expected'))
             band_budgets = asset_fidelity.get('band_budgets', {}) if isinstance(asset_fidelity, dict) else {}
             required_bands = ('near','mid','far') if scope_mode == 'world-scale' else ('near',)
             required_band_fields = ('representation','geometry','materials','contact','shadows','variation')
@@ -490,7 +494,7 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
             intentional_primitive = bool(primitive.get('intentional_primitive_style'))
             primitive_style_ok = not intentional_primitive or style_mode in {'low-poly','abstract'}
             max_placeholder = finite_number(primitive.get('near_placeholder_ratio_max'))
-            ratio_policy_ok = max_placeholder is not None and 0 <= max_placeholder <= (1.0 if intentional_primitive and primitive_style_ok else 0.20)
+            ratio_policy_ok = max_placeholder is not None and 0 <= max_placeholder <= 1.0
             checks.append(check('primitive placeholder policy', primitive_style_ok and ratio_policy_ok and nonempty(primitive.get('replacement_trigger')), f'intentional={intentional_primitive}; style={style_mode}; max={max_placeholder}; replacement={"yes" if nonempty(primitive.get("replacement_trigger")) else "missing"}'))
             material_contract = asset_fidelity.get('material_contract', {}) if isinstance(asset_fidelity, dict) else {}
             material_ok = bool(material_contract.get('families')) and nonempty(material_contract.get('roughness_response'))
@@ -500,11 +504,11 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
             evidence_req = asset_fidelity.get('evidence_requirements', {}) if isinstance(asset_fidelity, dict) else {}
             hero_views = evidence_req.get('hero_views', []) if isinstance(evidence_req, dict) else []
             evidence_contract_ok = len(hero_views) >= 3 and bool(evidence_req.get('target_size_review')) and bool(evidence_req.get('runtime_asset_report'))
-            if scope_mode == 'world-scale':
+            if scope_mode == 'world-scale' and bool(asset_fidelity.get('repeated_families_expected', False)):
                 evidence_contract_ok = evidence_contract_ok and bool(evidence_req.get('family_views'))
             checks.append(check('asset evidence contract', evidence_contract_ok, f'hero views={len(hero_views)}; family views={len(evidence_req.get("family_views", []))}; target-size={bool(evidence_req.get("target_size_review"))}; runtime-report={bool(evidence_req.get("runtime_asset_report"))}'))
-            if style_mode in {'realistic','reference-driven'}:
-                checks.append(check('reference-sensitive object coverage', bool(reference_objects), f'reference-critical objects={len(reference_objects)}; realistic/reference-driven flagship cannot mark all object fidelity not-applicable'))
+            if style_mode == 'reference-driven':
+                checks.append(check('reference-sensitive object coverage', bool(reference_objects), f'reference-critical objects={len(reference_objects)}; reference-driven flagship requires specific reference evidence'))
 
     visual_raw = plan.get('visual', {})
     visual = visual_raw if isinstance(visual_raw, dict) else {}
@@ -563,9 +567,15 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
         if bool(input_contract.get('pointer_look', False)):
             horizontal = str(input_contract.get('horizontal_default', '')).lower()
             vertical = str(input_contract.get('vertical_default', '')).lower()
-            checks.append(check('pointer direction reviewed', bool(input_contract.get('direction_reviewed', False)), 'reviewed' if input_contract.get('direction_reviewed') else 'not reviewed'))
+            checks.append(check('pointer direction reviewed', bool(input_contract.get('direction_reviewed', False)), 'reviewed semantically' if input_contract.get('direction_reviewed') else 'not reviewed'))
             checks.append(check('pointer look convention', horizontal in {'standard','inverted'} and vertical in {'standard','inverted'}, f'x={horizontal}, y={vertical}'))
             checks.append(check('drag/pointer-lock parity', bool(input_contract.get('drag_pointerlock_parity', False)), 'matched' if input_contract.get('drag_pointerlock_parity') else 'not verified'))
+        if bool(input_contract.get('locomotion', False)):
+            frame = str(input_contract.get('movement_frame', '')).lower()
+            keys = [input_contract.get(k) for k in ('forward_key','backward_key','left_key','right_key')]
+            locomotion_ok = frame in {'camera-planar','world'} and all(nonempty(k) for k in keys) and bool(input_contract.get('movement_direction_reviewed', False))
+            checks.append(check('locomotion direction contract', locomotion_ok, f'frame={frame or "missing"}; keys={keys}; reviewed={bool(input_contract.get("movement_direction_reviewed"))}'))
+            checks.append(check('diagonal movement policy', bool(input_contract.get('diagonal_speed_normalized', False)), 'normalized' if input_contract.get('diagonal_speed_normalized') else 'not normalized/reviewed'))
 
     static_fidelity = run_fidelity_audit(root, ambition == 'flagship')
     if static_fidelity:
@@ -582,7 +592,7 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
     domain_blockers = domain_review.get('unresolved_blockers', []) if isinstance(domain_review, dict) else []
     runtime_blockers = runtime_review.get('unresolved_blockers', []) if isinstance(runtime_review, dict) else []
     if ambition in {'showcase', 'flagship'}:
-        checks.append(check('implementation hardening', rounds >= 2, f'{rounds} revision round(s)'))
+        checks.append(check('implementation hardening', rounds >= 1, f'{rounds} evidence/repair round(s); continue while blockers remain'))
         product_fields = ('default_route_reviewed', 'first_use_clear', 'primary_workflow_complete', 'art_direction_coherent', 'ui_density_acceptable')
         incomplete_product = [key for key in product_fields if product_outcome.get(key) is not True]
         checks.append(check('product outcome ledger', not incomplete_product and not product_blockers, 'complete' if not incomplete_product and not product_blockers else f'incomplete={incomplete_product}; blockers={len(product_blockers)}'))
@@ -687,9 +697,17 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
             if spatial_applicable:
                 spatial_status = str(spatial_validation.get('status', '')).lower()
                 spatial_defects = spatial_validation.get('unresolved_defects', []) if isinstance(spatial_validation, dict) else []
-                spatial_checks = ('region_continuity','placement','contact','collision','navigation_clearance','lod_assignment')
+                spatial_checks = ('region_continuity','placement','contact','collision','navigation_clearance','lod_assignment','support_semantics','support_surface_consistency')
                 spatial_ok = spatial_status == 'pass' and all(str(spatial_validation.get(key, '')).lower() in {'pass','not-applicable'} for key in spatial_checks) and not spatial_defects
                 checks.append(check('runtime spatial validation', spatial_ok, f'status={spatial_status or "missing"}; defects={len(spatial_defects)}'))
+                spatial_audit_path = root / '.forge' / 'spatial-audit.json'
+                spatial_audit = {}
+                if spatial_audit_path.exists():
+                    try: spatial_audit = json.loads(spatial_audit_path.read_text(encoding='utf-8'))
+                    except Exception: spatial_audit = {}
+                spatial_audit_ok = bool(spatial_audit) and str(spatial_audit.get('status','')).lower() == 'pass' and bool(spatial_audit.get('strictSupport', False))
+                spatial_audit_detail = f'{spatial_audit_path}; strictSupport={spatial_audit.get("strictSupport")}' if spatial_audit else 'missing .forge/spatial-audit.json'
+                checks.append(check('runtime spatial audit evidence', spatial_audit_ok, spatial_audit_detail))
             if uses_generative_pipeline or reference_objects:
                 construction_status = str(construction_validation.get('status', '')).lower()
                 construction_defects = construction_validation.get('unresolved_defects', []) if isinstance(construction_validation, dict) else []
@@ -705,14 +723,14 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
                 else:
                     asset_checks = ('identity_critical_coverage','hero_asset_evidence','near_band_quality','material_validation','contact_validation','placeholder_audit','multi_view_coverage','target_size_review','runtime_asset_report')
                 runtime_asset_ok = asset_status == 'pass' and all(str(asset_fidelity_validation.get(key, '')).lower() == 'pass' for key in asset_checks) and not asset_defects
-                if scope_mode == 'world-scale':
+                if scope_mode == 'world-scale' and bool(asset_fidelity.get('repeated_families_expected', False)):
                     runtime_asset_ok = runtime_asset_ok and str(asset_fidelity_validation.get('representative_family_evidence', '')).lower() == 'pass'
                 max_placeholder = finite_number(asset_fidelity.get('primitive_policy', {}).get('near_placeholder_ratio_max')) if isinstance(asset_fidelity, dict) else None
                 measured_ratio = finite_number(asset_fidelity_validation.get('near_placeholder_ratio'))
                 intentional = bool(asset_fidelity.get('primitive_policy', {}).get('intentional_primitive_style')) if isinstance(asset_fidelity, dict) else False
-                if scope_mode != 'non-object' and not intentional:
-                    runtime_asset_ok = runtime_asset_ok and measured_ratio is not None and max_placeholder is not None and measured_ratio <= max_placeholder + 1e-9
-                checks.append(check('runtime asset fidelity validation', runtime_asset_ok, f'status={asset_status or "missing"}; ratio={measured_ratio}; max={max_placeholder}; defects={len(asset_defects)}'))
+                if scope_mode != 'non-object' and not intentional and measured_ratio is not None and max_placeholder is not None and measured_ratio > max_placeholder + 1e-9:
+                    checks.append(check('near placeholder ratio review', False, f'ratio={measured_ratio}; advisory max={max_placeholder}; inspect salience/identity impact', severity='warning'))
+                checks.append(check('runtime asset fidelity validation', runtime_asset_ok, f'status={asset_status or "missing"}; ratio={measured_ratio}; advisory max={max_placeholder}; defects={len(asset_defects)}'))
                 audit_path = root / '.forge' / 'asset-fidelity-audit.json'
                 audit_report = {}
                 if audit_path.exists():
@@ -739,6 +757,13 @@ def audit_project(root: Path, for_package: bool = False) -> dict[str, Any]:
             if bool(input_contract.get('pointer_look', False)):
                 checks.append(check('pointer direction runtime review', str(validation_input.get('pointer_direction_review', '')).lower() == 'pass', str(validation_input.get('pointer_direction_review', 'not-run'))))
                 checks.append(check('pointer lock/drag runtime parity', str(validation_input.get('drag_pointerlock_parity', '')).lower() == 'pass', str(validation_input.get('drag_pointerlock_parity', 'not-run'))))
+            if bool(input_contract.get('locomotion', False)):
+                checks.append(check('WASD movement runtime review', str(validation_input.get('movement_direction_review', '')).lower() == 'pass', str(validation_input.get('movement_direction_review', 'not-run'))))
+                if str(input_contract.get('movement_frame', '')).lower() == 'camera-planar':
+                    checks.append(check('camera-relative movement runtime review', str(validation_input.get('camera_relative_movement_review', '')).lower() == 'pass', str(validation_input.get('camera_relative_movement_review', 'not-run'))))
+                checks.append(check('diagonal speed runtime review', str(validation_input.get('diagonal_speed_review', '')).lower() == 'pass', str(validation_input.get('diagonal_speed_review', 'not-run'))))
+                if bool(input_contract.get('player_grounded', False)):
+                    checks.append(check('player grounding runtime review', str(validation_input.get('grounding_review', '')).lower() == 'pass', str(validation_input.get('grounding_review', 'not-run'))))
 
             measured = bool(performance.get('measured', False))
             measurement_block = str(performance.get('measurement_block', '')).strip()
@@ -1022,18 +1047,22 @@ def doctor() -> dict[str, Any]:
         'kits/systems/shared-field.mjs','kits/systems/world-director.mjs',
         'kits/three/panel-renderer.mjs','kits/three/shared-field-texture.mjs',
         'kits/three/lod-bands.mjs','kits/three/post-chain.mjs','kits/canvas/field-renderer.mjs',
-        'kits/input/pointer-look.mjs','kits/ui/icon-system.mjs','kits/webgl/resolve-pass.mjs',
+        'kits/input/pointer-look.mjs','kits/input/locomotion.mjs','kits/ui/icon-system.mjs','kits/webgl/resolve-pass.mjs',
         'kits/compute/task-runner.mjs','kits/authoring/history-store.mjs',
         'kits/authoring/parameter-store.mjs','kits/three/picking-gizmo.mjs',
         'kits/analysis/measurement-series.mjs','kits/io/project-codec.mjs',
         'kits/world/semantic-region-field.mjs','kits/world/region-graph.mjs','kits/world/region-heightfield.mjs','kits/world/scatter-policy.mjs',
         'kits/spatial/surface-anchor.mjs','kits/spatial/placement-solver.mjs','kits/spatial/contact-validator.mjs','kits/authoring/asset-router.mjs','kits/authoring/asset-fidelity-policy.mjs',
-        'scripts/asset_fidelity_audit.mjs','references/asset-fidelity-gates.md',
+        'scripts/asset_fidelity_audit.mjs','scripts/input_audit.mjs','references/asset-fidelity-gates.md',
         'references/perceptual-fidelity.md','references/interface-fidelity.md',
         'references/experience-concentration.md','references/measurement-integrity.md',
         'references/physics-simulation.md','references/parametric-design.md',
         'references/editor-interaction.md','references/compute-data-pipeline.md',
-        'references/world-authoring.md','references/asset-authoring.md','references/spatial-reconciliation.md','references/evidence-driven-hardening.md'
+        'references/world-authoring.md','references/asset-authoring.md','references/spatial-reconciliation.md','references/evidence-driven-hardening.md',
+        'references/lean-delivery.md','references/profiles.md','references/stack-selection.md','references/systemic-rendering.md',
+        'references/wave-and-fluid-surfaces.md','references/wind-and-atmospheric-flow.md','references/fire-smoke-and-reactive-flow.md',
+        'references/lighting-and-radiance.md','references/surface-scattering-and-pbr-materials.md','references/real-time-global-illumination.md',
+        'references/reference-light-transport-and-path-tracing.md','references/volumetric-rendering.md'
     ]
     missing = [name for name in required if not (SKILL_ROOT / name).exists()]
     py_error = None

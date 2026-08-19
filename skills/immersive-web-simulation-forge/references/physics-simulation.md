@@ -6,65 +6,69 @@ Read this reference for simulation laboratories, scientific visualizations, engi
 
 Classify the product before implementation:
 
-- `visual-concept`: motion is illustrative and may not support physical claims;
-- `educational`: qualitative behavior is intended, with declared simplifications;
-- `decision-support`: outputs may affect a user decision and require calibrated evidence;
-- `engineering`: quantitative outputs require domain review, tolerances, and benchmark evidence.
+- `visual-concept` — appearance/interaction is primary; physically informed analytic, reduced-order, procedural, or authored models are allowed when their limits are clear;
+- `educational` — qualitative causal behavior is intended and governing relationships should be explicit;
+- `decision-support` — outputs may affect a decision and require calibrated evidence;
+- `engineering` — quantitative outputs require domain review, tolerances, and benchmark evidence.
 
-Never promote a visually plausible animation into a physical claim. Display the claim level and important limitations near results when misunderstanding is plausible.
+Never promote a visually plausible animation into a physical claim. Claim level controls certification burden, not permission to mislabel arbitrary animation as simulation.
 
-Claim level is a certification-burden axis, not a model-fidelity axis. A well-known counterexample is game physics: production games routinely integrate real force/drag/buoyancy relationships, real light attenuation, real population/rate dynamics, yet almost never publish tolerances or benchmark validation for them — that is `educational`, not `engineering`, and it is still genuinely quantitative. Lowering the claim level below `engineering` relaxes which rung of the validation ladder is required (rung 5, expert-reviewed qualitative check, becomes acceptable); it does not relax the "Domain contract" requirements below — authoritative state variables, units, a real solver/integrator, and conserved/monotonic quantities are expected regardless of claim level. If a simulation feels arbitrary or unconvincing, first check whether the claim level was misread as license to replace the governing relationship with a heuristic; that is an implementation defect, not a consequence of choosing `educational` correctly.
+A `visual-concept` does **not** automatically require a heavy numerical solver. It does require truthful language and coherent causal state when the product claims that one phenomenon drives another. A reduced analytic or procedural field can be the right model for an artistic wind field; it becomes a defect only when the product implies CFD-grade flow or another stronger claim.
 
 ## Domain contract
 
-Record:
+Record as applicable:
 
-- authoritative state variables and their units;
+- authoritative state variables and units;
 - coordinate frame, handedness, axis conventions, and reference origin;
-- inputs, outputs, assumptions, initial conditions, and boundary conditions;
-- solver or integrator, timestep policy, iteration limits, and stopping conditions;
-- stability condition or reason the chosen step is safe;
-- conserved or monotonic quantities that should be checked;
-- expected uncertainty, discretization error, and validity envelope.
+- inputs, outputs, assumptions, initial/boundary conditions;
+- solver/integrator or direct/reduced model;
+- timestep/update policy and failure limits when numerical integration is used;
+- conserved, monotonic, symmetry, or limiting-case quantities that should be checked;
+- expected uncertainty/discretization/model error and validity envelope.
 
-Use one unit system internally. Convert only at input/output boundaries. Reject dimensionally invalid combinations instead of silently coercing them.
+Use one unit system internally. Convert at boundaries. Reject dimensionally invalid combinations instead of silently coercing them.
 
-## Canonical technique floor
+## Canonical technique disclosure
 
-Some domains already have an established standard numerical technique: spectral (FFT) synthesis for ocean/water surfaces, SPH or position-based dynamics for free-surface or granular fluids, mass-spring or FEM for cloth and soft bodies, Verlet/RK4 integrators for rigid-body motion. Declare this every time, not only when it is convenient:
+Do not infer a universal canonical method from a broad phenomenon label such as `fluid`, `cloth`, `rigid body`, `fire`, or `GI`. Many domains have several accepted method families whose suitability depends on regime, scale, interaction, dimensionality, accuracy target, and runtime budget.
 
-- `domain.canonical_technique` — the established technique's identity (a short label, e.g. "Tessendorf/Horvath spectral synthesis (inverse FFT)"), left empty only when `technique_conformance=not-applicable`;
-- `domain.implemented_technique` — what was actually built, in the same short-label shape as `canonical_technique` so the two are comparable at a glance;
-- `domain.technique_conformance` — one of `conformant` (implemented technique matches the canonical one), `approximation` (a cheaper version of the same technique family), `alternative` (a genuinely different technique was used), or `not-applicable` (no established canonical technique exists for this phenomenon);
-- `domain.authoritative_model` — the full prose description of what was built (parameters, resolution, solver details); this stays free text and is not compared character-for-character against `canonical_technique`;
-- `domain.technique_deviation_reason` — required whenever `technique_conformance` is not `conformant`. For `approximation`/`alternative` it records the deviation and its visible or behavioral cost — for example, "8 fixed directional sine components instead of FFT-synthesized spectrum; visible cost: no organic chop at oblique angles, foam is a decorative noise field rather than slope-derived, and the pattern repeats past ~200m." For `not-applicable` it records why no established technique applies to this phenomenon.
-
-`technique_conformance` is required for every product, the same as `claim_level` — it is a declared judgment the agent makes, not something the harness infers by diffing `canonical_technique` against `authoritative_model`: an honest, detailed `authoritative_model` will rarely match a short technique label verbatim even when fully conformant, and a lazy copy-paste of the label into `authoritative_model` would otherwise look conformant while recording nothing useful.
-
-This is not a rung on the validation ladder and it is not gated by profile: a `full-window-world` ocean, weather system, or crowd sim that reads as physically simulated owes the same disclosure as a `simulation-lab`. A silent substitution — a small hand-tuned approximation shipped while the product's language, README, or UI implies spectral/FFT/physically-simulated quality — is the same defect the claim-level note above warns against, just surfacing at the technique level instead of the certification level. Leaving `canonical_technique` empty is correct when no established technique exists for the phenomenon; it is not a way to avoid naming one that does. Read `references/wave-and-fluid-surfaces.md` for the water/fluid-surface case in detail.
-
-## Validation ladder
-
-Use the strongest available oracle:
-
-1. closed-form or manufactured solution;
-2. published benchmark or trusted reference implementation;
-3. convergence study under spatial/temporal refinement;
-4. conservation, symmetry, invariance, or limiting-case checks;
-5. expert-reviewed qualitative behavior only when stronger evidence is unavailable.
-
-For decision-support or engineering claims, one attractive run is not evidence. Record at least one known case, tolerance, result, and limitation. State when validation is blocked.
-
-## Runtime architecture
-
-Keep render cadence independent from solver cadence. Use a Worker, WASM module, WebGPU compute path, or server job when computation can block interaction. Long-running work requires cancellation, progress, bounded resource use, deterministic inputs or a recorded seed, and a recoverable failure state.
-
-Treat dropped simulation time, non-convergence, NaN/Inf, energy drift, and out-of-domain inputs as explicit states. Do not continue rendering a plausible result after the solver has failed.
-
-## Product loop
+When a specialist Forge reference exists, **that specialist reference owns regime selection and any canonical-technique floor**. For example, `wave-and-fluid-surfaces.md` distinguishes open-water spectral waves, shallow-water flow, and local free-surface liquid rather than declaring one solver for all water.
 
 Use:
 
+- `domain.canonical_technique` — an established technique/family only when the product's narrow regime has a defensible canonical/reference floor;
+- `domain.implemented_technique` — what was actually built, as a short identity label;
+- `domain.technique_conformance` — `conformant`, `approximation`, `alternative`, or `not-applicable`;
+- `domain.authoritative_model` — the detailed model/solver description;
+- `domain.technique_deviation_reason` — required when conformance is not `conformant`.
+
+`not-applicable` is correct when no single established canonical technique is defensible for the selected regime. It is not an escape hatch: still record the implemented technique and explain why method choice is product/regime dependent.
+
+A silent substitution remains a defect. If the product says `spectral ocean`, `physically simulated smoke`, or equivalent, the implementation must either match that claim or disclose the approximation/alternative and its visible/behavioral cost.
+
+## Validation ladder
+
+Use the strongest available oracle appropriate to the claim:
+
+1. closed-form or manufactured solution;
+2. published benchmark or trusted independent reference implementation;
+3. convergence/refinement study;
+4. conservation, symmetry, invariance, monotonicity, or limiting-case checks;
+5. expert-reviewed qualitative behavior when stronger evidence is unavailable and the claim permits it.
+
+For decision-support or engineering claims, one attractive run is not evidence. Record known cases, tolerances, results, and limitations. State when validation is blocked.
+
+## Runtime architecture
+
+Keep render cadence independent from solver cadence. Use Worker/WASM/WebGPU/server execution when computation can block interaction. Long-running work requires cancellation, progress or an honest indeterminate state, bounded resources, replayable inputs/seed where relevant, stale-result rejection, and recovery.
+
+Treat non-convergence, NaN/Inf, dropped simulation time beyond policy, energy drift outside tolerance, and out-of-domain inputs as explicit states. Do not keep displaying a plausible result after the model has failed.
+
+## Product loop
+
+For a simulation laboratory use:
+
 `question → configure → run → inspect → compare → export/reset`
 
-Provide presets or a valid starting case. Keep parameter units adjacent to controls. Show causality in both the hero visualization and native-resolution plots/tables. Preserve run configurations so comparisons are reproducible.
+Provide a valid starting case, adjacent units, reproducible comparison, and machine-readable outputs when analysis is part of the promise.

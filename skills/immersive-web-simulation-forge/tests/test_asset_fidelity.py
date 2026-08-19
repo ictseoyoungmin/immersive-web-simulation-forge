@@ -17,16 +17,24 @@ class AssetFidelityTests(unittest.TestCase):
     def failed_names(self, report):
         return {item['name'] for item in report['checks'] if item['status'] == 'fail'}
 
-    def test_flagship_spatial_cannot_disable_asset_fidelity(self):
+    def test_flagship_spatial_disabling_asset_fidelity_requires_non_object_rationale(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)/'world'; root.mkdir(); plan=helpers.valid_plan(); plan['asset_fidelity']['applicable']=False
             helpers.make_project(root,plan,validation=helpers.valid_validation())
-            self.assertIn('flagship asset fidelity enabled', self.failed_names(forge.audit_project(root)))
+            self.assertIn('flagship asset fidelity applicability', self.failed_names(forge.audit_project(root)))
+            plan['asset_fidelity']['non_object_identity_rationale']='procedural volumetric nebula field is the entire identity; no discrete hero object exists'
+            (root/'.forge/FORGE_PLAN.json').write_text(json.dumps(plan))
+            self.assertNotIn('flagship asset fidelity applicability', self.failed_names(forge.audit_project(root)))
 
-    def test_realistic_flagship_requires_reference_sensitive_object(self):
+    def test_realistic_flagship_does_not_require_reference_sensitive_object(self):
+        # v0.8.2: realistic no longer implies reference-driven; only the latter needs specific
+        # reference-sensitive object evidence.
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)/'world'; root.mkdir(); plan=helpers.valid_plan(); plan['asset_fidelity']['style_mode']='realistic'
             helpers.make_project(root,plan,validation=helpers.valid_validation())
+            self.assertNotIn('reference-sensitive object coverage', self.failed_names(forge.audit_project(root)))
+            plan['asset_fidelity']['style_mode']='reference-driven'
+            (root/'.forge/FORGE_PLAN.json').write_text(json.dumps(plan))
             self.assertIn('reference-sensitive object coverage', self.failed_names(forge.audit_project(root)))
 
     def test_missing_runtime_asset_audit_blocks_flagship(self):
@@ -35,11 +43,16 @@ class AssetFidelityTests(unittest.TestCase):
             (root/'.forge/asset-fidelity-audit.json').unlink()
             self.assertIn('runtime asset fidelity audit evidence', self.failed_names(forge.audit_project(root)))
 
-    def test_runtime_placeholder_ratio_above_plan_blocks_flagship(self):
+    def test_runtime_placeholder_ratio_above_plan_is_advisory_only(self):
+        # v0.8.2: near placeholder ratio is a diagnostic budget, not a certification truth —
+        # exceeding it warns instead of failing flagship completion by count alone.
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)/'world'; root.mkdir(); validation=helpers.valid_validation(); validation['asset_fidelity_validation']['near_placeholder_ratio']=0.35
             helpers.make_project(root,validation=validation)
-            self.assertIn('runtime asset fidelity validation', self.failed_names(forge.audit_project(root)))
+            report=forge.audit_project(root)
+            self.assertNotIn('runtime asset fidelity validation', self.failed_names(report))
+            warned={item['name'] for item in report['checks'] if item['status']=='warn'}
+            self.assertIn('near placeholder ratio review', warned)
 
     def test_asset_fidelity_audit_rejects_primitive_hero(self):
         with tempfile.TemporaryDirectory() as td:
@@ -57,7 +70,7 @@ class AssetFidelityTests(unittest.TestCase):
             proc=subprocess.run(['node',str(ROOT/'scripts/asset_fidelity_audit.mjs'),str(src),'--flagship'],capture_output=True,text=True)
             self.assertEqual(proc.returncode,1,proc.stdout+proc.stderr)
             ids={f['id'] for f in json.loads(proc.stdout)['findings']}
-            self.assertIn('identity-critical-placeholder',ids); self.assertIn('near-placeholder-ratio',ids)
+            self.assertIn('identity-critical-placeholder',ids); self.assertIn('near-placeholder-ratio-review',ids)
 
     def test_identity_critical_class_uncovered_by_explicit_flag(self):
         with tempfile.TemporaryDirectory() as td:
@@ -145,6 +158,30 @@ class AssetFidelityTests(unittest.TestCase):
             proc=subprocess.run(['node',str(ROOT/'scripts/asset_fidelity_audit.mjs'),str(src),'--flagship','--identity-classes','lighthouse,rock-stack'],capture_output=True,text=True)
             self.assertEqual(proc.returncode,0,proc.stdout+proc.stderr)
             self.assertEqual(json.loads(proc.stdout)['status'],'pass')
+
+    def test_non_object_identity_rationale_only_required_inside_an_entered_contract(self):
+        # Spatial flagship != automatically object-centric flagship. A genuine field/particle/
+        # astronomical product that opted out entirely (asset_fidelity.applicable=false in the
+        # plan) must not be flagged here — its rationale lives in FORGE_PLAN.json instead, which
+        # forge.py already checks. This script should only demand a rationale once an agent has
+        # entered the asset-fidelity contract (applicable=true) and still marks scopeMode=non-object.
+        def build(applicable):
+            td = tempfile.mkdtemp()
+            root = Path(td) / '.forge'; root.mkdir()
+            (root / 'FORGE_PLAN.json').write_text(json.dumps({'asset_fidelity': {'applicable': applicable}}))
+            src = root / 'evidence.json'
+            src.write_text(json.dumps({'styleMode': 'abstract', 'scopeMode': 'non-object', 'targetSizeReviewed': True, 'evidenceViews': ['hero', 'alt', 'third'], 'objects': [], 'families': []}))
+            return src
+
+        src_opted_out = build(False)
+        proc = subprocess.run(['node', str(ROOT / 'scripts/asset_fidelity_audit.mjs'), str(src_opted_out), '--flagship'], capture_output=True, text=True)
+        ids = {f['id'] for f in json.loads(proc.stdout)['findings']}
+        self.assertNotIn('non-object-identity-unsubstantiated', ids)
+
+        src_opted_in = build(True)
+        proc = subprocess.run(['node', str(ROOT / 'scripts/asset_fidelity_audit.mjs'), str(src_opted_in), '--flagship'], capture_output=True, text=True)
+        ids = {f['id'] for f in json.loads(proc.stdout)['findings']}
+        self.assertIn('non-object-identity-unsubstantiated', ids)
 
     def test_intentional_low_poly_can_use_primitives_but_still_needs_evidence(self):
         with tempfile.TemporaryDirectory() as td:
